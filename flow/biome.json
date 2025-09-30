@@ -1,0 +1,16 @@
+{
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noUnknownAtRules": {
+          "level": "off"
+        }
+      }
+    }
+  },
+  "css": {
+    "linter": {
+      "enabled": true
+    }
+  }
+}
