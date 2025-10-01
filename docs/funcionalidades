@@ -1,0 +1,215 @@
+📊 Análise Completa do Frontend - Funcionalidades por Módulo
+Analisei o frontend e completei a lista de funcionalidades. Aqui está o mapeamento completo baseado nas páginas existentes:
+
+1. Pagina Dashboard ✅
+ * Usuario deve ser capaz de ver:
+   - Vendas Hoje (R$ 1.247,00)
+   - Gasto Anúncios (R$ 340,50)
+   - Lucro Líquido (R$ 906,50)
+   - Pagamentos Agendados (R$ 2.450,00)
+   - Gráfico Vendas vs Gastos (últimos 7 meses)
+   - Atividades Recentes (vendas, pagamentos, entregas, anúncios)
+   - Próximos Vencimentos (clientes, valores, datas)
+   - Humor do Negócio (status visual com emoji)
+* Usuario deve ser capaz de acionar:
+   - Filtrar período (Últimos 7 dias)
+   - Nova Venda
+   - Enviar Cobrança WhatsApp
+   - Gerar Relatório
+   - Agendar Pagamento
+
+2. Pagina Clientes ✅
+* Usuario deve ser capaz de ver:
+ - Tabela com clientes contendo:
+ - Cliente (nome)
+ - Contato (telefone/email)
+ - Valor Pedido
+ - Status (pendente/pago/entregue)
+ - Etiqueta (categorização)
+
+* Usuario deve ser capaz de gerenciar:
+ - Etiquetas (criar, editar, excluir)
+ - Exportar, Importar lista clientes
+ - Criar novo cliente
+ - Criar etiquetas com cores personalizadas
+ - Filtros de busca por tipo de etiqueta
+ - Busca por nome, email, telefone, valor, status do pedido, etiqueta, 
+ - Ações rapidas de (enviar whatsapp, agendar,ligar, editar, excluir)
+
+3. Pagina Anúncios (Facebook Ads Manager) ✅
+* Usuario deve ser capaz de ver:
+ - Campanhas ativas
+ - Card com Gasto
+ - Card com Impressões
+ - Card com Cliques
+ - Card com CTR
+ - Card com CPC
+ - Card com CPM
+ - Card com ROAS
+ - Grafico com Performance de Gasto vs Vendas ao longo do tempo
+ - Tabela com detalhes das campanhas (nome, status, gasto, impressões, cliques, CTR, CPC, CPM, ROAS)
+
+* Usuario deve ser capaz de:
+ - Criar nova campanha
+ - Pausar/reativar campanhas
+ - Botão de sincronizar dados (Botão atualizar já presente no frontend)
+ - Ajustar orçamento
+ - Seletor de período para análise de dados (Diario, Semanal, Mensal, Personalizado) "Seletor já presente no frontend"
+ - Ver relatórios detalhados
+ - Otimizar campanhas automaticamente
+
+4. Pagina Integrações (Connection Hub) ✅
+* Usuario deve ser capaz de ver:
+ - Status das conexões (Coinzz, Facebook, WhatsApp,)
+ - Configurar Integrações com Gateway de Pagamento (Em breve, mas não no momento atual)
+ - Configurar Integrações com Facebook Ads, Coinzz, WhatsApp (Em breve, mais integrações virão)
+ - Última sincronização
+ - Status dos webhooks
+ - Logs de integração
+* Usuario deve ser capaz de:
+ - Conectar/desconectar serviços
+ - Configurar webhooks
+ - Testar conexões
+ - Ver logs de erro
+
+5. Pagina Projeções (Financial Crystal Ball) ✅
+* Usuario deve ser capaz de ver:
+ - Dois cards Roxo e laranha que hoje mostra valores do cartão de credito, mas deve mostrar Receita e Despesas.
+ - Seletor ja presente, mas deve ter opções de (7 dias, 30 dias, 90 dias, 6 meses, 1 ano)
+ - Gráfico de vendas históricas
+ - Ball com porcentagem de Meta do mes atual (Abaixo de media valor exemplo: R$ 12.000,00/15.000,00) e data exemplo: (até 30/09)
+ - Ball com porcentagem de de gastos, aconselhando redução (exemplo: R$ 3.500,00/5.000,00) e data exemplo: (até 30/09)
+ - Ball com porcentagem de Reserva de Emergência (exemplo: R$ 1.200,00/2.000,00) e data exemplo: (até 30/09)
+ - Previsões futuras (7 dias, 30 dias, 90 dias)
+ - Projeção de Cash Flow (pessimista, realista, otimista)
+ - Conquistas (Metas atingidas, Roi acima de 100%, mes sem prejuizo, 10k em vendas e proximas metas,) o ideal e criar novas metas que irão aparecer para o usuario.
+ - Score de Saúde Financeira: Ball com status (Excelente, Bom, Regular, Ruim, Muito Bom)
+   - Informaçoes no card de score de saude financeira com: Fluxo de caixa, Controle de gastos, Roi anuncios, Reserva de emergencia, Meta de vendas.
+   - icones ao lado informando; baixo risco, risco moderado, alto risco. precisa moderar, diversificado e outras informações.
+ - Recomendações Personalizadas
+   - Aumente sua reserva de emergência para 6 meses de gastos (exemplos)
+   - Mantenha o ROI dos anúncios acima de 250% (exemplos)
+   - Reduza gastos com anúncios em 10% (exemplos)
+   - Considere diversificar suas fontes de renda (exemplos)
+* Usuario deve ser capaz de:
+ - Criar Metas personalizadas para as Balls de Projeções
+ - Exportar dados
+ - Configurar alertas
+ - Ver análise detalhada
+
+6. Pagina Relatórios (Reports Center) ✅
+* Usuario deve ser capaz de ver:
+ - Tags Relatórios predefinidos (Vendas, Financeiro, Performance, Clientes, Anúncios)
+ - Relatorios predefinidos (Relatório de Vendas Mensal,Demonstrativo Financeiro, Performance de Campanhas, Análise de Clientes
+, Dashboard Executivo, Relatório de Impostos, Análise de Funil de Vendas, ROI por Canal de Marketing)
+ - Relatórios customizados
+ - Busca de Relatórios por nome, data, tipo
+ - Seletor de período (Diario, Semanal, Mensal, Personalizado)
+* Usuario deve ser capaz de:
+ - Icone de compartilhar
+ - Icone de Favoritar "estrela"
+ - Botão de Visualizar
+ - Botão de Baixar
+ - Criar relatórios customizados
+ - Agendar geração automática
+ - Exportar (PDF, Excel, CSV)
+ - Compartilhar relatórios
+ - Salvar templates
+ - Atualizar
+ - Configurar
+
+7. Pagina Planos (Plans & Pricing) ✅
+* Usuario deve ser capaz de ver:
+ - Plano atual
+ - Plano Mensal, Anual
+ - Comparativo de planos
+ - Perguntas frequentes
+ - Card com Falar com Vendas, Agendar Demo
+* Usuario deve ser capaz de:
+ - Fazer upgrade/downgrade
+ - Falar com vendas, agendar demo
+ - Ver detalhes do plano
+
+8. Pagina Configurações (Settings) ✅
+* Usuario deve ser capaz de ver:
+ - Perfil
+   - Foto do Perfil
+   - Fazer Upload/Alterar foto, Remover foto
+   - Nome Completo
+   - Email
+   - Telefone
+   - Endereço
+   - CPF/CNPJ
+   - Endereço
+   - Cidade
+   - Estado
+   - CEP
+ - Sistema
+   - Aparência com switch claro/escuro
+   - Configurações de fuso horário
+   - Formato de data e hora
+   - Moeda padrão
+ - Notificações
+   - Configurações de notificações por email
+   - Configurações de notificações push
+   - Configurações de notificações SMS (futuro)
+   - Alertas de Vendas
+   - Novidades e Promoções
+   - Atualizações do Sistema
+ - Segurança da conta
+    - Alterar senha
+    - Autenticação de dois fatores (2FA) (apara futuro)
+    - Sessoes ativas
+ - Faturamento
+  - Plano Atual
+  - Metodo de Pagamento
+  - Historico de Faturas
+ - Integracoes
+  - Gerenciar integrações ativas
+  - Adicionar novas integrações
+    - Facebook Ads
+    - Coinzz
+    - WhatsApp
+ - Avançado
+  - Exportar dados
+  - Zona de teste perigo (Excluir conta)
+* Usuario deve ser capaz de:
+ - Editar informações perfil
+ - Editar configurações sistema
+ - Editar preferências notificações
+ - Editar configurações segurança
+ - Editar informações faturamento
+ - Editar integrações
+ - Editar Avançado
+   - Exportar dados
+   - Exluir conta
+
+9. Pagina Ajuda (Help Center) ✅
+* Usuario deve ser capaz de ver:
+ - Card com Chat ao Vivo
+ - Card com Email de Suporte
+ - Card com Suporte Telefônico
+ - Buscar na central de ajuda
+ - Tutoriais e Guias em vídeo
+ - Perguntas frequentes (FAQs)
+   - tags de:
+     - Geral
+     - integrações
+     - relatórios
+     - faturamento
+     - suporte.
+ - Documentação Tecnica
+  - Card API Documentation
+  - Card Manual do Usuario
+* Usuario deve ser capaz de:
+ - Buscar na base de conhecimento
+ - Entrar em contato via chat
+ - Enviar email
+ - Ligar para suporte
+🔄 Funcionalidades Transversais
+* Usuario deve ser capaz de:
+ - Receber notificações em tempo real
+ - Navegar entre módulos via sidebar
+ - Usar busca global
+ - Alternar tema (claro/escuro)
+ - Fazer logout

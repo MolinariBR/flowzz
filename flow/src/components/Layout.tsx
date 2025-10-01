@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {LayoutDashboard, Users, TrendingUp, Settings, Zap, Bell, Search, ChevronRight, Menu, X, User, LogOut, Crown, Moon, PieChart, FileText, HelpCircle, CreditCard} from 'lucide-react'
+import { Bell, ChevronRight, CreditCard, Crown, FileText, HelpCircle, LayoutDashboard, LogOut, Menu, Moon, PieChart, Search, Settings, TrendingUp, User, Users, X, Zap } from 'lucide-react'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -148,14 +148,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 >
                   <FileText className="h-4 w-4 mr-3" />
                   Relatório
-                </Link>
-                <Link 
-                  href="/configuracoes"
-                  onClick={() => setSidebarOpen(false)}
-                  className="w-full flex items-center px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <Settings className="h-4 w-4 mr-3" />
-                  Configurações
                 </Link>
                 <Link 
                   href="/ajuda"

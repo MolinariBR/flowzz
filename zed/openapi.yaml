@@ -1,0 +1,1922 @@
+openapi: 3.0.3
+info:
+  title: Flowzz API
+  version: 1.0.0
+  description: |
+    API completa para a plataforma Flowzz - Gestão de afiliados e marketing digital.
+    
+    ## Autenticação
+    A API usa JWT (JSON Web Tokens) para autenticação. Inclua o token no header:
+    ```
+    Authorization: Bearer {token}
+    ```
+    
+    ## Rate Limiting
+    - 100 requisições por minuto por usuário
+    - 1000 requisições por hora por usuário
+    
+  contact:
+    name: Flowzz Support
+    email: suporte@flowzz.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001/api/v1
+    description: Development server
+  - url: https://api.flowzz.com/v1
+    description: Production server
+
+tags:
+  - name: Auth
+    description: Autenticação e gerenciamento de sessão
+  - name: Dashboard
+    description: Métricas e visão geral do negócio
+  - name: Clients
+    description: Gestão de clientes
+  - name: Tags
+    description: Gestão de etiquetas
+  - name: Sales
+    description: Gestão de vendas
+  - name: Ads
+    description: Gestão de anúncios e campanhas
+  - name: Integrations
+    description: Integrações com serviços externos
+  - name: Projections
+    description: Projeções financeiras e metas
+  - name: Reports
+    description: Geração e gestão de relatórios
+  - name: Settings
+    description: Configurações do usuário
+  - name: Plans
+    description: Planos e assinaturas
+  - name: Help
+    description: Central de ajuda e suporte
+  - name: Admin
+    description: Endpoints administrativos
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Mensagem de erro
+        code:
+          type: string
+          description: Código do erro
+        details:
+          type: object
+          description: Detalhes adicionais do erro
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        telefone:
+          type: string
+        cpf_cnpj:
+          type: string
+        endereco:
+          $ref: '#/components/schemas/Address'
+        avatar_url:
+          type: string
+          format: uri
+        plano_atual:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+        data_cadastro:
+          type: string
+          format: date-time
+        ultimo_acesso:
+          type: string
+          format: date-time
+        preferencias:
+          $ref: '#/components/schemas/UserPreferences'
+
+    Address:
+      type: object
+      properties:
+        rua:
+          type: string
+        numero:
+          type: string
+        complemento:
+          type: string
+        bairro:
+          type: string
+        cidade:
+          type: string
+        estado:
+          type: string
+        cep:
+          type: string
+
+    UserPreferences:
+      type: object
+      properties:
+        tema:
+          type: string
+          enum: [light, dark]
+        fuso_horario:
+          type: string
+        formato_data:
+          type: string
+        moeda:
+          type: string
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        telefone:
+          type: string
+        valor_pedido:
+          type: number
+          format: decimal
+        status:
+          type: string
+          enum: [pendente, pago, entregue, cancelado]
+        etiquetas:
+          type: array
+          items:
+            type: string
+            format: uuid
+        data_cadastro:
+          type: string
+          format: date-time
+        data_ultima_compra:
+          type: string
+          format: date-time
+        observacoes:
+          type: string
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nome:
+          type: string
+        cor:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+
+    Sale:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cliente_id:
+          type: string
+          format: uuid
+        valor:
+          type: number
+          format: decimal
+        data_venda:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pendente, pago, cancelado]
+        forma_pagamento:
+          type: string
+        observacoes:
+          type: string
+
+    Ad:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nome:
+          type: string
+        plataforma:
+          type: string
+          enum: [facebook, instagram, google]
+        status:
+          type: string
+          enum: [ativo, pausado, finalizado]
+        orcamento_diario:
+          type: number
+          format: decimal
+        orcamento_total:
+          type: number
+          format: decimal
+        gasto_atual:
+          type: number
+          format: decimal
+        impressoes:
+          type: integer
+        cliques:
+          type: integer
+        conversoes:
+          type: integer
+        ctr:
+          type: number
+          format: decimal
+        cpc:
+          type: number
+          format: decimal
+        cpm:
+          type: number
+          format: decimal
+        roas:
+          type: number
+          format: decimal
+        data_inicio:
+          type: string
+          format: date-time
+        data_fim:
+          type: string
+          format: date-time
+
+    Integration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        provedor:
+          type: string
+          enum: [facebook, coinzz, whatsapp, pagbank]
+        status:
+          type: string
+          enum: [conectado, desconectado, erro]
+        configuracao:
+          type: object
+        ultima_sincronizacao:
+          type: string
+          format: date-time
+        webhook_url:
+          type: string
+          format: uri
+
+    Report:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nome:
+          type: string
+        tipo:
+          type: string
+          enum: [vendas, financeiro, performance, clientes, anuncios]
+        formato:
+          type: string
+          enum: [pdf, excel, csv]
+        parametros:
+          type: object
+        status:
+          type: string
+          enum: [gerando, pronto, erro]
+        url_download:
+          type: string
+          format: uri
+        data_criacao:
+          type: string
+          format: date-time
+        favorito:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+
+    Goal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        titulo:
+          type: string
+        descricao:
+          type: string
+        valor_alvo:
+          type: number
+          format: decimal
+        valor_atual:
+          type: number
+          format: decimal
+        prazo:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [ativo, concluido, cancelado]
+        categoria:
+          type: string
+          enum: [receita, despesa, reserva]
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        plano:
+          type: string
+          enum: [mensal, anual]
+        status:
+          type: string
+          enum: [ativo, cancelado, suspenso]
+        valor:
+          type: number
+          format: decimal
+        data_inicio:
+          type: string
+          format: date-time
+        data_fim:
+          type: string
+          format: date-time
+        metodo_pagamento:
+          type: object
+
+    DashboardMetrics:
+      type: object
+      properties:
+        vendas_hoje:
+          type: number
+          format: decimal
+        gasto_anuncios:
+          type: number
+          format: decimal
+        lucro_liquido:
+          type: number
+          format: decimal
+        pagamentos_agendados:
+          type: number
+          format: decimal
+        conversoes:
+          type: integer
+        humor_negocio:
+          type: string
+          enum: [excelente, bom, regular, ruim]
+
+paths:
+  # ==================== AUTENTICAÇÃO ====================
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login de usuário
+      description: Autentica um usuário e retorna um token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logout de usuário
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout bem-sucedido
+        '401':
+          description: Não autorizado
+
+  /auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: Renovar token de acesso
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token renovado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  refresh_token:
+                    type: string
+
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Obter dados do usuário autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # ==================== DASHBOARD ====================
+  /dashboard/metrics:
+    get:
+      tags:
+        - Dashboard
+      summary: Obter métricas do dashboard
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [hoje, 7dias, 30dias, 90dias]
+          description: Período para filtrar as métricas
+      responses:
+        '200':
+          description: Métricas do dashboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardMetrics'
+
+  /dashboard/activities:
+    get:
+      tags:
+        - Dashboard
+      summary: Obter atividades recentes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Lista de atividades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    tipo:
+                      type: string
+                    descricao:
+                      type: string
+                    data:
+                      type: string
+                      format: date-time
+
+  /dashboard/chart:
+    get:
+      tags:
+        - Dashboard
+      summary: Dados para gráfico de vendas vs gastos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: months
+          in: query
+          schema:
+            type: integer
+            default: 7
+      responses:
+        '200':
+          description: Dados do gráfico
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    mes:
+                      type: string
+                    vendas:
+                      type: number
+                    gastos:
+                      type: number
+
+  # ==================== CLIENTES ====================
+  /clients:
+    get:
+      tags:
+        - Clients
+      summary: Listar clientes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Buscar por nome, email ou telefone
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pendente, pago, entregue, cancelado]
+        - name: tag_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Client'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      pages:
+                        type: integer
+
+    post:
+      tags:
+        - Clients
+      summary: Criar novo cliente
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+                - email
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                telefone:
+                  type: string
+                valor_pedido:
+                  type: number
+                status:
+                  type: string
+                etiquetas:
+                  type: array
+                  items:
+                    type: string
+                observacoes:
+                  type: string
+      responses:
+        '201':
+          description: Cliente criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+
+  /clients/{id}:
+    get:
+      tags:
+        - Clients
+      summary: Obter detalhes de um cliente
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalhes do cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+
+    put:
+      tags:
+        - Clients
+      summary: Atualizar cliente
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+      responses:
+        '200':
+          description: Cliente atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+
+    delete:
+      tags:
+        - Clients
+      summary: Excluir cliente
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Cliente excluído
+
+  /clients/import:
+    post:
+      tags:
+        - Clients
+      summary: Importar lista de clientes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Importação concluída
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: object
+
+  /clients/export:
+    get:
+      tags:
+        - Clients
+      summary: Exportar lista de clientes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv, excel]
+            default: csv
+      responses:
+        '200':
+          description: Arquivo de exportação
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /clients/bulk-actions:
+    post:
+      tags:
+        - Clients
+      summary: Ações em lote sobre clientes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+                - client_ids
+              properties:
+                action:
+                  type: string
+                  enum: [delete, update_status, add_tag, remove_tag]
+                client_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                data:
+                  type: object
+      responses:
+        '200':
+          description: Ações executadas
+
+  # ==================== ETIQUETAS ====================
+  /tags:
+    get:
+      tags:
+        - Tags
+      summary: Listar etiquetas
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de etiquetas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+
+    post:
+      tags:
+        - Tags
+      summary: Criar nova etiqueta
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+                - cor
+              properties:
+                nome:
+                  type: string
+                cor:
+                  type: string
+                  pattern: '^#[0-9A-Fa-f]{6}$'
+      responses:
+        '201':
+          description: Etiqueta criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+
+  /tags/{id}:
+    put:
+      tags:
+        - Tags
+      summary: Atualizar etiqueta
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                cor:
+                  type: string
+      responses:
+        '200':
+          description: Etiqueta atualizada
+
+    delete:
+      tags:
+        - Tags
+      summary: Excluir etiqueta
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Etiqueta excluída
+
+  # ==================== VENDAS ====================
+  /sales:
+    get:
+      tags:
+        - Sales
+      summary: Listar vendas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de vendas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
+
+    post:
+      tags:
+        - Sales
+      summary: Registrar nova venda
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cliente_id
+                - valor
+              properties:
+                cliente_id:
+                  type: string
+                  format: uuid
+                valor:
+                  type: number
+                forma_pagamento:
+                  type: string
+                observacoes:
+                  type: string
+      responses:
+        '201':
+          description: Venda registrada
+
+  /sales/whatsapp-charge:
+    post:
+      tags:
+        - Sales
+      summary: Enviar cobrança via WhatsApp
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sale_id
+              properties:
+                sale_id:
+                  type: string
+                  format: uuid
+                mensagem:
+                  type: string
+      responses:
+        '200':
+          description: Cobrança enviada
+
+  # ==================== ANÚNCIOS ====================
+  /ads/campaigns:
+    get:
+      tags:
+        - Ads
+      summary: Listar campanhas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [diario, semanal, mensal, personalizado]
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lista de campanhas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ad'
+
+    post:
+      tags:
+        - Ads
+      summary: Criar nova campanha
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+                - plataforma
+                - orcamento_diario
+              properties:
+                nome:
+                  type: string
+                plataforma:
+                  type: string
+                orcamento_diario:
+                  type: number
+                orcamento_total:
+                  type: number
+      responses:
+        '201':
+          description: Campanha criada
+
+  /ads/metrics:
+    get:
+      tags:
+        - Ads
+      summary: Obter métricas agregadas de anúncios
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Métricas de anúncios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gasto_total:
+                    type: number
+                  impressoes_total:
+                    type: integer
+                  cliques_total:
+                    type: integer
+                  ctr_medio:
+                    type: number
+                  cpc_medio:
+                    type: number
+                  cpm_medio:
+                    type: number
+                  roas_medio:
+                    type: number
+
+  /ads/sync:
+    post:
+      tags:
+        - Ads
+      summary: Sincronizar dados do Facebook Ads
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Sincronização iniciada
+
+  # ==================== INTEGRAÇÕES ====================
+  /integrations:
+    get:
+      tags:
+        - Integrations
+      summary: Listar integrações
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de integrações
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Integration'
+
+  /integrations/{provider}/connect:
+    post:
+      tags:
+        - Integrations
+      summary: Conectar integração
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [facebook, coinzz, whatsapp, pagbank]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                credentials:
+                  type: object
+                config:
+                  type: object
+      responses:
+        '200':
+          description: Integração conectada
+
+  /integrations/{provider}/disconnect:
+    delete:
+      tags:
+        - Integrations
+      summary: Desconectar integração
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Integração desconectada
+
+  /integrations/{provider}/test:
+    post:
+      tags:
+        - Integrations
+      summary: Testar conexão com integração
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultado do teste
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+
+  /integrations/logs:
+    get:
+      tags:
+        - Integrations
+      summary: Obter logs de integrações
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: provider
+          in: query
+          schema:
+            type: string
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [error, warning, info]
+      responses:
+        '200':
+          description: Logs de integrações
+
+  # ==================== PROJEÇÕES ====================
+  /projections/sales:
+    get:
+      tags:
+        - Projections
+      summary: Obter projeções de vendas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [7dias, 30dias, 90dias, 6meses, 1ano]
+      responses:
+        '200':
+          description: Projeções de vendas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  historico:
+                    type: array
+                    items:
+                      type: object
+                  previsao:
+                    type: object
+
+  /projections/cashflow:
+    get:
+      tags:
+        - Projections
+      summary: Projeção de fluxo de caixa
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Projeção de cashflow
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pessimista:
+                    type: object
+                  realista:
+                    type: object
+                  otimista:
+                    type: object
+
+  /projections/goals:
+    get:
+      tags:
+        - Projections
+      summary: Listar metas
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de metas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+
+    post:
+      tags:
+        - Projections
+      summary: Criar nova meta
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - titulo
+                - valor_alvo
+                - prazo
+                - categoria
+              properties:
+                titulo:
+                  type: string
+                descricao:
+                  type: string
+                valor_alvo:
+                  type: number
+                prazo:
+                  type: string
+                  format: date
+                categoria:
+                  type: string
+      responses:
+        '201':
+          description: Meta criada
+
+  /projections/health-score:
+    get:
+      tags:
+        - Projections
+      summary: Score de saúde financeira
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Score de saúde financeira
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: string
+                    enum: [excelente, muito_bom, bom, regular, ruim]
+                  indicadores:
+                    type: object
+                  recomendacoes:
+                    type: array
+                    items:
+                      type: string
+
+  # ==================== RELATÓRIOS ====================
+  /reports:
+    get:
+      tags:
+        - Reports
+      summary: Listar relatórios
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: tipo
+          in: query
+          schema:
+            type: string
+        - name: favorito
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de relatórios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+
+  /reports/generate:
+    post:
+      tags:
+        - Reports
+      summary: Gerar novo relatório
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+                - tipo
+                - formato
+              properties:
+                nome:
+                  type: string
+                tipo:
+                  type: string
+                formato:
+                  type: string
+                parametros:
+                  type: object
+      responses:
+        '202':
+          description: Geração iniciada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+  /reports/{id}/download:
+    get:
+      tags:
+        - Reports
+      summary: Download de relatório
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Arquivo do relatório
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /reports/{id}/favorite:
+    post:
+      tags:
+        - Reports
+      summary: Favoritar relatório
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Relatório favoritado
+
+  /reports/{id}/share:
+    post:
+      tags:
+        - Reports
+      summary: Compartilhar relatório
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emails:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+      responses:
+        '200':
+          description: Relatório compartilhado
+
+  /reports/templates:
+    get:
+      tags:
+        - Reports
+      summary: Listar templates de relatórios
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Templates disponíveis
+
+  # ==================== CONFIGURAÇÕES ====================
+  /settings/profile:
+    get:
+      tags:
+        - Settings
+      summary: Obter perfil do usuário
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perfil do usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    put:
+      tags:
+        - Settings
+      summary: Atualizar perfil
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                telefone:
+                  type: string
+                endereco:
+                  $ref: '#/components/schemas/Address'
+      responses:
+        '200':
+          description: Perfil atualizado
+
+  /settings/profile/avatar:
+    post:
+      tags:
+        - Settings
+      summary: Upload de avatar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar atualizado
+
+  /settings/preferences:
+    put:
+      tags:
+        - Settings
+      summary: Atualizar preferências
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferences'
+      responses:
+        '200':
+          description: Preferências atualizadas
+
+  /settings/notifications:
+    get:
+      tags:
+        - Settings
+      summary: Obter configurações de notificações
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Configurações de notificações
+
+    put:
+      tags:
+        - Settings
+      summary: Atualizar configurações de notificações
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: boolean
+                push:
+                  type: boolean
+                tipos:
+                  type: object
+      responses:
+        '200':
+          description: Configurações atualizadas
+
+  /settings/change-password:
+    post:
+      tags:
+        - Settings
+      summary: Alterar senha
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - current_password
+                - new_password
+              properties:
+                current_password:
+                  type: string
+                new_password:
+                  type: string
+      responses:
+        '200':
+          description: Senha alterada
+
+  /settings/sessions:
+    get:
+      tags:
+        - Settings
+      summary: Listar sessões ativas
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Sessões ativas
+
+  /settings/export-data:
+    get:
+      tags:
+        - Settings
+      summary: Exportar dados do usuário
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dados exportados
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /settings/account:
+    delete:
+      tags:
+        - Settings
+      summary: Excluir conta
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+      responses:
+        '204':
+          description: Conta excluída
+
+  # ==================== PLANOS ====================
+  /plans:
+    get:
+      tags:
+        - Plans
+      summary: Listar planos disponíveis
+      responses:
+        '200':
+          description: Lista de planos
+
+  /subscriptions/current:
+    get:
+      tags:
+        - Plans
+      summary: Obter assinatura atual
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Assinatura atual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /subscriptions/upgrade:
+    post:
+      tags:
+        - Plans
+      summary: Fazer upgrade de plano
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - plan_id
+              properties:
+                plan_id:
+                  type: string
+                payment_method:
+                  type: object
+      responses:
+        '200':
+          description: Upgrade realizado
+
+  /subscriptions/cancel:
+    post:
+      tags:
+        - Plans
+      summary: Cancelar assinatura
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Assinatura cancelada
+
+  /subscriptions/history:
+    get:
+      tags:
+        - Plans
+      summary: Histórico de assinaturas
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Histórico de assinaturas
+
+  # ==================== AJUDA ====================
+  /help/categories:
+    get:
+      tags:
+        - Help
+      summary: Listar categorias de ajuda
+      responses:
+        '200':
+          description: Categorias de ajuda
+
+  /help/articles:
+    get:
+      tags:
+        - Help
+      summary: Listar artigos de ajuda
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Artigos de ajuda
+
+  /help/search:
+    get:
+      tags:
+        - Help
+      summary: Buscar na base de conhecimento
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultados da busca
+
+  /help/contact:
+    post:
+      tags:
+        - Help
+      summary: Enviar mensagem de contato
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subject
+                - message
+              properties:
+                subject:
+                  type: string
+                message:
+                  type: string
+                category:
+                  type: string
+      responses:
+        '200':
+          description: Mensagem enviada
+
+  /help/tickets:
+    get:
+      tags:
+        - Help
+      summary: Listar tickets do usuário
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de tickets
+
+  # ==================== ADMIN ====================
+  /admin/metrics:
+    get:
+      tags:
+        - Admin
+      summary: Métricas administrativas
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Métricas do sistema
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Listar todos os usuários (admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuários
+
+  /admin/users/{id}/suspend:
+    post:
+      tags:
+        - Admin
+      summary: Suspender usuário
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Usuário suspenso
+
+  /admin/users/{id}/impersonate:
+    post:
+      tags:
+        - Admin
+      summary: Fazer login como usuário
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Token de impersonação
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /admin/integrations/status:
+    get:
+      tags:
+        - Admin
+      summary: Status global das integrações
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Status das integrações
+
+  /admin/audit-logs:
+    get:
+      tags:
+        - Admin
+      summary: Logs de auditoria
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: admin_id
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Logs de auditoria

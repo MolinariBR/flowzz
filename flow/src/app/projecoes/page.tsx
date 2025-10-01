@@ -558,7 +558,7 @@ export default function Projecoes() {
 							<span className="font-medium text-indigo-900">Próxima Meta</span>
 						</div>
 						<p className="text-sm text-indigo-800">
-							Faltam apenas R$ 2.550 para desbloquear "R$ 15k em Vendas"!
+							Faltam apenas R$ 2.550 para desbloquear &quot;R$ 15k em Vendas&quot;!
 						</p>
 						<div className="w-full bg-indigo-200 rounded-full h-2 mt-2">
 							<div
