@@ -30,7 +30,7 @@
 - Estimar esforço (story points)
 ```
 
-### 4. 🏗️ **Especificar Arquitetura** (Design Spec)
+### 4. 🏗️ **Especificar Arquitetura** (Design)
 ```
 - Definir stack tecnológica baseada nas stories
 - Especificar padrões arquiteturais

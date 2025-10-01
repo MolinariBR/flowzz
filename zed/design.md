@@ -10,6 +10,9 @@
 │  Landing Page    │  App Cliente     │   Painel Admin       │
 │  (Marketing)     │  (SaaS)          │   (Gestão)           │
 │  Next.js SSG     │  Next.js SSR     │   Next.js SSR        │
+│  ✅ Captar leads │  ✅ Dashboard    │   🚧 Métricas SaaS   │
+│  ✅ SEO          │  ✅ Clientes     │   🚧 Gestão Users    │
+│  ✅ Conversão    │  ✅ Relatórios   │   🚧 Admin Panel     │
 └────────┬─────────┴────────┬─────────┴──────────┬───────────┘
          │                  │                    │
          └──────────────────┴────────────────────┘
@@ -38,15 +41,77 @@
 
 ## 🛠️ STACK TECNOLÓGICA DETALHADA
 
-### **Frontend (Usuário + Admin)**
+### **Frontend Multi-App Architecture**
 
-#### Framework Base
+#### 🎯 **Três Aplicações Separadas**
+
+##### 1. Landing Page (Marketing) - `/landing/`
+```typescript
+- Next.js 14+ (App Router) - SSG
+  ✅ SEO otimizado para captação
+  ✅ Performance máxima (Static)
+  ✅ Conversão de leads
+  
+- Stack:
+  ✅ HeroUI + Tailwind CSS
+  ✅ Framer Motion (animações)
+  ✅ React Hook Form + Zod
+  ✅ Vercel/Netlify deployment
+```
+
+##### 2. App Cliente (SaaS) - `/flow/`
+```typescript
+- Next.js 14+ (App Router) - SSR
+  ✅ Dashboard financeiro
+  ✅ Gestão de clientes
+  ✅ Relatórios e analytics
+  ✅ Integrações (Coinzz, Facebook, WhatsApp)
+  
+- Stack Completo:
+  ✅ HeroUI v2.4+ (componentes acessíveis)
+  ✅ Tailwind CSS 3.4+ (styling)
+  ✅ Zustand (state management)
+  ✅ TanStack Query (data fetching)
+  ✅ React Hook Form + Zod (forms)
+  ✅ Recharts (visualizações)
+  ✅ TanStack Table (tabelas)
+  
+- IMPORTANTE: ❌ NÃO MODIFICAR (já implementado)
+```
+
+##### 3. Painel Admin (Gestão) - `/admin/`
+```typescript
+- Next.js 14+ (App Router) - SSR
+  ✅ Dashboard métricas SaaS (MRR, ARR, Churn, LTV, CAC)
+  ✅ Gestão de usuários (CRUD, suspend, impersonate)
+  ✅ Monitoramento de integrações
+  ✅ Sistema de auditoria
+  ✅ Alertas e notificações
+  
+- Stack Específico Admin:
+  ✅ HeroUI v2.4+ (consistência visual)
+  ✅ Tailwind CSS (tema admin customizado)
+  ✅ Zustand (admin state)
+  ✅ TanStack Query (cache métricas 1h)
+  ✅ Recharts (gráficos SaaS)
+  ✅ Lucide React (ícones)
+  ✅ Framer Motion (transições)
+  
+- Autenticação:
+  ✅ JWT validation
+  ✅ Role-based access (ADMIN, SUPER_ADMIN)
+  ✅ Session management
+  ✅ Logout automático
+```
+
+#### Framework Base Unificado
 ```typescript
 - Next.js 14.2+ (App Router)
   ✅ Razão: SSR/SSG, API Routes, SEO otimizado
-  ✅ Permite unificar app cliente e admin
+  ✅ Permite 3 apps independentes
   ✅ Image optimization nativa
   ✅ Bundle splitting automático
+  ✅ Shared components library
 ```
 
 #### UI Components
@@ -101,6 +166,210 @@
   
 - Alternativa: Chart.js + react-chartjs-2
   ✅ Mais leve, performance superior
+```
+
+---
+
+## 👨‍💼 PAINEL ADMIN - ARQUITETURA ESPECÍFICA
+
+### **Estrutura de Pastas Admin**
+```
+admin/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── login/
+│   │   │   └── layout.tsx
+│   │   ├── (dashboard)/
+│   │   │   ├── dashboard/
+│   │   │   ├── users/
+│   │   │   ├── metrics/
+│   │   │   ├── integrations/
+│   │   │   └── layout.tsx (sidebar + nav)
+│   │   ├── globals.css
+│   │   └── layout.tsx (root)
+│   ├── components/
+│   │   ├── ui/ (HeroUI wrappers)
+│   │   ├── forms/ (admin forms)
+│   │   ├── layout/ (sidebar, nav, breadcrumb)
+│   │   └── charts/ (métricas SaaS)
+│   ├── lib/
+│   │   ├── api/ (admin endpoints)
+│   │   ├── hooks/ (admin hooks)
+│   │   ├── utils/ (helpers)
+│   │   └── auth/ (JWT validation)
+│   ├── providers/
+│   │   ├── providers.tsx (HeroUI + TanStack)
+│   │   ├── auth-provider.tsx
+│   │   └── theme-provider.tsx
+│   └── types/
+│       ├── admin.ts
+│       ├── metrics.ts
+│       └── api.ts
+├── tailwind.config.ts (tema admin)
+├── next.config.ts
+└── package.json
+```
+
+### **Endpoints Admin (Backend Integration)**
+```typescript
+// Métricas SaaS (Story 7.1)
+GET /admin/metrics
+{
+  mrr: 18450,
+  arr: 221400,
+  churn_rate: 4.2,
+  ltv: 2840,
+  cac: 285,
+  total_users: 247,
+  active_users_30d: 198,
+  new_subscriptions_month: 23,
+  cancellations_month: 5,
+  tickets_open: 12
+}
+
+GET /admin/users/growth?period=12
+[
+  { month: '2024-01', users: 45 },
+  { month: '2024-02', users: 67 },
+  // ... 12 meses
+]
+
+GET /admin/revenue?period=12
+[
+  { month: '2024-01', revenue: 12450 },
+  { month: '2024-02', revenue: 15630 },
+  // ... 12 meses
+]
+
+// Gestão de Usuários (Story 7.2)
+GET /admin/users?page=1&search=&plan=&status=
+POST /admin/users/:id/suspend
+POST /admin/users/:id/reactivate
+POST /admin/users/:id/impersonate
+GET /admin/users/:id/logs
+```
+
+### **Componentes Admin Específicos**
+```typescript
+// Dashboard Métricas
+<MetricsGrid>
+  <MetricCard title="MRR" value="R$ 18.450" change="+12%" />
+  <MetricCard title="Churn Rate" value="4,2%" change="-0.8%" />
+  <MetricCard title="Total Users" value="247" change="+23" />
+</MetricsGrid>
+
+<ChartsGrid>
+  <GrowthChart data={userGrowth} />
+  <RevenueChart data={revenue} />
+  <PlanDistribution data={plans} />
+</ChartsGrid>
+
+// Gestão de Usuários
+<UsersTable 
+  data={users}
+  onSuspend={handleSuspend}
+  onImpersonate={handleImpersonate}
+  pagination={{ page: 1, total: 247 }}
+/>
+
+<UserActions>
+  <Button onClick={suspendUser}>Suspender</Button>
+  <Button onClick={impersonateUser}>Impersonar</Button>
+  <Button onClick={viewLogs}>Ver Logs</Button>
+</UserActions>
+```
+
+### **State Management Admin**
+```typescript
+// Admin Store (Zustand)
+interface AdminState {
+  metrics: AdminMetrics | null
+  users: User[]
+  selectedUser: User | null
+  loading: boolean
+  
+  // Actions
+  fetchMetrics: () => Promise<void>
+  fetchUsers: (filters: UserFilters) => Promise<void>
+  suspendUser: (userId: string) => Promise<void>
+  impersonateUser: (userId: string) => Promise<string> // returns token
+}
+
+// Auth Store
+interface AuthState {
+  user: AdminUser | null
+  token: string | null
+  role: 'ADMIN' | 'SUPER_ADMIN' | null
+  
+  login: (email: string, password: string) => Promise<void>
+  logout: () => void
+  validateToken: () => Promise<boolean>
+}
+```
+
+### **Autenticação & Autorização Admin**
+```typescript
+// Login Flow
+1. POST /auth/admin/login
+   { email: 'admin@flowzz.com.br', password: 'admin123456' }
+   
+2. Response:
+   {
+     user: { id, email, nome, role: 'ADMIN' },
+     accessToken: 'jwt-token',
+     refreshToken: 'refresh-token'
+   }
+   
+3. Store tokens + redirect to /admin/dashboard
+
+// Route Protection
+<AdminLayout>
+  <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+    <DashboardPage />
+  </RoleGuard>
+</AdminLayout>
+
+// API Integration
+const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+})
+```
+
+### **Design System Admin**
+```typescript
+// Tema Admin (Tailwind Config)
+theme: {
+  extend: {
+    colors: {
+      // Admin brand colors
+      admin: {
+        50: '#f0f9ff',
+        500: '#3b82f6',
+        600: '#2563eb',
+        900: '#1e3a8a'
+      },
+      // Status colors
+      success: '#10b981',
+      warning: '#f59e0b',
+      danger: '#ef4444',
+      info: '#3b82f6'
+    }
+  }
+}
+
+// Layout Responsivo
+<AdminShell>
+  <Sidebar collapsed={isMobile} />
+  <MainContent>
+    <TopNav user={adminUser} />
+    <Breadcrumb />
+    <PageContent />
+  </MainContent>
+</AdminShell>
 ```
 
 #### Tables
@@ -434,7 +703,7 @@ class PrismaClientRepository implements IClientRepository {
    → Invalida refresh token no DB
 ```
 
-### **Authorization (RBAC)**
+### **Authorization (RBAC) + Admin Security**
 ```typescript
 enum Role {
   USER = 'user',
@@ -442,7 +711,7 @@ enum Role {
   SUPER_ADMIN = 'super_admin'
 }
 
-// Middleware
+// Backend Middleware
 const authorize = (roles: Role[]) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -452,8 +721,94 @@ const authorize = (roles: Role[]) => {
   }
 }
 
+// Admin Endpoints Protection
+router.get('/admin/metrics', authorize([Role.ADMIN, Role.SUPER_ADMIN]), getMetricsController)
+router.get('/admin/users', authorize([Role.ADMIN, Role.SUPER_ADMIN]), getUsersController)
+router.post('/admin/users/:id/suspend', authorize([Role.ADMIN, Role.SUPER_ADMIN]), suspendUserController)
+router.post('/admin/users/:id/impersonate', authorize([Role.SUPER_ADMIN]), impersonateController) // Apenas SUPER_ADMIN
+
+// Frontend Route Guards
+const RoleGuard = ({ children, allowedRoles, fallback }) => {
+  const { user } = useAuth()
+  
+  if (!user || !allowedRoles.includes(user.role)) {
+    return fallback || <AccessDenied />
+  }
+  
+  return children
+}
+
+// Usage in Admin App
+<RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+  <AdminDashboard />
+</RoleGuard>
+
+<RoleGuard allowedRoles={['SUPER_ADMIN']} fallback={<div>Acesso negado</div>}>
+  <UserImpersonation />
+</RoleGuard>
+```
+
+### **Admin Session Security**
+```typescript
+// Token refresh automático
+const useTokenRefresh = () => {
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        await refreshToken()
+      } catch (error) {
+        // Redirect to login
+        router.push('/admin/login')
+      }
+    }, 14 * 60 * 1000) // Refresh a cada 14 min (token expira em 15)
+    
+    return () => clearInterval(interval)
+  }, [])
+}
+
+// Logout automático por inatividade
+const useInactivityLogout = (timeoutMs = 30 * 60 * 1000) => {
+  useEffect(() => {
+    let timeout: NodeJS.Timeout
+    
+    const resetTimeout = () => {
+      clearTimeout(timeout)
+      timeout = setTimeout(() => {
+        logout()
+        router.push('/admin/login?reason=timeout')
+      }, timeoutMs)
+    }
+    
+    // Reset timeout em qualquer atividade
+    document.addEventListener('mousedown', resetTimeout)
+    document.addEventListener('keydown', resetTimeout)
+    
+    resetTimeout() // Initial timeout
+    
+    return () => {
+      clearTimeout(timeout)
+      document.removeEventListener('mousedown', resetTimeout)
+      document.removeEventListener('keydown', resetTimeout)
+    }
+  }, [])
+}
+
+// Audit Log para ações admin
+const logAdminAction = async (action: string, targetUserId?: string, details?: any) => {
+  await apiClient.post('/admin/audit-logs', {
+    action,
+    target_user_id: targetUserId,
+    details,
+    timestamp: new Date().toISOString(),
+    ip_address: await getClientIP()
+  })
+}
+
 // Usage
-router.get('/admin/users', authorize([Role.ADMIN]), getUsersController)
+const suspendUser = async (userId: string) => {
+  await apiClient.post(`/admin/users/${userId}/suspend`)
+  await logAdminAction('USER_SUSPENDED', userId, { reason: 'payment_overdue' })
+}
 ```
 
 ### **Rate Limiting**
