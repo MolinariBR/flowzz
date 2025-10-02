@@ -3,12 +3,12 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { 
-  DashboardMetrics, 
+import type {
+  DashboardMetrics,
   DashboardMetricsWithComparisons,
   DashboardChartData,
   DashboardActivity,
-  MetricComparison 
+  MetricComparison,
 } from '../interfaces/DashboardService.interface';
 import { DashboardRepository } from '../repositories/DashboardRepository';
 import { redisService } from '../shared/services/RedisService';
@@ -38,33 +38,33 @@ export class DashboardService {
     // Buscar métricas de hoje e ontem em paralelo
     const [todayMetrics, yesterdayMetrics] = await Promise.all([
       this.calculateMetrics(userId, today),
-      this.calculateMetrics(userId, yesterday)
+      this.calculateMetrics(userId, yesterday),
     ]);
 
     // Calcular comparações percentuais
     const comparisons: MetricComparison = {
       vendas_hoje: this.calculatePercentageChange(
         todayMetrics.vendas_hoje,
-        yesterdayMetrics.vendas_hoje
+        yesterdayMetrics.vendas_hoje,
       ),
       gasto_anuncios: this.calculatePercentageChange(
         todayMetrics.gasto_anuncios,
-        yesterdayMetrics.gasto_anuncios
+        yesterdayMetrics.gasto_anuncios,
       ),
       lucro_liquido: this.calculatePercentageChange(
         todayMetrics.lucro_liquido,
-        yesterdayMetrics.lucro_liquido
+        yesterdayMetrics.lucro_liquido,
       ),
       pagamentos_agendados: this.calculatePercentageChange(
         todayMetrics.pagamentos_agendados,
-        yesterdayMetrics.pagamentos_agendados
-      )
+        yesterdayMetrics.pagamentos_agendados,
+      ),
     };
 
     const result: DashboardMetricsWithComparisons = {
       ...todayMetrics,
       comparisons,
-      ultima_atualizacao: new Date()
+      ultima_atualizacao: new Date(),
     };
 
     // Armazenar no cache (TTL 5 minutos)
@@ -79,7 +79,7 @@ export class DashboardService {
   private async calculateMetrics(userId: string, date: Date): Promise<DashboardMetrics> {
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
@@ -87,11 +87,11 @@ export class DashboardService {
     const [
       vendas,
       gastos,
-      pagamentosAgendados
+      pagamentosAgendados,
     ] = await Promise.all([
       this.dashboardRepository.getSalesForPeriod(userId, startOfDay, endOfDay),
       this.dashboardRepository.getAdSpendForPeriod(userId, startOfDay, endOfDay),
-      this.dashboardRepository.getScheduledPayments(userId, startOfDay, endOfDay)
+      this.dashboardRepository.getScheduledPayments(userId, startOfDay, endOfDay),
     ]);
 
     // Calcular vendas do dia
@@ -117,7 +117,7 @@ export class DashboardService {
       vendas_hoje,
       gasto_anuncios,
       lucro_liquido,
-      pagamentos_agendados
+      pagamentos_agendados,
     };
   }
 
@@ -128,7 +128,7 @@ export class DashboardService {
     if (previous === 0) {
       return current > 0 ? 100 : 0; // 100% se houve crescimento, 0% se manteve zerado
     }
-    
+
     return Number(((current - previous) / previous * 100).toFixed(1));
   }
 
@@ -142,12 +142,12 @@ export class DashboardService {
     startDate.setDate(startDate.getDate() - days);
 
     const data = await this.dashboardRepository.getChartData(userId, startDate, endDate);
-    
+
     return data.map((item: any) => ({
       date: item.date,
       vendas: Number(item.vendas),
       gastos: Number(item.gastos),
-      lucro: Number(item.vendas) - Number(item.gastos)
+      lucro: Number(item.vendas) - Number(item.gastos),
     }));
   }
 
@@ -163,9 +163,9 @@ export class DashboardService {
    * Obtém métricas agregadas para um período específico
    */
   async getMetricsForPeriod(
-    userId: string, 
-    startDate: Date, 
-    _endDate: Date
+    userId: string,
+    startDate: Date,
+    _endDate: Date,
   ): Promise<DashboardMetrics> {
     return await this.calculateMetrics(userId, startDate);
   }

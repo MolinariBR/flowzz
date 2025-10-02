@@ -1,8 +1,8 @@
 /**
  * Report Routes
- * 
+ *
  * Rotas REST para geração e gestão de relatórios PDF/Excel
- * 
+ *
  * Referências:
  * - design.md: §REST API - Endpoints com autenticação JWT
  * - dev-stories.md: Dev Story 4.2 - API assíncrona de relatórios
@@ -21,10 +21,10 @@ const reportController = new ReportController();
 /**
  * POST /api/v1/reports/generate
  * Gera novo relatório (processamento assíncrono)
- * 
+ *
  * @access Private (requer autenticação)
  * @rate-limit 10 req/hour (configurado em server.ts)
- * 
+ *
  * Body: {
  *   type: 'SALES_REPORT' | 'FINANCIAL_SUMMARY' | 'CLIENT_ANALYSIS' | 'PROJECTION_REPORT' | 'CUSTOM',
  *   title: string,
@@ -42,7 +42,7 @@ const reportController = new ReportController();
  *   sendEmail?: boolean,
  *   emailRecipients?: string[]
  * }
- * 
+ *
  * Response: 202 Accepted {
  *   success: true,
  *   message: string,
@@ -58,9 +58,9 @@ router.post('/generate', authenticate, reportController.generateReport);
 /**
  * GET /api/v1/reports/:id/status
  * Obtém status de geração de um relatório
- * 
+ *
  * @access Private (requer autenticação + ownership)
- * 
+ *
  * Response: 200 OK {
  *   success: true,
  *   data: {
@@ -77,9 +77,9 @@ router.get('/:id/status', authenticate, reportController.getReportStatus);
 /**
  * GET /api/v1/reports/:id/download
  * Obtém URL de download do relatório gerado
- * 
+ *
  * @access Private (requer autenticação + ownership)
- * 
+ *
  * Response: 200 OK {
  *   success: true,
  *   data: {
@@ -93,9 +93,9 @@ router.get('/:id/download', authenticate, reportController.getDownloadUrl);
 /**
  * GET /api/v1/reports
  * Lista relatórios do usuário com paginação e filtros
- * 
+ *
  * @access Private (requer autenticação)
- * 
+ *
  * Query params:
  * - page: number (default 1)
  * - limit: number (default 20, max 100)
@@ -104,7 +104,7 @@ router.get('/:id/download', authenticate, reportController.getDownloadUrl);
  * - format?: 'pdf' | 'excel'
  * - startDate?: ISO date
  * - endDate?: ISO date
- * 
+ *
  * Response: 200 OK {
  *   success: true,
  *   data: Report[],
@@ -121,9 +121,9 @@ router.get('/', authenticate, reportController.listReports);
 /**
  * DELETE /api/v1/reports/:id
  * Remove um relatório
- * 
+ *
  * @access Private (requer autenticação + ownership)
- * 
+ *
  * Response: 204 No Content
  */
 router.delete('/:id', authenticate, reportController.deleteReport);
@@ -131,9 +131,9 @@ router.delete('/:id', authenticate, reportController.deleteReport);
 /**
  * GET /api/v1/reports/statistics
  * Obtém estatísticas de uso de relatórios
- * 
+ *
  * @access Private (requer autenticação)
- * 
+ *
  * Response: 200 OK {
  *   success: true,
  *   data: {

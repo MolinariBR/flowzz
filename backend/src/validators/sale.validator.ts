@@ -6,11 +6,11 @@ import { z } from 'zod';
 // Enum para status de vendas
 export const saleStatusSchema = z.enum([
   'PENDING',
-  'PAID', 
+  'PAID',
   'SHIPPED',
   'DELIVERED',
   'CANCELED',
-  'REFUNDED'
+  'REFUNDED',
 ]);
 
 // Schema para criação de venda
@@ -30,7 +30,7 @@ export const createSaleSchema = z.object({
   payment_due_date: z.string().datetime().transform(val => new Date(val)).optional(),
   payment_date: z.string().datetime().transform(val => new Date(val)).optional(),
   shipped_at: z.string().datetime().transform(val => new Date(val)).optional(),
-  delivered_at: z.string().datetime().transform(val => new Date(val)).optional()
+  delivered_at: z.string().datetime().transform(val => new Date(val)).optional(),
 }).refine(
   (data) => {
     // Validate that total_price equals quantity * unit_price
@@ -38,8 +38,8 @@ export const createSaleSchema = z.object({
   },
   {
     message: 'Preço total deve ser igual a quantidade × preço unitário',
-    path: ['total_price']
-  }
+    path: ['total_price'],
+  },
 ).refine(
   (data) => {
     // Validate payment dates logic
@@ -50,8 +50,8 @@ export const createSaleSchema = z.object({
   },
   {
     message: 'Data de pagamento não pode ser anterior à data de vencimento',
-    path: ['payment_date']
-  }
+    path: ['payment_date'],
+  },
 ).refine(
   (data) => {
     // Validate delivery dates logic
@@ -62,8 +62,8 @@ export const createSaleSchema = z.object({
   },
   {
     message: 'Data de entrega não pode ser anterior à data de envio',
-    path: ['delivered_at']
-  }
+    path: ['delivered_at'],
+  },
 );
 
 // Schema para atualização de venda
@@ -82,7 +82,7 @@ export const updateSaleSchema = z.object({
   payment_due_date: z.string().datetime().transform(val => new Date(val)).optional(),
   payment_date: z.string().datetime().transform(val => new Date(val)).optional(),
   shipped_at: z.string().datetime().transform(val => new Date(val)).optional(),
-  delivered_at: z.string().datetime().transform(val => new Date(val)).optional()
+  delivered_at: z.string().datetime().transform(val => new Date(val)).optional(),
 }).refine(
   (data) => {
     // Validate that total_price equals quantity * unit_price if both are provided
@@ -93,8 +93,8 @@ export const updateSaleSchema = z.object({
   },
   {
     message: 'Preço total deve ser igual a quantidade × preço unitário',
-    path: ['total_price']
-  }
+    path: ['total_price'],
+  },
 );
 
 // Schema para filtros de vendas
@@ -107,7 +107,7 @@ export const saleFiltersSchema = z.object({
   min_amount: z.number().min(0).optional(),
   max_amount: z.number().min(0).optional(),
   page: z.string().transform(val => parseInt(val, 10)).pipe(z.number().int().min(1)).default('1'),
-  limit: z.string().transform(val => parseInt(val, 10)).pipe(z.number().int().min(1).max(100)).default('10')
+  limit: z.string().transform(val => parseInt(val, 10)).pipe(z.number().int().min(1).max(100)).default('10'),
 }).refine(
   (data) => {
     // Validate date range
@@ -118,8 +118,8 @@ export const saleFiltersSchema = z.object({
   },
   {
     message: 'Data final deve ser posterior à data inicial',
-    path: ['end_date']
-  }
+    path: ['end_date'],
+  },
 ).refine(
   (data) => {
     // Validate amount range
@@ -130,22 +130,22 @@ export const saleFiltersSchema = z.object({
   },
   {
     message: 'Valor máximo deve ser maior que valor mínimo',
-    path: ['max_amount']
-  }
+    path: ['max_amount'],
+  },
 );
 
 // Schema para parâmetros de período (análises)
 export const periodParamsSchema = z.object({
   start_date: z.string().datetime().transform(val => new Date(val)),
-  end_date: z.string().datetime().transform(val => new Date(val))
+  end_date: z.string().datetime().transform(val => new Date(val)),
 }).refine(
   (data) => {
     return data.end_date >= data.start_date;
   },
   {
     message: 'Data final deve ser posterior à data inicial',
-    path: ['end_date']
-  }
+    path: ['end_date'],
+  },
 );
 
 export type CreateSaleInput = z.infer<typeof createSaleSchema>;

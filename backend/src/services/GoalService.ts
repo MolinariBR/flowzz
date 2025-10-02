@@ -1,9 +1,9 @@
 /**
  * GoalService Implementation
- * 
+ *
  * Sistema de metas financeiras personalizadas com cálculo automático de progresso
  * e notificações em marcos importantes (80%, 100%)
- * 
+ *
  * Referências:
  * - plan.md: Persona João - "Acompanhar progresso e se manter motivado"
  * - design.md: §Goals System - CRUD, Progress tracking, Notifications
@@ -35,7 +35,7 @@ export class GoalService implements IGoalService {
 
   /**
    * Cria nova meta para usuário
-   * 
+   *
    * Critérios de Aceitação (user-stories.md Story 4.2):
    * - Máximo 5 metas ativas simultâneas por usuário
    * - Validar se period_end > period_start
@@ -47,7 +47,7 @@ export class GoalService implements IGoalService {
       const canCreate = await this.canCreateGoal(userId);
       if (!canCreate) {
         throw new Error(
-          `Limite de ${this.MAX_ACTIVE_GOALS} metas ativas atingido. Desative ou conclua uma meta existente para criar nova.`
+          `Limite de ${this.MAX_ACTIVE_GOALS} metas ativas atingido. Desative ou conclua uma meta existente para criar nova.`,
         );
       }
 
@@ -98,7 +98,7 @@ export class GoalService implements IGoalService {
       is_active?: boolean;
       period_type?: PeriodType;
       target_type?: GoalTargetType;
-    }
+    },
   ): Promise<GoalWithProgress[]> {
     try {
       const goals = await prisma.goal.findMany({
@@ -116,7 +116,7 @@ export class GoalService implements IGoalService {
 
       // Calcular progresso para todas as metas
       const goalsWithProgress = await Promise.all(
-        goals.map((goal) => this.calculateProgress(goal))
+        goals.map((goal) => this.calculateProgress(goal)),
       );
 
       logger.info(`Listadas ${goals.length} metas para userId=${userId}`, {
@@ -164,7 +164,7 @@ export class GoalService implements IGoalService {
 
   /**
    * Atualiza meta existente
-   * 
+   *
    * Não pode alterar:
    * - target_type (tipo de meta)
    * - period_start (data início)
@@ -172,7 +172,7 @@ export class GoalService implements IGoalService {
   async updateGoal(
     goalId: string,
     userId: string,
-    data: UpdateGoalDTO
+    data: UpdateGoalDTO,
   ): Promise<GoalWithProgress> {
     try {
       // Verificar se meta existe e pertence ao usuário
@@ -237,7 +237,7 @@ export class GoalService implements IGoalService {
 
   /**
    * Calcula progresso atual da meta
-   * 
+   *
    * Busca current_value baseado em target_type:
    * - REVENUE: SUM(sales.total_price) WHERE status IN ('PAID', 'DELIVERED')
    * - PROFIT: SUM(sales.total_price - ads.spend)
@@ -250,21 +250,21 @@ export class GoalService implements IGoalService {
       let currentValue = 0;
 
       switch (goal.target_type) {
-        case GoalTargetType.REVENUE:
-          currentValue = await this.calculateRevenueValue(goal);
-          break;
-        case GoalTargetType.PROFIT:
-          currentValue = await this.calculateProfitValue(goal);
-          break;
-        case GoalTargetType.ORDERS:
-          currentValue = await this.calculateSalesCountValue(goal);
-          break;
-        case GoalTargetType.CUSTOM:
-          // Para metas customizadas, usar current_value do banco
-          currentValue = Number(goal.current_value);
-          break;
-        default:
-          logger.warn(`Tipo de meta não suportado: ${goal.target_type}`);
+      case GoalTargetType.REVENUE:
+        currentValue = await this.calculateRevenueValue(goal);
+        break;
+      case GoalTargetType.PROFIT:
+        currentValue = await this.calculateProfitValue(goal);
+        break;
+      case GoalTargetType.ORDERS:
+        currentValue = await this.calculateSalesCountValue(goal);
+        break;
+      case GoalTargetType.CUSTOM:
+        // Para metas customizadas, usar current_value do banco
+        currentValue = Number(goal.current_value);
+        break;
+      default:
+        logger.warn(`Tipo de meta não suportado: ${goal.target_type}`);
       }
 
       // Atualizar current_value no banco
@@ -332,7 +332,7 @@ export class GoalService implements IGoalService {
 
   /**
    * Atualiza progresso de todas as metas ativas do usuário
-   * 
+   *
    * Deve ser chamado quando:
    * - Nova venda registrada
    * - Sync Coinzz completo
@@ -371,7 +371,7 @@ export class GoalService implements IGoalService {
 
   /**
    * Verifica e envia notificações de progresso
-   * 
+   *
    * Notifica quando atingir:
    * - 80% do progresso (primeira vez)
    * - 100% do progresso (meta completa)
@@ -440,7 +440,7 @@ export class GoalService implements IGoalService {
 
   /**
    * Verifica metas expiradas e marca como incomplete
-   * 
+   *
    * Executado diariamente via cron job
    */
   async expireOldGoals(): Promise<number> {
@@ -484,21 +484,21 @@ export class GoalService implements IGoalService {
 
       const totalGoals = allGoals.length;
       const activeGoals = allGoals.filter((g) => g.is_active).length;
-      
+
       const completedGoals = allGoals.filter(
-        (g) => Number(g.current_value) >= Number(g.target_value)
+        (g) => Number(g.current_value) >= Number(g.target_value),
       ).length;
 
       const now = new Date();
       const expiredGoals = allGoals.filter(
-        (g) => g.period_end < now && Number(g.current_value) < Number(g.target_value)
+        (g) => g.period_end < now && Number(g.current_value) < Number(g.target_value),
       ).length;
 
       const completionRate = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
 
       // Calcular tempo médio de conclusão (apenas metas completas)
       const completedGoalsWithTime = allGoals.filter(
-        (g) => Number(g.current_value) >= Number(g.target_value)
+        (g) => Number(g.current_value) >= Number(g.target_value),
       );
 
       let avgCompletionTime = 0;
@@ -538,7 +538,7 @@ export class GoalService implements IGoalService {
 
   /**
    * Valida se usuário pode criar mais metas
-   * 
+   *
    * Limite: 5 metas ativas simultâneas
    */
   async canCreateGoal(userId: string): Promise<boolean> {

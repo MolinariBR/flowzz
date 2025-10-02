@@ -15,21 +15,21 @@ export const registerSchema = z.object({
     .max(255, 'Email deve ter no máximo 255 caracteres')
     .toLowerCase()
     .trim(),
-  
+
   password: z
     .string()
     .min(8, 'Senha deve ter pelo menos 8 caracteres')
     .max(128, 'Senha deve ter no máximo 128 caracteres')
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Senha deve conter pelo menos 1 letra minúscula, 1 maiúscula e 1 número'
+      'Senha deve conter pelo menos 1 letra minúscula, 1 maiúscula e 1 número',
     ),
-  
+
   nome: z
     .string()
     .min(2, 'Nome deve ter pelo menos 2 caracteres')
     .max(255, 'Nome deve ter no máximo 255 caracteres')
-    .trim()
+    .trim(),
 });
 
 /**
@@ -42,10 +42,10 @@ export const loginSchema = z.object({
     .email('Email deve ter formato válido')
     .toLowerCase()
     .trim(),
-  
+
   password: z
     .string()
-    .min(1, 'Senha é obrigatória')
+    .min(1, 'Senha é obrigatória'),
 });
 
 /**
@@ -55,7 +55,7 @@ export const loginSchema = z.object({
 export const refreshTokenSchema = z.object({
   refreshToken: z
     .string()
-    .min(1, 'Refresh token é obrigatório')
+    .min(1, 'Refresh token é obrigatório'),
 });
 
 /**
@@ -65,7 +65,7 @@ export const refreshTokenSchema = z.object({
 export const logoutSchema = z.object({
   refreshToken: z
     .string()
-    .min(1, 'Refresh token é obrigatório')
+    .min(1, 'Refresh token é obrigatório'),
 });
 
 // Export types

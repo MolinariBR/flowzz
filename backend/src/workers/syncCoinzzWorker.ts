@@ -1,10 +1,10 @@
 /**
  * Worker para sincronizar vendas do Coinzz
- * 
+ *
  * Referências:
  * - tasks.md: Task 5.2.4 - Sincronização automática via cron
  * - design.md: Background Jobs - Coinzz Sync
- * 
+ *
  * Execução: Agendada via cron (a cada hora)
  * Responsabilidade: Chamar CoinzzService.syncSales para buscar vendas da API Coinzz
  */
@@ -20,7 +20,7 @@ const coinzzService = new CoinzzService(prisma);
 
 /**
  * Processa job de sincronização Coinzz
- * 
+ *
  * @param job - Job do Bull contendo empresaId e opções
  * @returns Promise com resultado da sincronização
  */

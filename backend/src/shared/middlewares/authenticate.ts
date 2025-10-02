@@ -13,29 +13,29 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
   try {
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader) {
-      res.status(401).json({ 
+      res.status(401).json({
         error: 'Unauthorized',
-        message: 'Authorization header is required'
+        message: 'Authorization header is required',
       });
       return;
     }
 
     if (!authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ 
+      res.status(401).json({
         error: 'Unauthorized',
-        message: 'Authorization header must start with Bearer'
+        message: 'Authorization header must start with Bearer',
       });
       return;
     }
 
     const token = authHeader.split(' ')[1];
-    
+
     if (!token) {
-      res.status(401).json({ 
+      res.status(401).json({
         error: 'Unauthorized',
-        message: 'Token is required'
+        message: 'Token is required',
       });
       return;
     }
@@ -47,7 +47,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     // Inject user info into request
     req.user = {
       userId: payload.userId,
-      role: payload.role
+      role: payload.role,
     };
 
     next();
@@ -55,26 +55,26 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     // Handle JWT specific errors
     if (error instanceof Error) {
       if (error.name === 'TokenExpiredError') {
-        res.status(401).json({ 
+        res.status(401).json({
           error: 'Unauthorized',
-          message: 'Token has expired'
+          message: 'Token has expired',
         });
         return;
       }
-      
+
       if (error.name === 'JsonWebTokenError') {
-        res.status(401).json({ 
+        res.status(401).json({
           error: 'Unauthorized',
-          message: 'Invalid token'
+          message: 'Invalid token',
         });
         return;
       }
     }
 
     // Generic error
-    res.status(401).json({ 
+    res.status(401).json({
       error: 'Unauthorized',
-      message: 'Invalid token'
+      message: 'Invalid token',
     });
   }
 };
@@ -86,17 +86,17 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
 export const authorize = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      res.status(401).json({ 
+      res.status(401).json({
         error: 'Unauthorized',
-        message: 'Authentication required'
+        message: 'Authentication required',
       });
       return;
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      res.status(403).json({ 
+      res.status(403).json({
         error: 'Forbidden',
-        message: 'Insufficient permissions'
+        message: 'Insufficient permissions',
       });
       return;
     }
@@ -111,6 +111,6 @@ export const authorize = (allowedRoles: string[]) => {
 export const requireAdmin = authorize(['ADMIN']);
 
 /**
- * User or Admin authorization middleware  
+ * User or Admin authorization middleware
  */
 export const requireAuth = authorize(['USER', 'ADMIN']);

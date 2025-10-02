@@ -1,8 +1,8 @@
 /**
  * Goal Routes
- * 
+ *
  * Rotas REST para CRUD de metas financeiras
- * 
+ *
  * Referências:
  * - design.md: §Routes - REST endpoints com autenticação JWT
  * - tasks.md: Task 9.2.3 - Criar endpoints de metas

@@ -1,9 +1,9 @@
 /**
  * Facebook Ads Sync Worker - Task 6.1/6.2
- * 
+ *
  * Worker Bull para sincronização automática de insights do Facebook Ads.
  * Executa a cada 6 horas para todos os usuários com integração ativa.
- * 
+ *
  * Referências:
  * - design.md: Facebook Ads Marketing API Integration
  * - dev-stories.md: Dev Story 3.2
@@ -105,8 +105,8 @@ async function processAutoSyncAllUsers(job: Job): Promise<unknown> {
         },
         {
           priority: 5, // Menor prioridade que syncs manuais
-        }
-      )
+        },
+      ),
     );
 
     await Promise.all(jobs);
@@ -178,7 +178,7 @@ export function startSyncFacebookWorker(): void {
         cron: '0 */6 * * *', // A cada 6 horas
       },
       jobId: 'facebook-auto-sync',
-    }
+    },
   ).catch((error) => {
     logger.error('Failed to schedule Facebook auto-sync cron', { error: error.message });
   });
@@ -210,7 +210,7 @@ export async function scheduleFacebookSync(userId: string, forceFullSync = false
     },
     {
       priority: 1, // Alta prioridade para syncs manuais
-    }
+    },
   );
 }
 

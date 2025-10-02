@@ -7,7 +7,7 @@ import type {
   CreateSaleDTO,
   PaginatedSales,
   SaleFilters,
-  UpdateSaleDTO
+  UpdateSaleDTO,
 } from '../interfaces/SaleRepository.interface';
 
 export class SaleService {
@@ -21,11 +21,15 @@ export class SaleService {
     userId: string,
     filters: SaleFilters = {},
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<PaginatedSales> {
     // Validate pagination parameters
-    if (page < 1) page = 1;
-    if (limit < 1 || limit > 100) limit = 10; // Max 100 per page
+    if (page < 1) {
+      page = 1;
+    }
+    if (limit < 1 || limit > 100) {
+      limit = 10;
+    } // Max 100 per page
 
     return await this.saleRepository.findByUserId(userId, filters, page, limit);
   }
@@ -54,7 +58,7 @@ export class SaleService {
   async updateSale(
     id: string,
     userId: string,
-    data: UpdateSaleDTO
+    data: UpdateSaleDTO,
   ): Promise<Sale | null> {
     // Check if sale exists and belongs to user
     const existingSale = await this.saleRepository.findById(id, userId);
@@ -90,7 +94,7 @@ export class SaleService {
   async getSalesByPeriod(
     userId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     total_sales: number;
     total_commission: number;

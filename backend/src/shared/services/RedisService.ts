@@ -15,9 +15,9 @@ export class RedisService {
       url: string;
       password?: string;
     } = {
-      url: env.REDIS_URL
+      url: env.REDIS_URL,
     };
-    
+
     if (env.REDIS_PASSWORD) {
       redisOptions.password = env.REDIS_PASSWORD;
     }
@@ -215,7 +215,7 @@ export class RedisService {
   /**
    * Operações específicas para Dashboard Metrics
    */
-  
+
   /**
    * Chave padrão para métricas do dashboard
    */
@@ -273,13 +273,13 @@ export class RedisService {
 
       const ttls = await Promise.all(keys.map(key => this.getTTL(key)));
       const validTTLs = ttls.filter(ttl => ttl > 0);
-      const avgTTL = validTTLs.length > 0 
+      const avgTTL = validTTLs.length > 0
         ? Math.round(validTTLs.reduce((sum, ttl) => sum + ttl, 0) / validTTLs.length)
         : 0;
 
       return {
         totalKeys: keys.length,
-        avgTTL
+        avgTTL,
       };
     } catch (error) {
       logger.error('❌ Redis: Erro ao obter estatísticas do cache', { error });

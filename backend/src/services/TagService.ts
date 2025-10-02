@@ -1,11 +1,11 @@
 /**
  * Tag Service
- * 
+ *
  * Referências:
  * - openapi.yaml: Tag CRUD endpoints
  * - design.md: Clean Architecture + Repository Pattern
  * - tasks.md: Task 3.2 - Tags API (CRUD, many-to-many, validações)
- * 
+ *
  * Regras de Negócio:
  * - Usuário pode ter no máximo 20 tags (tasks.md Task 3.2.3)
  * - Nome de tag deve ser único por usuário

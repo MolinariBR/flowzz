@@ -3,14 +3,14 @@
 
 import type { Request, Response } from 'express';
 import { DashboardService } from '../services/DashboardService';
-import type { 
-  DashboardMetrics, 
-  DashboardMetricsWithComparisons 
+import type {
+  DashboardMetrics,
+  DashboardMetricsWithComparisons,
 } from '../interfaces/DashboardService.interface';
 import {
   dashboardMetricsQuerySchema,
   dashboardChartQuerySchema,
-  dashboardActivitiesQuerySchema
+  dashboardActivitiesQuerySchema,
 } from '../validators/dashboard.validator';
 
 interface AuthenticatedRequest extends Request {
@@ -35,24 +35,24 @@ export class DashboardController {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        res.status(401).json({ 
-          success: false, 
-          error: 'Usuário não autenticado' 
+        res.status(401).json({
+          success: false,
+          error: 'Usuário não autenticado',
         });
         return;
       }
 
       // Validar query parameters (se houver)
       const validatedQuery = dashboardMetricsQuerySchema.parse(req.query);
-      
+
       let metrics: DashboardMetrics | DashboardMetricsWithComparisons;
-      
+
       if (validatedQuery.start_date && validatedQuery.end_date) {
         // Métricas para período específico
         metrics = await this.dashboardService.getMetricsForPeriod(
           userId,
           validatedQuery.start_date,
-          validatedQuery.end_date
+          validatedQuery.end_date,
         );
       } else {
         // Métricas do dia atual com comparações
@@ -61,14 +61,14 @@ export class DashboardController {
 
       res.status(200).json({
         success: true,
-        data: metrics
+        data: metrics,
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('validation')) {
         res.status(400).json({
           success: false,
           error: 'Parâmetros de query inválidos',
-          details: error.message
+          details: error.message,
         });
         return;
       }
@@ -76,7 +76,7 @@ export class DashboardController {
       console.error('Error fetching dashboard metrics:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -89,23 +89,23 @@ export class DashboardController {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        res.status(401).json({ 
-          success: false, 
-          error: 'Usuário não autenticado' 
+        res.status(401).json({
+          success: false,
+          error: 'Usuário não autenticado',
         });
         return;
       }
 
       // Validar e parsear query parameters
       const validatedQuery = dashboardChartQuerySchema.parse(req.query);
-      
+
       // Calcular período em dias baseado nas datas ou período predefinido
       let days = 30; // default
-      
+
       if (validatedQuery.start_date && validatedQuery.end_date) {
         days = Math.ceil(
-          (validatedQuery.end_date.getTime() - validatedQuery.start_date.getTime()) / 
-          (1000 * 60 * 60 * 24)
+          (validatedQuery.end_date.getTime() - validatedQuery.start_date.getTime()) /
+          (1000 * 60 * 60 * 24),
         );
       } else if (validatedQuery.period) {
         const periodDays: Record<string, number> = {
@@ -113,7 +113,7 @@ export class DashboardController {
           '30d': 30,
           '90d': 90,
           '1y': 365,
-          'custom': 30
+          'custom': 30,
         };
         days = periodDays[validatedQuery.period] || 30;
       }
@@ -132,16 +132,16 @@ export class DashboardController {
           period: {
             start: startDate.toISOString(),
             end: endDate.toISOString(),
-            days: Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-          }
-        }
+            days: Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+          },
+        },
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('validation')) {
         res.status(400).json({
           success: false,
           error: 'Parâmetros de query inválidos',
-          details: error.message
+          details: error.message,
         });
         return;
       }
@@ -149,7 +149,7 @@ export class DashboardController {
       console.error('Error fetching dashboard chart data:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -162,19 +162,19 @@ export class DashboardController {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        res.status(401).json({ 
-          success: false, 
-          error: 'Usuário não autenticado' 
+        res.status(401).json({
+          success: false,
+          error: 'Usuário não autenticado',
         });
         return;
       }
 
       // Validar query parameters
       const validatedQuery = dashboardActivitiesQuerySchema.parse(req.query);
-      
+
       const activities = await this.dashboardService.getRecentActivities(
         userId,
-        validatedQuery.limit
+        validatedQuery.limit,
       );
 
       res.status(200).json({
@@ -182,15 +182,15 @@ export class DashboardController {
         data: activities,
         meta: {
           total: activities.length,
-          limit: validatedQuery.limit
-        }
+          limit: validatedQuery.limit,
+        },
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('validation')) {
         res.status(400).json({
           success: false,
           error: 'Parâmetros de query inválidos',
-          details: error.message
+          details: error.message,
         });
         return;
       }
@@ -198,7 +198,7 @@ export class DashboardController {
       console.error('Error fetching dashboard activities:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -211,22 +211,22 @@ export class DashboardController {
     try {
       const userId = req.user?.userId;
       const userRole = req.user?.role;
-      
+
       if (!userId) {
-        res.status(401).json({ 
-          success: false, 
-          error: 'Usuário não autenticado' 
+        res.status(401).json({
+          success: false,
+          error: 'Usuário não autenticado',
         });
         return;
       }
 
       // Apenas admin pode invalidar cache de todos os usuários
       const invalidateAll = req.query.all === 'true';
-      
+
       if (invalidateAll && userRole !== 'ADMIN') {
         res.status(403).json({
           success: false,
-          error: 'Acesso negado: apenas administradores podem invalidar cache global'
+          error: 'Acesso negado: apenas administradores podem invalidar cache global',
         });
         return;
       }
@@ -239,15 +239,15 @@ export class DashboardController {
 
       res.status(200).json({
         success: true,
-        message: invalidateAll 
+        message: invalidateAll
           ? 'Cache global invalidado com sucesso'
-          : 'Cache do usuário invalidado com sucesso'
+          : 'Cache do usuário invalidado com sucesso',
       });
     } catch (error) {
       console.error('Error invalidating dashboard cache:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -259,29 +259,29 @@ export class DashboardController {
   getCacheStats = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userRole = req.user?.role;
-      
+
       if (userRole !== 'ADMIN') {
         res.status(403).json({
           success: false,
-          error: 'Acesso negado: apenas administradores podem visualizar estatísticas do cache'
+          error: 'Acesso negado: apenas administradores podem visualizar estatísticas do cache',
         });
         return;
       }
 
       // TODO: Implementar método getCacheStats no DashboardService
       const stats = {
-        message: 'Cache stats não implementado ainda'
+        message: 'Cache stats não implementado ainda',
       };
 
       res.status(200).json({
         success: true,
-        data: stats
+        data: stats,
       });
     } catch (error) {
       console.error('Error fetching cache stats:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };

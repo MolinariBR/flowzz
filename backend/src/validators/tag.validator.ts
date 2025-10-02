@@ -1,6 +1,6 @@
 /**
  * Tag Validation Schemas
- * 
+ *
  * Referências:
  * - openapi.yaml: Tag schema validations
  * - design.md: Zod validation library
@@ -61,7 +61,7 @@ export const updateTagSchema = z.object({
     (data) => data.nome !== undefined || data.cor !== undefined,
     {
       message: 'Forneça pelo menos um campo para atualizar (nome ou cor)',
-    }
+    },
   ),
 });
 

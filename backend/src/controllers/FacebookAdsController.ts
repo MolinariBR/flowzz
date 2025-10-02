@@ -1,9 +1,9 @@
 /**
  * FacebookAdsController
- * 
+ *
  * Controller para gerenciar integração com Facebook Marketing API.
  * Permite conectar contas de anúncios, sincronizar métricas e calcular ROAS.
- * 
+ *
  * Referências:
  * - design.md: Facebook Ads Marketing API Integration
  * - dev-stories.md: Dev Story 3.2
@@ -30,7 +30,7 @@ export class FacebookAdsController {
   /**
    * Iniciar processo de OAuth
    * GET /api/v1/integrations/facebook/connect
-   * 
+   *
    * @returns Authorization URL para redirecionar o usuário
    */
   async connect(req: Request, res: Response): Promise<void> {
@@ -47,7 +47,7 @@ export class FacebookAdsController {
 
       // Redirect URI from environment or default
       const redirectUri = process.env.FACEBOOK_REDIRECT_URI || `${process.env.API_URL}/api/v1/integrations/facebook/callback`;
-      
+
       const authUrl = await this.facebookAdsService.getAuthorizationUrl(userId, redirectUri);
 
       logger.info('Facebook OAuth authorization URL generated', { userId });
@@ -73,7 +73,7 @@ export class FacebookAdsController {
   /**
    * Callback OAuth do Facebook
    * GET /api/v1/integrations/facebook/callback?code=XXX&state=YYY
-   * 
+   *
    * @returns Resultado da conexão (ad accounts, permissions)
    */
   async callback(req: Request, res: Response): Promise<void> {
@@ -127,7 +127,7 @@ export class FacebookAdsController {
   /**
    * Obter status da integração
    * GET /api/v1/integrations/facebook/status
-   * 
+   *
    * @returns Status da conexão (connected, lastSyncAt, tokenExpiresAt, etc.)
    */
   async getStatus(req: Request, res: Response): Promise<void> {
@@ -163,7 +163,7 @@ export class FacebookAdsController {
   /**
    * Buscar insights de ad account
    * POST /api/v1/integrations/facebook/insights
-   * 
+   *
    * Body: FacebookInsightsParamsDTO
    * @returns Insights com métricas agregadas e ROAS
    */
@@ -227,7 +227,7 @@ export class FacebookAdsController {
   /**
    * Sincronizar insights manualmente
    * POST /api/v1/integrations/facebook/sync
-   * 
+   *
    * Body (opcional): { adAccountId?, startDate?, endDate? }
    * @returns Resultado da sincronização (insightsSynced, campaignsSynced, errors)
    */
@@ -274,7 +274,7 @@ export class FacebookAdsController {
   /**
    * Listar ad accounts
    * GET /api/v1/integrations/facebook/ad-accounts
-   * 
+   *
    * @returns Lista de ad accounts do usuário
    */
   async getAdAccounts(req: Request, res: Response): Promise<void> {
@@ -312,7 +312,7 @@ export class FacebookAdsController {
   /**
    * Testar conexão
    * GET /api/v1/integrations/facebook/test
-   * 
+   *
    * @returns Resultado do teste (valid, adAccountId, permissions, expiresAt)
    */
   async testConnection(req: Request, res: Response): Promise<void> {
@@ -348,7 +348,7 @@ export class FacebookAdsController {
   /**
    * Desconectar integração
    * POST /api/v1/integrations/facebook/disconnect
-   * 
+   *
    * @returns Confirmação de desconexão
    */
   async disconnect(req: Request, res: Response): Promise<void> {

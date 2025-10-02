@@ -6,7 +6,7 @@ import { SaleService } from '../services/SaleService';
 import {
   createSaleSchema,
   saleFiltersSchema,
-  updateSaleSchema
+  updateSaleSchema,
 } from '../validators/sale.validator';
 
 interface AuthenticatedRequest extends Request {
@@ -34,10 +34,10 @@ export class SaleController {
         res.status(401).json({ success: false, error: 'Usuário não autenticado' });
         return;
       }
-      
+
       // Validate and parse query parameters
       const validatedQuery = saleFiltersSchema.parse(req.query);
-      
+
       const filters = {
         client_id: validatedQuery.client_id,
         status: validatedQuery.status,
@@ -45,26 +45,26 @@ export class SaleController {
         start_date: validatedQuery.start_date,
         end_date: validatedQuery.end_date,
         min_amount: validatedQuery.min_amount,
-        max_amount: validatedQuery.max_amount
+        max_amount: validatedQuery.max_amount,
       };
 
       const result = await this.saleService.getAllSales(
         userId,
         filters,
         validatedQuery.page,
-        validatedQuery.limit
+        validatedQuery.limit,
       );
 
       res.status(200).json({
         success: true,
-        data: result
+        data: result,
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('validation')) {
         res.status(400).json({
           success: false,
           error: 'Dados de filtro inválidos',
-          details: error.message
+          details: error.message,
         });
         return;
       }
@@ -72,7 +72,7 @@ export class SaleController {
       console.error('Error fetching sales:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -92,7 +92,7 @@ export class SaleController {
       if (!id) {
         res.status(400).json({
           success: false,
-          error: 'ID da venda é obrigatório'
+          error: 'ID da venda é obrigatório',
         });
         return;
       }
@@ -102,20 +102,20 @@ export class SaleController {
       if (!sale) {
         res.status(404).json({
           success: false,
-          error: 'Venda não encontrada'
+          error: 'Venda não encontrada',
         });
         return;
       }
 
       res.status(200).json({
         success: true,
-        data: sale
+        data: sale,
       });
     } catch (error) {
       console.error('Error fetching sale by ID:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -130,7 +130,7 @@ export class SaleController {
         res.status(401).json({ success: false, error: 'Usuário não autenticado' });
         return;
       }
-      
+
       // Validate request body
       const validatedData = createSaleSchema.parse(req.body);
 
@@ -139,7 +139,7 @@ export class SaleController {
       res.status(201).json({
         success: true,
         data: sale,
-        message: 'Venda criada com sucesso'
+        message: 'Venda criada com sucesso',
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -147,7 +147,7 @@ export class SaleController {
           res.status(400).json({
             success: false,
             error: 'Dados inválidos',
-            details: error.message
+            details: error.message,
           });
           return;
         }
@@ -156,7 +156,7 @@ export class SaleController {
       console.error('Error creating sale:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -176,7 +176,7 @@ export class SaleController {
       if (!id) {
         res.status(400).json({
           success: false,
-          error: 'ID da venda é obrigatório'
+          error: 'ID da venda é obrigatório',
         });
         return;
       }
@@ -189,7 +189,7 @@ export class SaleController {
       if (!sale) {
         res.status(404).json({
           success: false,
-          error: 'Venda não encontrada'
+          error: 'Venda não encontrada',
         });
         return;
       }
@@ -197,7 +197,7 @@ export class SaleController {
       res.status(200).json({
         success: true,
         data: sale,
-        message: 'Venda atualizada com sucesso'
+        message: 'Venda atualizada com sucesso',
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -205,7 +205,7 @@ export class SaleController {
           res.status(400).json({
             success: false,
             error: 'Dados inválidos',
-            details: error.message
+            details: error.message,
           });
           return;
         }
@@ -214,7 +214,7 @@ export class SaleController {
       console.error('Error updating sale:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -234,7 +234,7 @@ export class SaleController {
       if (!id) {
         res.status(400).json({
           success: false,
-          error: 'ID da venda é obrigatório'
+          error: 'ID da venda é obrigatório',
         });
         return;
       }
@@ -244,20 +244,20 @@ export class SaleController {
       if (!deleted) {
         res.status(404).json({
           success: false,
-          error: 'Venda não encontrada'
+          error: 'Venda não encontrada',
         });
         return;
       }
 
       res.status(200).json({
         success: true,
-        message: 'Venda deletada com sucesso'
+        message: 'Venda deletada com sucesso',
       });
     } catch (error) {
       console.error('Error deleting sale:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };
@@ -278,7 +278,7 @@ export class SaleController {
       if (!start_date || !end_date) {
         res.status(400).json({
           success: false,
-          error: 'Data inicial e final são obrigatórias'
+          error: 'Data inicial e final são obrigatórias',
         });
         return;
       }
@@ -289,7 +289,7 @@ export class SaleController {
       if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
         res.status(400).json({
           success: false,
-          error: 'Formato de data inválido'
+          error: 'Formato de data inválido',
         });
         return;
       }
@@ -297,7 +297,7 @@ export class SaleController {
       if (endDate < startDate) {
         res.status(400).json({
           success: false,
-          error: 'Data final deve ser posterior à data inicial'
+          error: 'Data final deve ser posterior à data inicial',
         });
         return;
       }
@@ -306,13 +306,13 @@ export class SaleController {
 
       res.status(200).json({
         success: true,
-        data: summary
+        data: summary,
       });
     } catch (error) {
       console.error('Error fetching sales summary:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       });
     }
   };

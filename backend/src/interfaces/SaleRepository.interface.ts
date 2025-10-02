@@ -61,19 +61,19 @@ export interface ISaleRepository {
     page: number,
     limit: number
   ): Promise<PaginatedSales>;
-  
+
   findById(id: string, userId: string): Promise<Sale | null>;
-  
+
   create(userId: string, data: CreateSaleDTO): Promise<Sale>;
-  
+
   update(id: string, userId: string, data: UpdateSaleDTO): Promise<Sale | null>;
-  
+
   delete(id: string, userId: string): Promise<boolean>;
-  
+
   checkOwnership(id: string, userId: string): Promise<boolean>;
-  
+
   findByExternalId(externalId: string, userId: string): Promise<Sale | null>;
-  
+
   getTotalsByPeriod(
     userId: string,
     startDate: Date,

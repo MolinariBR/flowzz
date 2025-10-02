@@ -1,6 +1,6 @@
 /**
  * Facebook Ads Service Interfaces
- * 
+ *
  * Referências:
  * - design.md: Facebook Ads Marketing API Integration
  * - dev-stories.md: Dev Story 3.2 - Facebook Ads Integration
@@ -25,7 +25,7 @@ export interface IFacebookAdAccount {
 /**
  * Facebook Ad Insights Interface
  * Métricas detalhadas de campanhas publicitárias
- * 
+ *
  * Referência: design.md - Facebook Marketing API v18+
  */
 export interface IFacebookAdInsights {
@@ -63,7 +63,7 @@ export interface IFacebookCampaign {
 /**
  * Facebook Integration Config
  * Armazenado em Integration.config (JSONB)
- * 
+ *
  * Referência: design.md - Integration Model Schema
  */
 export interface IFacebookIntegrationConfig {
@@ -79,7 +79,7 @@ export interface IFacebookIntegrationConfig {
 /**
  * DTO: Connect Facebook OAuth
  * Requisição inicial de conexão
- * 
+ *
  * Referência: dev-stories.md - OAuth 2.0 flow
  */
 export interface FacebookConnectDTO {
@@ -116,7 +116,7 @@ export interface FacebookAdAccountDTO {
 /**
  * DTO: Get Insights Parameters
  * Parâmetros para buscar insights
- * 
+ *
  * Referência: dev-stories.md - getInsights method
  */
 export interface FacebookInsightsParamsDTO {
@@ -194,7 +194,7 @@ export interface FacebookTestConnectionResponseDTO {
 
 /**
  * Facebook Ads Service Interface
- * 
+ *
  * Implementa integração completa com Facebook Marketing API
  * Referência: dev-stories.md - Dev Story 3.2
  */
@@ -202,7 +202,7 @@ export interface IFacebookAdsService {
   /**
    * Iniciar fluxo OAuth 2.0
    * Retorna URL para redirect do usuário
-   * 
+   *
    * @param userId - ID do usuário Flowzz
    * @param redirectUri - URI de callback após autorização
    * @returns URL de autorização Facebook
@@ -212,7 +212,7 @@ export interface IFacebookAdsService {
   /**
    * Processar callback OAuth
    * Troca code por access_token e salva no DB
-   * 
+   *
    * @param userId - ID do usuário Flowzz
    * @param code - Authorization code do Facebook
    * @param state - State parameter para validação CSRF
@@ -227,7 +227,7 @@ export interface IFacebookAdsService {
   /**
    * Renovar access token expirado
    * Facebook tokens duram 60 dias
-   * 
+   *
    * @param userId - ID do usuário
    * @returns Novo access token
    */
@@ -235,7 +235,7 @@ export interface IFacebookAdsService {
 
   /**
    * Buscar contas de anúncios do usuário
-   * 
+   *
    * @param userId - ID do usuário
    * @returns Lista de ad accounts
    */
@@ -245,9 +245,9 @@ export interface IFacebookAdsService {
    * Buscar insights de uma conta de anúncios
    * Implementa rate limiting (200 req/hora)
    * Cache Redis (6 horas TTL)
-   * 
+   *
    * Referência: tasks.md - Task 6.2.1
-   * 
+   *
    * @param userId - ID do usuário
    * @param params - Parâmetros de busca
    * @returns Insights agregados
@@ -260,9 +260,9 @@ export interface IFacebookAdsService {
   /**
    * Sincronizar insights e salvar no banco
    * Busca insights, calcula ROAS, salva no Ad model
-   * 
+   *
    * Referência: tasks.md - Task 6.2.3
-   * 
+   *
    * @param empresaId - ID da empresa (user)
    * @param forceFullSync - Forçar sync completo (ignora cache)
    * @returns Resultado da sincronização
@@ -275,9 +275,9 @@ export interface IFacebookAdsService {
   /**
    * Calcular ROAS (Return on Ad Spend)
    * ROAS = (receita_vendas / gasto_anuncios)
-   * 
+   *
    * Referência: tasks.md - Task 6.2.3, dev-stories.md
-   * 
+   *
    * @param empresaId - ID da empresa
    * @param startDate - Data inicial
    * @param endDate - Data final
@@ -291,7 +291,7 @@ export interface IFacebookAdsService {
 
   /**
    * Obter status da integração
-   * 
+   *
    * @param userId - ID do usuário
    * @returns Status da integração
    */
@@ -300,7 +300,7 @@ export interface IFacebookAdsService {
   /**
    * Testar conexão com Facebook API
    * Valida token e permissões
-   * 
+   *
    * @param userId - ID do usuário
    * @returns Resultado do teste
    */
@@ -309,7 +309,7 @@ export interface IFacebookAdsService {
   /**
    * Desconectar integração Facebook
    * Remove access token e desativa sync
-   * 
+   *
    * @param userId - ID do usuário
    */
   disconnect(userId: string): Promise<void>;
@@ -317,9 +317,9 @@ export interface IFacebookAdsService {
   /**
    * Criptografar access token
    * AES-256-CBC com IV aleatório
-   * 
+   *
    * Referência: design.md - Security Best Practices
-   * 
+   *
    * @param token - Token em plaintext
    * @returns Token criptografado (formato: {iv}:{encrypted})
    */
@@ -327,7 +327,7 @@ export interface IFacebookAdsService {
 
   /**
    * Descriptografar access token
-   * 
+   *
    * @param encryptedToken - Token criptografado
    * @returns Token em plaintext
    */

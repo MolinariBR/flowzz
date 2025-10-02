@@ -1,10 +1,10 @@
 /**
  * Bull Queues Infrastructure
- * 
+ *
  * Referências:
  * - tasks.md: Task 4.0.2 - Criar todas as queues necessárias
  * - design.md: Background Jobs with Bull
- * 
+ *
  * Queues disponíveis:
  * - syncCoinzzQueue: Sincronizar vendas do Coinzz (cron: a cada hora)
  * - syncFacebookQueue: Sincronizar anúncios do Facebook Ads (cron: a cada 6 horas)
@@ -37,7 +37,7 @@ const defaultJobOptions: JobOptions = {
  */
 export function createQueue<T = unknown>(
   name: string,
-  options?: JobOptions
+  options?: JobOptions,
 ): Bull.Queue<T> {
   const queue = new Bull<T>(name, {
     redis: redisConfig,

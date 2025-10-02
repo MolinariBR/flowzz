@@ -1,9 +1,9 @@
 /**
  * Facebook Ads Integration Routes
- * 
+ *
  * Rotas para gerenciar integração com Facebook Marketing API.
  * Todas as rotas requerem autenticação (middleware authenticate).
- * 
+ *
  * Referências:
  * - design.md: Facebook Ads Marketing API Integration
  * - dev-stories.md: Dev Story 3.2
@@ -33,7 +33,7 @@ router.get(
   async (req, res) => {
     logger.info('GET /integrations/facebook/connect', { userId: req.user?.userId });
     await facebookAdsController.connect(req, res);
-  }
+  },
 );
 
 /**
@@ -53,7 +53,7 @@ router.get(
   async (req, res) => {
     logger.info('GET /integrations/facebook/callback', { userId: req.user?.userId, hasCode: !!req.query.code });
     await facebookAdsController.callback(req, res);
-  }
+  },
 );
 
 /**
@@ -70,7 +70,7 @@ router.get(
   async (req, res) => {
     logger.info('GET /integrations/facebook/status', { userId: req.user?.userId });
     await facebookAdsController.getStatus(req, res);
-  }
+  },
 );
 
 /**
@@ -90,7 +90,7 @@ router.post(
   async (req, res) => {
     logger.info('POST /integrations/facebook/insights', { userId: req.user?.userId, adAccountId: req.body?.adAccountId });
     await facebookAdsController.getInsights(req, res);
-  }
+  },
 );
 
 /**
@@ -108,7 +108,7 @@ router.post(
   async (req, res) => {
     logger.info('POST /integrations/facebook/sync', { userId: req.user?.userId });
     await facebookAdsController.syncManual(req, res);
-  }
+  },
 );
 
 /**
@@ -125,7 +125,7 @@ router.get(
   async (req, res) => {
     logger.info('GET /integrations/facebook/ad-accounts', { userId: req.user?.userId });
     await facebookAdsController.getAdAccounts(req, res);
-  }
+  },
 );
 
 /**
@@ -142,7 +142,7 @@ router.get(
   async (req, res) => {
     logger.info('GET /integrations/facebook/test', { userId: req.user?.userId });
     await facebookAdsController.testConnection(req, res);
-  }
+  },
 );
 
 /**
@@ -159,7 +159,7 @@ router.post(
   async (req, res) => {
     logger.info('POST /integrations/facebook/disconnect', { userId: req.user?.userId });
     await facebookAdsController.disconnect(req, res);
-  }
+  },
 );
 
 export default router;

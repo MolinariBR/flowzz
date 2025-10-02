@@ -1,8 +1,8 @@
 /**
  * GoalController
- * 
+ *
  * Controller REST para CRUD de metas financeiras
- * 
+ *
  * Referências:
  * - design.md: §Controller Layer - REST endpoints com validação
  * - dev-stories.md: Dev Story 4.2 - Endpoints de metas
@@ -31,7 +31,7 @@ export class GoalController {
   /**
    * GET /goals?is_active=true&period_type=MONTHLY
    * Lista metas do usuário com filtros opcionais
-   * 
+   *
    * Query params:
    * - is_active: boolean (opcional)
    * - period_type: DAILY|WEEKLY|MONTHLY|QUARTERLY|YEARLY (opcional)
@@ -152,7 +152,7 @@ export class GoalController {
   /**
    * POST /goals
    * Cria nova meta
-   * 
+   *
    * Body:
    * {
    *   "title": "Faturar R$ 15.000 em Outubro",
@@ -163,7 +163,7 @@ export class GoalController {
    *   "period_start": "2025-10-01T00:00:00Z",
    *   "period_end": "2025-10-31T23:59:59Z"
    * }
-   * 
+   *
    * Critérios de Aceitação (user-stories.md Story 4.2):
    * - Máximo 5 metas ativas simultâneas
    * - period_end > period_start
@@ -236,7 +236,7 @@ export class GoalController {
   /**
    * PUT /goals/:id
    * Atualiza meta existente
-   * 
+   *
    * Body (todos opcionais):
    * {
    *   "title": "Novo título",
@@ -245,7 +245,7 @@ export class GoalController {
    *   "period_end": "2025-11-30T23:59:59Z",
    *   "is_active": false
    * }
-   * 
+   *
    * Não pode alterar:
    * - target_type (tipo de meta)
    * - period_start (data início)
@@ -393,7 +393,7 @@ export class GoalController {
   /**
    * GET /goals/statistics
    * Retorna estatísticas gerais das metas do usuário
-   * 
+   *
    * Inclui:
    * - Total de metas
    * - Metas ativas

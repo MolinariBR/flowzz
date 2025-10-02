@@ -1,6 +1,6 @@
 /**
  * Redis Configuration
- * 
+ *
  * Referências:
  * - tasks.md: Task 4.0.1 - Configurar Bull Queues com Redis
  * - design.md: Cache Layer + Background Jobs

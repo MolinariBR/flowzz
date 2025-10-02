@@ -8,7 +8,7 @@ import type {
   ISaleRepository,
   PaginatedSales,
   SaleFilters,
-  UpdateSaleDTO
+  UpdateSaleDTO,
 } from '../interfaces/SaleRepository.interface';
 
 export class SaleRepository implements ISaleRepository {
@@ -16,14 +16,14 @@ export class SaleRepository implements ISaleRepository {
     userId: string,
     filters: SaleFilters,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<PaginatedSales> {
     const offset = (page - 1) * limit;
-    
+
     // Build where clause with filters
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = {
-      user_id: userId
+      user_id: userId,
     };
 
     if (filters.client_id) {
@@ -37,7 +37,7 @@ export class SaleRepository implements ISaleRepository {
     if (filters.product_name) {
       whereClause.product_name = {
         contains: filters.product_name,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
@@ -69,19 +69,19 @@ export class SaleRepository implements ISaleRepository {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
+              email: true,
+            },
+          },
         },
         orderBy: {
-          created_at: 'desc'
+          created_at: 'desc',
         },
         skip: offset,
-        take: limit
+        take: limit,
       }),
       prisma.sale.count({
-        where: whereClause
-      })
+        where: whereClause,
+      }),
     ]);
 
     return {
@@ -89,7 +89,7 @@ export class SaleRepository implements ISaleRepository {
       total,
       page,
       limit,
-      total_pages: Math.ceil(total / limit)
+      total_pages: Math.ceil(total / limit),
     };
   }
 
@@ -97,7 +97,7 @@ export class SaleRepository implements ISaleRepository {
     return prisma.sale.findFirst({
       where: {
         id,
-        user_id: userId
+        user_id: userId,
       },
       include: {
         client: {
@@ -105,10 +105,10 @@ export class SaleRepository implements ISaleRepository {
             id: true,
             name: true,
             email: true,
-            phone: true
-          }
-        }
-      }
+            phone: true,
+          },
+        },
+      },
     });
   }
 
@@ -125,7 +125,7 @@ export class SaleRepository implements ISaleRepository {
       payment_date: data.payment_date || null,
       shipped_at: data.shipped_at || null,
       delivered_at: data.delivered_at || null,
-      status: data.status || 'PENDING'
+      status: data.status || 'PENDING',
     };
 
     return prisma.sale.create({
@@ -135,10 +135,10 @@ export class SaleRepository implements ISaleRepository {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
   }
 
@@ -151,13 +151,13 @@ export class SaleRepository implements ISaleRepository {
 
     // Convert undefined to null for Prisma
     const updateData = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, value === undefined ? null : value])
+      Object.entries(data).map(([key, value]) => [key, value === undefined ? null : value]),
     );
 
     return prisma.sale.update({
       where: {
         id,
-        user_id: userId
+        user_id: userId,
       },
       data: updateData,
       include: {
@@ -165,10 +165,10 @@ export class SaleRepository implements ISaleRepository {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
   }
 
@@ -177,8 +177,8 @@ export class SaleRepository implements ISaleRepository {
       await prisma.sale.delete({
         where: {
           id,
-          user_id: userId
-        }
+          user_id: userId,
+        },
       });
       return true;
     } catch (_error) {
@@ -190,11 +190,11 @@ export class SaleRepository implements ISaleRepository {
     const sale = await prisma.sale.findFirst({
       where: {
         id,
-        user_id: userId
+        user_id: userId,
       },
       select: {
-        id: true
-      }
+        id: true,
+      },
     });
 
     return !!sale;
@@ -204,15 +204,15 @@ export class SaleRepository implements ISaleRepository {
     return prisma.sale.findFirst({
       where: {
         external_id: externalId,
-        user_id: userId
-      }
+        user_id: userId,
+      },
     });
   }
 
   async getTotalsByPeriod(
     userId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     total_sales: number;
     total_commission: number;
@@ -223,25 +223,25 @@ export class SaleRepository implements ISaleRepository {
         user_id: userId,
         created_at: {
           gte: startDate,
-          lte: endDate
+          lte: endDate,
         },
         status: {
-          in: ['PAID', 'DELIVERED'] // Only count completed sales
-        }
+          in: ['PAID', 'DELIVERED'], // Only count completed sales
+        },
       },
       _sum: {
         total_price: true,
-        commission: true
+        commission: true,
       },
       _count: {
-        id: true
-      }
+        id: true,
+      },
     });
 
     return {
       total_sales: Number(result._sum.total_price) || 0,
       total_commission: Number(result._sum.commission) || 0,
-      count: result._count.id || 0
+      count: result._count.id || 0,
     };
   }
 }

@@ -1,8 +1,8 @@
 /**
  * Storage Cleanup Job
- * 
+ *
  * Job que executa diariamente para remover arquivos antigos do S3/R2
- * 
+ *
  * Referências:
  * - tasks.md: Task 10.1.5 - Cleanup automático de arquivos
  * - TASK10_STORAGE_TODO.md: Cleanup de arquivos >30 dias
@@ -17,7 +17,7 @@ const storageService = new StorageService();
 /**
  * Job que roda diariamente às 3h da manhã (horário de Brasília)
  * Remove arquivos de relatórios com mais de 30 dias
- * 
+ *
  * Cron Schedule: '0 3 * * *'
  * - Minuto: 0
  * - Hora: 3 (3h AM)
@@ -54,7 +54,7 @@ export const storageCleanupJob = new CronJob(
   },
   null, // onComplete callback
   false, // start: false (será iniciado manualmente no server.ts)
-  'America/Sao_Paulo' // timezone
+  'America/Sao_Paulo', // timezone
 );
 
 /**

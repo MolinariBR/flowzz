@@ -1,9 +1,9 @@
 /**
  * ProjectionService Interface
- * 
+ *
  * Sistema de projeções financeiras com 3 cenários (pessimista/realista/otimista)
  * Baseado em médias móveis, tendências e ajuste de sazonalidade
- * 
+ *
  * Referências:
  * - plan.md: Persona Maria - "Ter projeções financeiras confiáveis para tomar decisões"
  * - design.md: §Financial Projections - Cache Strategy, Algoritmo de médias móveis
@@ -115,14 +115,14 @@ export interface SeasonalityData {
 export interface IProjectionService {
   /**
    * Calcula projeções de vendas para período especificado
-   * 
+   *
    * Critérios de Aceitação (user-stories.md Story 4.1):
    * - Mínimo 30 dias de histórico necessário
    * - Considera sazonalidade (dia da semana)
    * - 3 cenários: pessimista, realista, otimista
    * - Confiança 0-100% baseada em variância
    * - Cache de 6 horas
-   * 
+   *
    * @param userId - ID do usuário
    * @param period - Período em dias (7, 30, 90, 180, 365)
    * @returns Projeção com 3 cenários e confiança
@@ -135,7 +135,7 @@ export interface IProjectionService {
 
   /**
    * Calcula projeção de fluxo de caixa (vendas - despesas)
-   * 
+   *
    * @param userId - ID do usuário
    * @param period - Período em dias
    * @returns Projeção de cashflow com lucro líquido
@@ -147,12 +147,12 @@ export interface IProjectionService {
 
   /**
    * Calcula score de saúde financeira (0-100%)
-   * 
+   *
    * Score baseado em:
    * - Tendência (30%): Crescimento vs Queda
    * - Lucratividade (40%): Margem de lucro
    * - Consistência (30%): Baixa variância
-   * 
+   *
    * @param userId - ID do usuário
    * @returns Score com interpretação e recomendações
    */
@@ -160,7 +160,7 @@ export interface IProjectionService {
 
   /**
    * Detecta tendência nos dados de vendas
-   * 
+   *
    * @param sales - Array de vendas ordenadas por data
    * @returns Tipo de tendência detectada
    */
@@ -168,7 +168,7 @@ export interface IProjectionService {
 
   /**
    * Calcula média móvel para período específico
-   * 
+   *
    * @param sales - Array de vendas
    * @param days - Número de dias para média
    * @returns Valor médio diário
@@ -177,7 +177,7 @@ export interface IProjectionService {
 
   /**
    * Calcula variância para determinar confiança
-   * 
+   *
    * @param sales - Array de vendas
    * @returns Variância dos dados (0-1)
    */
@@ -185,11 +185,11 @@ export interface IProjectionService {
 
   /**
    * Ajusta valor considerando sazonalidade do dia da semana
-   * 
+   *
    * Baseado em histórico:
    * - Segunda-Sexta: 1.1x (10% acima da média)
    * - Sábado-Domingo: 0.8x (20% abaixo da média)
-   * 
+   *
    * @param value - Valor a ser ajustado
    * @param date - Data para verificar dia da semana
    * @returns Valor ajustado
@@ -198,7 +198,7 @@ export interface IProjectionService {
 
   /**
    * Analisa sazonalidade dos dados históricos
-   * 
+   *
    * @param sales - Array de vendas
    * @returns Dados de sazonalidade por dia da semana
    */
@@ -206,12 +206,12 @@ export interface IProjectionService {
 
   /**
    * Invalida cache de projeções do usuário
-   * 
+   *
    * Deve ser chamado quando:
    * - Nova venda registrada
    * - Sync Coinzz completo
    * - Sync Facebook Ads completo
-   * 
+   *
    * @param userId - ID do usuário
    */
   invalidateCache(userId: string): Promise<void>;

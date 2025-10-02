@@ -3,13 +3,13 @@
 
 import type { Client } from '@prisma/client';
 import { prisma } from '../shared/config/database';
-import type { 
-  ClientFilters, 
-  CreateClientDTO, 
-  IClientRepository, 
-  PaginatedClients, 
-  PaginationOptions, 
-  UpdateClientDTO 
+import type {
+  ClientFilters,
+  CreateClientDTO,
+  IClientRepository,
+  PaginatedClients,
+  PaginationOptions,
+  UpdateClientDTO,
 } from '../interfaces/ClientRepository.interface';
 
 export class ClientRepository implements IClientRepository {
@@ -19,17 +19,17 @@ export class ClientRepository implements IClientRepository {
       include: {
         tags: {
           include: {
-            tag: true
-          }
-        }
-      }
+            tag: true,
+          },
+        },
+      },
     });
   }
 
   async findByUserId(
-    userId: string, 
-    filters?: ClientFilters, 
-    pagination?: PaginationOptions
+    userId: string,
+    filters?: ClientFilters,
+    pagination?: PaginationOptions,
   ): Promise<PaginatedClients> {
     const page = pagination?.page || 1;
     const limit = pagination?.limit || 20;
@@ -37,14 +37,14 @@ export class ClientRepository implements IClientRepository {
 
     // Build where clause with filters
     const where: { [key: string]: unknown } = {
-      user_id: userId
+      user_id: userId,
     };
 
     if (filters?.search) {
       where.OR = [
         { name: { contains: filters.search, mode: 'insensitive' } },
         { email: { contains: filters.search, mode: 'insensitive' } },
-        { phone: { contains: filters.search, mode: 'insensitive' } }
+        { phone: { contains: filters.search, mode: 'insensitive' } },
       ];
     }
 
@@ -56,9 +56,9 @@ export class ClientRepository implements IClientRepository {
       where.tags = {
         some: {
           tag_id: {
-            in: filters.tags
-          }
-        }
+            in: filters.tags,
+          },
+        },
       };
     }
 
@@ -72,12 +72,12 @@ export class ClientRepository implements IClientRepository {
         include: {
           tags: {
             include: {
-              tag: true
-            }
-          }
-        }
+              tag: true,
+            },
+          },
+        },
       }),
-      this.count(userId, filters)
+      this.count(userId, filters),
     ]);
 
     return {
@@ -86,8 +86,8 @@ export class ClientRepository implements IClientRepository {
         total,
         page,
         limit,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -111,10 +111,10 @@ export class ClientRepository implements IClientRepository {
       include: {
         tags: {
           include: {
-            tag: true
-          }
-        }
-      }
+            tag: true,
+          },
+        },
+      },
     });
   }
 
@@ -137,29 +137,29 @@ export class ClientRepository implements IClientRepository {
       include: {
         tags: {
           include: {
-            tag: true
-          }
-        }
-      }
+            tag: true,
+          },
+        },
+      },
     });
   }
 
   async delete(id: string): Promise<void> {
     await prisma.client.delete({
-      where: { id }
+      where: { id },
     });
   }
 
   async count(userId: string, filters?: ClientFilters): Promise<number> {
     const where: { [key: string]: unknown } = {
-      user_id: userId
+      user_id: userId,
     };
 
     if (filters?.search) {
       where.OR = [
         { name: { contains: filters.search, mode: 'insensitive' } },
         { email: { contains: filters.search, mode: 'insensitive' } },
-        { phone: { contains: filters.search, mode: 'insensitive' } }
+        { phone: { contains: filters.search, mode: 'insensitive' } },
       ];
     }
 
@@ -171,9 +171,9 @@ export class ClientRepository implements IClientRepository {
       where.tags = {
         some: {
           tag_id: {
-            in: filters.tags
-          }
-        }
+            in: filters.tags,
+          },
+        },
       };
     }
 
@@ -183,9 +183,9 @@ export class ClientRepository implements IClientRepository {
   async checkOwnership(id: string, userId: string): Promise<boolean> {
     const client = await prisma.client.findFirst({
       where: { id, user_id: userId },
-      select: { id: true }
+      select: { id: true },
     });
-    
+
     return client !== null;
   }
 }

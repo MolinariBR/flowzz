@@ -9,11 +9,11 @@ import type {
   AdSpendAggregation,
   ChartDataRow,
   ScheduledPayment,
-  DashboardActivity
+  DashboardActivity,
 } from '../interfaces/DashboardService.interface';
 
 export class DashboardRepository {
-  
+
   /**
    * Busca vendas para um período específico
    * Referência: Story 2.1 - Vendas hoje
@@ -21,28 +21,28 @@ export class DashboardRepository {
   async getSalesForPeriod(
     userId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<SalesAggregation[]> {
     const sales = await prisma.sale.findMany({
       where: {
         user_id: userId,
         created_at: {
           gte: startDate,
-          lte: endDate
+          lte: endDate,
         },
         status: {
-          in: ['PAID', 'SHIPPED', 'DELIVERED'] // Apenas vendas efetivadas
-        }
+          in: ['PAID', 'SHIPPED', 'DELIVERED'], // Apenas vendas efetivadas
+        },
       },
       select: {
         total_price: true,
-        status: true
-      }
+        status: true,
+      },
     });
 
     return sales.map((sale: any): SalesAggregation => ({
       total_price: sale.total_price,
-      status: sale.status
+      status: sale.status,
     }));
   }
 
@@ -53,25 +53,25 @@ export class DashboardRepository {
   async getAdSpendForPeriod(
     userId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<AdSpendAggregation[]> {
     const ads = await prisma.ad.findMany({
       where: {
         user_id: userId,
         date: {
           gte: startDate,
-          lte: endDate
-        }
+          lte: endDate,
+        },
       },
       select: {
         spend: true,
-        date: true
-      }
+        date: true,
+      },
     });
 
     return ads.map((ad: any): AdSpendAggregation => ({
       spend: ad.spend,
-      date: ad.date
+      date: ad.date,
     }));
   }
 
@@ -82,7 +82,7 @@ export class DashboardRepository {
   async getScheduledPayments(
     userId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ScheduledPayment[]> {
     const scheduledPayments = await prisma.sale.findMany({
       where: {
@@ -93,30 +93,30 @@ export class DashboardRepository {
             status: 'PENDING',
             payment_due_date: {
               gte: startDate,
-              lte: endDate
-            }
+              lte: endDate,
+            },
           },
           {
             // Vendas enviadas aguardando confirmação
             status: 'SHIPPED',
             shipped_at: {
               gte: startDate,
-              lte: endDate
-            }
-          }
-        ]
+              lte: endDate,
+            },
+          },
+        ],
       },
       select: {
         total_price: true,
         payment_due_date: true,
-        status: true
-      }
+        status: true,
+      },
     });
 
     return scheduledPayments.map((payment: any): ScheduledPayment => ({
       total_price: payment.total_price,
       payment_due_date: payment.payment_due_date,
-      status: payment.status
+      status: payment.status,
     }));
   }
 
@@ -127,7 +127,7 @@ export class DashboardRepository {
   async getChartData(
     userId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ChartDataRow[]> {
     // Query SQL raw para agregar dados por dia
     const result = await prisma.$queryRaw<Array<{
@@ -176,7 +176,7 @@ export class DashboardRepository {
     return result.map((row: any): ChartDataRow => ({
       date: row.date,
       vendas: Number(row.vendas),
-      gastos: Number(row.gastos)
+      gastos: Number(row.gastos),
     }));
   }
 
@@ -186,26 +186,26 @@ export class DashboardRepository {
    */
   async getRecentActivities(
     userId: string,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<DashboardActivity[]> {
     const activities: DashboardActivity[] = [];
 
     // Vendas recentes
     const recentSales = await prisma.sale.findMany({
       where: {
-        user_id: userId
+        user_id: userId,
       },
       include: {
         client: {
           select: {
-            name: true
-          }
-        }
+            name: true,
+          },
+        },
       },
       orderBy: {
-        created_at: 'desc'
+        created_at: 'desc',
       },
-      take: Math.ceil(limit / 2) // Metade do limite para vendas
+      take: Math.ceil(limit / 2), // Metade do limite para vendas
     });
 
     // Adicionar vendas às atividades
@@ -220,8 +220,8 @@ export class DashboardRepository {
         metadata: {
           saleId: sale.id,
           clientName: sale.client?.name,
-          status: sale.status
-        }
+          status: sale.status,
+        },
       });
     });
 
@@ -231,20 +231,20 @@ export class DashboardRepository {
         user_id: userId,
         status: 'PAID',
         payment_date: {
-          not: null
-        }
+          not: null,
+        },
       },
       include: {
         client: {
           select: {
-            name: true
-          }
-        }
+            name: true,
+          },
+        },
       },
       orderBy: {
-        payment_date: 'desc'
+        payment_date: 'desc',
       },
-      take: Math.ceil(limit / 2) // Metade do limite para pagamentos
+      take: Math.ceil(limit / 2), // Metade do limite para pagamentos
     });
 
     // Adicionar pagamentos às atividades
@@ -260,8 +260,8 @@ export class DashboardRepository {
           metadata: {
             saleId: payment.id,
             clientName: payment.client?.name,
-            productName: payment.product_name
-          }
+            productName: payment.product_name,
+          },
         });
       }
     });
@@ -277,7 +277,7 @@ export class DashboardRepository {
    */
   async getMonthlySalesAggregation(
     userId: string,
-    year: number
+    year: number,
   ): Promise<Array<{ month: number; total: number; count: number }>> {
     const result = await prisma.$queryRaw<Array<{
       month: number;
@@ -299,7 +299,7 @@ export class DashboardRepository {
     return result.map((row: any) => ({
       month: Number(row.month),
       total: Number(row.total),
-      count: Number(row.count)
+      count: Number(row.count),
     }));
   }
 }

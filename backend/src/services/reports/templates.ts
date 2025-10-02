@@ -9,7 +9,7 @@ import type { SalesReportData } from '../../interfaces/ReportService.interface';
  */
 export function generateSalesReportTemplate(data: SalesReportData, options: { title: string; includeLogo?: boolean }): string {
   const { title, includeLogo } = options;
-  
+
   const logoSection = includeLogo
     ? `
       <div class="text-center mb-8">

@@ -1,8 +1,8 @@
 /**
  * StorageService
- * 
+ *
  * Serviço para upload/download de arquivos em AWS S3 ou Cloudflare R2
- * 
+ *
  * Referências:
  * - design.md: §Cloud Storage - Armazenamento escalável de relatórios
  * - tasks.md: Task 10.1.5 - Storage Service com signed URLs
@@ -37,7 +37,7 @@ interface StorageConfig {
 
 /**
  * Service para gerenciamento de arquivos em S3/R2
- * 
+ *
  * Features:
  * - Upload de arquivos com metadata
  * - Signed URLs para download seguro (expiração configurável)
@@ -120,22 +120,22 @@ export class StorageService {
 
   /**
    * Faz upload de um arquivo para S3/R2
-   * 
+   *
    * @param buffer - Buffer do arquivo
    * @param filename - Nome do arquivo (ex: report-uuid.pdf)
    * @param contentType - MIME type (ex: application/pdf)
    * @returns Chave S3 do arquivo (ex: reports/report-uuid.pdf)
-   * 
+   *
    * @throws Error se storage não estiver configurado ou upload falhar
    */
   async uploadFile(
     buffer: Buffer,
     filename: string,
-    contentType?: string
+    contentType?: string,
   ): Promise<string> {
     if (!this.isConfigured) {
       throw new Error(
-        'Storage service not configured. Please set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_S3_BUCKET environment variables.'
+        'Storage service not configured. Please set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_S3_BUCKET environment variables.',
       );
     }
 
@@ -177,18 +177,18 @@ export class StorageService {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new Error(
-        `Failed to upload file to S3/R2: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to upload file to S3/R2: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   /**
    * Gera URL assinada para download seguro
-   * 
+   *
    * @param key - Chave do arquivo no S3 (ex: reports/report-uuid.pdf)
    * @param expiresIn - Tempo de expiração em segundos (padrão: 7 dias)
    * @returns URL assinada válida pelo período especificado
-   * 
+   *
    * @throws Error se storage não estiver configurado ou geração falhar
    */
   async getSignedUrl(key: string, expiresIn: number = 604800): Promise<string> {
@@ -220,16 +220,16 @@ export class StorageService {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new Error(
-        `Failed to generate signed URL: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to generate signed URL: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   /**
    * Deleta um arquivo do S3/R2
-   * 
+   *
    * @param key - Chave do arquivo (ex: reports/report-uuid.pdf)
-   * 
+   *
    * @throws Error se storage não estiver configurado ou deleção falhar
    */
   async deleteFile(key: string): Promise<void> {
@@ -256,17 +256,17 @@ export class StorageService {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new Error(
-        `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   /**
    * Remove arquivos antigos do bucket (cleanup automático)
-   * 
+   *
    * @param olderThanDays - Deletar arquivos mais antigos que N dias (padrão: 30)
    * @returns Número de arquivos deletados
-   * 
+   *
    * @throws Error se storage não estiver configurado ou cleanup falhar
    */
   async cleanupOldFiles(olderThanDays: number = 30): Promise<number> {
@@ -345,14 +345,14 @@ export class StorageService {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new Error(
-        `Failed to cleanup old files: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to cleanup old files: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
   /**
    * Verifica se conexão com S3/R2 está funcionando
-   * 
+   *
    * @returns true se conectado, false caso contrário
    */
   async healthCheck(): Promise<boolean> {
@@ -385,7 +385,7 @@ export class StorageService {
 
   /**
    * Detecta content type baseado na extensão do arquivo
-   * 
+   *
    * @param filename - Nome do arquivo
    * @returns MIME type correspondente
    */

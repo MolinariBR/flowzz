@@ -14,7 +14,7 @@ async function main() {
   // Clear existing data in development
   if (process.env.NODE_ENV === 'development') {
     console.log('🧹 Cleaning development database...');
-    
+
     await prisma.activity.deleteMany();
     await prisma.subscription.deleteMany();
     await prisma.report.deleteMany();
@@ -31,7 +31,7 @@ async function main() {
 
   // Create subscription plans
   console.log('📋 Creating subscription plans...');
-  
+
   const basicPlan = await prisma.plan.create({
     data: {
       name: 'Básico',
@@ -42,13 +42,13 @@ async function main() {
         max_clients: 100,
         max_integrations: 2,
         reports: ['basic'],
-        support: 'email'
+        support: 'email',
       },
       limits: {
         api_calls_per_day: 1000,
-        storage_gb: 1
-      }
-    }
+        storage_gb: 1,
+      },
+    },
   });
 
   const proPlan = await prisma.plan.create({
@@ -61,20 +61,20 @@ async function main() {
         max_clients: 1000,
         max_integrations: 5,
         reports: ['basic', 'advanced', 'custom'],
-        support: 'priority'
+        support: 'priority',
       },
       limits: {
         api_calls_per_day: 10000,
-        storage_gb: 10
-      }
-    }
+        storage_gb: 10,
+      },
+    },
   });
 
   // Create demo user
   console.log('👤 Creating demo user...');
-  
+
   const passwordHash = await bcrypt.hash('demo123456', 12);
-  
+
   const demoUser = await prisma.user.create({
     data: {
       email: 'demo@flowzz.com.br',
@@ -83,15 +83,15 @@ async function main() {
       role: 'USER',
       subscription_status: 'TRIAL',
       trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-      plan_id: basicPlan.id
-    }
+      plan_id: basicPlan.id,
+    },
   });
 
   // Create admin user
   console.log('🔧 Creating admin user...');
-  
+
   const adminPasswordHash = await bcrypt.hash('admin123456', 12);
-  
+
   await prisma.user.create({
     data: {
       email: 'admin@flowzz.com.br',
@@ -99,13 +99,13 @@ async function main() {
       nome: 'Administrador',
       role: 'ADMIN',
       subscription_status: 'ACTIVE',
-      plan_id: proPlan.id
-    }
+      plan_id: proPlan.id,
+    },
   });
 
   // Create sample clients for demo user
   console.log('👥 Creating sample clients...');
-  
+
   const clients = await Promise.all([
     prisma.client.create({
       data: {
@@ -118,8 +118,8 @@ async function main() {
         state: 'SP',
         status: 'ACTIVE',
         total_spent: 1250.50,
-        total_orders: 3
-      }
+        total_orders: 3,
+      },
     }),
     prisma.client.create({
       data: {
@@ -132,8 +132,8 @@ async function main() {
         state: 'RJ',
         status: 'ACTIVE',
         total_spent: 890.30,
-        total_orders: 2
-      }
+        total_orders: 2,
+      },
     }),
     prisma.client.create({
       data: {
@@ -145,36 +145,36 @@ async function main() {
         state: 'MG',
         status: 'INACTIVE',
         total_spent: 0,
-        total_orders: 0
-      }
-    })
+        total_orders: 0,
+      },
+    }),
   ]);
 
   // Create sample tags
   console.log('🏷️ Creating sample tags...');
-  
+
   const tags = await Promise.all([
     prisma.tag.create({
       data: {
         user_id: demoUser.id,
         name: 'VIP',
-        color: '#FFD700'
-      }
+        color: '#FFD700',
+      },
     }),
     prisma.tag.create({
       data: {
         user_id: demoUser.id,
         name: 'Frequente',
-        color: '#32CD32'
-      }
+        color: '#32CD32',
+      },
     }),
     prisma.tag.create({
       data: {
         user_id: demoUser.id,
         name: 'Inativo',
-        color: '#FF6347'
-      }
-    })
+        color: '#FF6347',
+      },
+    }),
   ]);
 
   // Associate tags with clients
@@ -182,26 +182,26 @@ async function main() {
     prisma.clientTag.create({
       data: {
         client_id: clients[0].id,
-        tag_id: tags[0].id // João Silva - VIP
-      }
+        tag_id: tags[0].id, // João Silva - VIP
+      },
     }),
     prisma.clientTag.create({
       data: {
         client_id: clients[1].id,
-        tag_id: tags[1].id // Maria Santos - Frequente
-      }
+        tag_id: tags[1].id, // Maria Santos - Frequente
+      },
     }),
     prisma.clientTag.create({
       data: {
         client_id: clients[2].id,
-        tag_id: tags[2].id // Pedro Oliveira - Inativo
-      }
-    })
+        tag_id: tags[2].id, // Pedro Oliveira - Inativo
+      },
+    }),
   ]);
 
   // Create sample sales
   console.log('💰 Creating sample sales...');
-  
+
   await Promise.all([
     prisma.sale.create({
       data: {
@@ -217,8 +217,8 @@ async function main() {
         payment_method: 'PIX',
         payment_date: new Date('2024-09-15'),
         shipped_at: new Date('2024-09-16'),
-        delivered_at: new Date('2024-09-18')
-      }
+        delivered_at: new Date('2024-09-18'),
+      },
     }),
     prisma.sale.create({
       data: {
@@ -233,8 +233,8 @@ async function main() {
         status: 'DELIVERED',
         payment_method: 'Cartão de Crédito',
         payment_date: new Date('2024-09-20'),
-        delivered_at: new Date('2024-09-20')
-      }
+        delivered_at: new Date('2024-09-20'),
+      },
     }),
     prisma.sale.create({
       data: {
@@ -249,8 +249,8 @@ async function main() {
         status: 'DELIVERED',
         payment_method: 'Boleto',
         payment_date: new Date('2024-09-25'),
-        delivered_at: new Date('2024-09-25')
-      }
+        delivered_at: new Date('2024-09-25'),
+      },
     }),
     prisma.sale.create({
       data: {
@@ -264,14 +264,14 @@ async function main() {
         commission: 196.95,
         status: 'PAID',
         payment_method: 'PIX',
-        payment_date: new Date('2024-09-28')
-      }
-    })
+        payment_date: new Date('2024-09-28'),
+      },
+    }),
   ]);
 
   // Create sample integration
   console.log('🔗 Creating sample integration...');
-  
+
   await prisma.integration.create({
     data: {
       user_id: demoUser.id,
@@ -280,15 +280,15 @@ async function main() {
       config: {
         api_key: 'demo_key_encrypted',
         webhook_url: 'https://api.flowzz.com.br/webhooks/coinzz',
-        sync_frequency: 'daily'
+        sync_frequency: 'daily',
       },
-      last_sync: new Date()
-    }
+      last_sync: new Date(),
+    },
   });
 
   // Create sample goal
   console.log('🎯 Creating sample goal...');
-  
+
   await prisma.goal.create({
     data: {
       user_id: demoUser.id,
@@ -299,21 +299,21 @@ async function main() {
       current_value: 2141.30, // Sum of current sales
       period_type: 'MONTHLY',
       period_start: new Date('2024-10-01'),
-      period_end: new Date('2024-10-31')
-    }
+      period_end: new Date('2024-10-31'),
+    },
   });
 
   // Create sample activities
   console.log('📋 Creating sample activities...');
-  
+
   await Promise.all([
     prisma.activity.create({
       data: {
         user_id: demoUser.id,
         action: 'login',
         metadata: { ip: '192.168.1.100' },
-        ip_address: '192.168.1.100'
-      }
+        ip_address: '192.168.1.100',
+      },
     }),
     prisma.activity.create({
       data: {
@@ -321,17 +321,17 @@ async function main() {
         action: 'create_client',
         entity_type: 'client',
         entity_id: clients[0].id,
-        metadata: { client_name: clients[0].name }
-      }
+        metadata: { client_name: clients[0].name },
+      },
     }),
     prisma.activity.create({
       data: {
         user_id: demoUser.id,
         action: 'connect_integration',
         entity_type: 'integration',
-        metadata: { provider: 'COINZZ' }
-      }
-    })
+        metadata: { provider: 'COINZZ' },
+      },
+    }),
   ]);
 
   console.log('✅ Database seed completed successfully!');

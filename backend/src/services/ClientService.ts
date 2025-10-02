@@ -3,12 +3,12 @@
 
 import type { Client } from '@prisma/client';
 import { ClientRepository } from '../repositories/ClientRepository';
-import type { 
-  ClientFilters, 
-  CreateClientDTO, 
-  PaginatedClients, 
-  PaginationOptions, 
-  UpdateClientDTO 
+import type {
+  ClientFilters,
+  CreateClientDTO,
+  PaginatedClients,
+  PaginationOptions,
+  UpdateClientDTO,
 } from '../interfaces/ClientRepository.interface';
 import type { CreateClientInput, UpdateClientInput } from '../validators/client.validator';
 
@@ -20,10 +20,10 @@ export class ClientService {
   }
 
   async getClients(
-    userId: string, 
-    page: number = 1, 
-    limit: number = 20, 
-    filters?: ClientFilters
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+    filters?: ClientFilters,
   ): Promise<PaginatedClients> {
     const pagination: PaginationOptions = { page, limit };
     return await this.clientRepository.findByUserId(userId, filters, pagination);
@@ -31,7 +31,7 @@ export class ClientService {
 
   async getClientById(id: string, userId: string): Promise<Client> {
     const client = await this.clientRepository.findById(id);
-    
+
     if (!client) {
       throw new Error('Cliente não encontrado');
     }
@@ -47,10 +47,10 @@ export class ClientService {
   async createClient(data: Omit<CreateClientDTO, 'user_id'>, userId: string): Promise<Client> {
     // Validate business rules
     await this.validateClientData(data, userId);
-    
+
     // Set user_id
     const clientData: CreateClientDTO = { ...data, user_id: userId };
-    
+
     return await this.clientRepository.create(clientData);
   }
 
@@ -98,11 +98,11 @@ export class ClientService {
   private async validateEmailUniqueness(email: string, userId: string, excludeId?: string): Promise<void> {
     const filters: ClientFilters = { search: email };
     const existing = await this.clientRepository.findByUserId(userId, filters, { page: 1, limit: 1 });
-    
-    const duplicateClient = existing.data.find(client => 
-      client.email === email && client.id !== excludeId
+
+    const duplicateClient = existing.data.find(client =>
+      client.email === email && client.id !== excludeId,
     );
-    
+
     if (duplicateClient) {
       throw new Error('Já existe um cliente com este email');
     }

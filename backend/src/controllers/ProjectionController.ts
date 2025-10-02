@@ -1,8 +1,8 @@
 /**
  * ProjectionController
- * 
+ *
  * Controller REST para endpoints de projeções financeiras
- * 
+ *
  * Referências:
  * - design.md: §Controller Layer - REST endpoints com validação
  * - dev-stories.md: Dev Story 4.1 - Endpoints de projeções
@@ -31,7 +31,7 @@ export class ProjectionController {
   /**
    * GET /projections/sales?period=30
    * Retorna projeção de vendas com 3 cenários (pessimista/realista/otimista)
-   * 
+   *
    * Critérios de Aceitação (user-stories.md Story 4.1):
    * - Mínimo 30 dias de histórico necessário
    * - 3 cenários: pessimista, realista, otimista
@@ -96,7 +96,7 @@ export class ProjectionController {
   /**
    * GET /projections/cashflow?period=90
    * Retorna projeção de fluxo de caixa (vendas - despesas)
-   * 
+   *
    * Inclui:
    * - Projeção de vendas (3 cenários)
    * - Projeção de despesas (ads + operacional)
@@ -161,12 +161,12 @@ export class ProjectionController {
   /**
    * GET /projections/health-score
    * Retorna score de saúde financeira (0-100%)
-   * 
+   *
    * Score baseado em:
    * - Tendência (30%): Crescimento vs Queda
    * - Lucratividade (40%): Margem de lucro
    * - Consistência (30%): Baixa variância
-   * 
+   *
    * Inclui:
    * - Score geral (0-100%)
    * - Scores individuais

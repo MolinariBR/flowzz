@@ -1,10 +1,10 @@
 /**
  * Bull Queues Definitions
- * 
+ *
  * Referências:
  * - tasks.md: Task 4.0.2 - Criar todas as queues necessárias
  * - design.md: Background Jobs with Bull
- * 
+ *
  * Queues disponíveis:
  * 1. syncCoinzzQueue: Sincronizar vendas do Coinzz (cron: a cada hora)
  * 2. syncFacebookQueue: Sincronizar anúncios do Facebook Ads (cron: a cada 6 horas)
@@ -30,7 +30,7 @@ export interface SyncFacebookJobData {
   userId: string; // user_id do usuário/empresa
   forceFullSync?: boolean;
   adAccountId?: string; // Opcional: específico ad account (padrão: todos)
-  
+
   // Legacy fields (deprecated - manter por compatibilidade temporária)
   empresaId?: string;
 }
@@ -68,7 +68,7 @@ export interface ReportJobData {
   };
   sendEmail?: boolean; // Enviar email quando pronto
   emailRecipients?: string[]; // Lista de emails
-  
+
   // Campos antigos (deprecated - manter compatibilidade)
   empresaId?: string;
   reportType?: 'sales' | 'leads' | 'performance' | 'custom';

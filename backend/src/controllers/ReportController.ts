@@ -1,8 +1,8 @@
 /**
  * ReportController
- * 
+ *
  * Controller REST para geração e gestão de relatórios PDF/Excel
- * 
+ *
  * Referências:
  * - design.md: §Controller Layer - REST endpoints com validação
  * - dev-stories.md: Dev Story 4.2 - Geração assíncrona de relatórios
@@ -33,7 +33,7 @@ export class ReportController {
   /**
    * POST /reports/generate
    * Gera novo relatório (processamento assíncrono)
-   * 
+   *
    * Body: {
    *   type: ReportType,
    *   title: string,
@@ -42,7 +42,7 @@ export class ReportController {
    *   sendEmail?: boolean,
    *   emailRecipients?: string[]
    * }
-   * 
+   *
    * Response: 202 Accepted com reportId
    */
   generateReport = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -62,7 +62,7 @@ export class ReportController {
       // Enfileirar geração do relatório
       const report = await reportService.generateReport(
         userId,
-        validatedData as unknown as Parameters<typeof reportService.generateReport>[1]
+        validatedData as unknown as Parameters<typeof reportService.generateReport>[1],
       );
 
       logger.info('Report generation queued', {
@@ -107,7 +107,7 @@ export class ReportController {
   /**
    * GET /reports/:id/status
    * Obtém status de geração de um relatório
-   * 
+   *
    * Response: {
    *   id: string,
    *   status: 'PENDING' | 'GENERATING' | 'READY' | 'ERROR',
@@ -171,7 +171,7 @@ export class ReportController {
   /**
    * GET /reports/:id/download
    * Faz download do arquivo de relatório gerado
-   * 
+   *
    * Response: Redirect para URL assinada ou stream do arquivo
    */
   getDownloadUrl = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -267,7 +267,7 @@ export class ReportController {
   /**
    * GET /reports?page=1&limit=20&type=SALES_REPORT&status=READY
    * Lista relatórios do usuário com paginação e filtros
-   * 
+   *
    * Query params:
    * - page: number (default 1)
    * - limit: number (default 20, max 100)
@@ -294,7 +294,7 @@ export class ReportController {
       // Buscar relatórios
       const result = await reportService.listReports(
         userId,
-        validatedQuery as unknown as Parameters<typeof reportService.listReports>[1]
+        validatedQuery as unknown as Parameters<typeof reportService.listReports>[1],
       );
 
       res.status(200).json({

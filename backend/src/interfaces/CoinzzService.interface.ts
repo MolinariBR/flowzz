@@ -1,12 +1,12 @@
 /**
  * Coinzz Service Interfaces and DTOs
- * 
+ *
  * Referências:
  * - webhookcoinzz.md: Estrutura completa dos webhooks
  * - tasks.md: Task 5.2 - Implementar CoinzzService
  * - user-stories.md: Story 1.3 - Sincronizar vendas automaticamente
  * - design.md: External Integrations - Coinzz
- * 
+ *
  * Este arquivo define as interfaces para integração com a plataforma Coinzz,
  * incluindo estruturas de webhooks, configuração e métodos do service.
  */
@@ -175,7 +175,7 @@ export interface ICoinzzIntegrationConfig {
 /**
  * Interface do serviço Coinzz
  * Define todos os métodos disponíveis para integração
- * 
+ *
  * Referências:
  * - tasks.md: Task 5.2 - Implementar CoinzzService
  * - design.md: External Integrations - Coinzz

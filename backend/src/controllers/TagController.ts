@@ -1,6 +1,6 @@
 /**
  * Tag Controller
- * 
+ *
  * Referências:
  * - openapi.yaml: Tag endpoints especification
  * - design.md: REST API patterns and error handling

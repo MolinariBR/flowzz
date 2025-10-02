@@ -39,7 +39,7 @@ const dashboardController = new DashboardController();
  *           minimum: 0
  *           description: Total de pagamentos agendados
  *           example: 2450.00
- *     
+ *
  *     DashboardMetricsWithComparisons:
  *       allOf:
  *         - $ref: '#/components/schemas/DashboardMetrics'
@@ -71,7 +71,7 @@ const dashboardController = new DashboardController();
  *               type: string
  *               format: date-time
  *               description: Timestamp da última atualização dos dados
- *     
+ *
  *     DashboardChartData:
  *       type: object
  *       required:
@@ -95,7 +95,7 @@ const dashboardController = new DashboardController();
  *         lucro:
  *           type: number
  *           description: Lucro do dia (vendas - gastos)
- *     
+ *
  *     DashboardActivity:
  *       type: object
  *       required:

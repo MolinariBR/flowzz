@@ -1,12 +1,12 @@
 /**
  * Worker para gerar relatórios PDF/Excel
- * 
+ *
  * Referências:
  * - tasks.md: Task 10.1.3 - Bull queue worker para relatórios
  * - design.md: Background Jobs - Report Generation
  * - dev-stories.md: Dev Story 4.2 - Geração assíncrona de relatórios
  * - user-stories.md: Story 6.1 - Relatórios executivos
- * 
+ *
  * Fluxo:
  * 1. Recebe job com reportId, userId, type, format, filters
  * 2. Atualiza status para GENERATING
@@ -16,7 +16,7 @@
  * 6. Atualiza status para READY com file_url
  * 7. Envia email de notificação (se solicitado)
  * 8. Em caso de erro: atualiza status para ERROR
- * 
+ *
  * Configuração: timeout 5min, retry 3x, exponential backoff
  */
 
@@ -31,7 +31,7 @@ const reportService = new ReportService();
 
 /**
  * Processa job de geração de relatório
- * 
+ *
  * @param job - Job do Bull contendo configuração do relatório
  * @returns Promise com resultado da geração
  */
@@ -53,7 +53,7 @@ export async function processReportJob(job: Job<ReportJobData>): Promise<void> {
     // 1. Atualizar status para GENERATING
     await prisma.report.update({
       where: { id: reportId },
-      data: { 
+      data: {
         data: { status: 'GENERATING' },
       },
     });
@@ -66,48 +66,48 @@ export async function processReportJob(job: Job<ReportJobData>): Promise<void> {
       financialData: Awaited<ReturnType<typeof reportService.collectFinancialData>>;
       clientsData: Awaited<ReturnType<typeof reportService.collectClientsData>>;
     };
-    
-    let reportData: 
+
+    let reportData:
       | Awaited<ReturnType<typeof reportService.collectSalesData>>
       | Awaited<ReturnType<typeof reportService.collectFinancialData>>
       | Awaited<ReturnType<typeof reportService.collectClientsData>>
       | CustomReportData;
-    
+
     switch (type) {
-      case 'SALES_REPORT': {
-        reportData = await reportService.collectSalesData(userId, filters);
-        break;
-      }
-      
-      case 'FINANCIAL_SUMMARY': {
-        reportData = await reportService.collectFinancialData(userId, filters);
-        break;
-      }
-      
-      case 'CLIENT_ANALYSIS': {
-        reportData = await reportService.collectClientsData(userId, filters);
-        break;
-      }
-      
-      case 'PROJECTION_REPORT': {
-        // Para projeções, usar dados financeiros como base
-        reportData = await reportService.collectFinancialData(userId, filters);
-        break;
-      }
-      
-      case 'CUSTOM': {
-        // Para relatórios customizados, coletar múltiplos tipos de dados
-        const [salesData, financialData, clientsData] = await Promise.all([
-          reportService.collectSalesData(userId, filters),
-          reportService.collectFinancialData(userId, filters),
-          reportService.collectClientsData(userId, filters),
-        ]);
-        reportData = { salesData, financialData, clientsData };
-        break;
-      }
-      
-      default:
-        throw new Error(`Tipo de relatório desconhecido: ${type}`);
+    case 'SALES_REPORT': {
+      reportData = await reportService.collectSalesData(userId, filters);
+      break;
+    }
+
+    case 'FINANCIAL_SUMMARY': {
+      reportData = await reportService.collectFinancialData(userId, filters);
+      break;
+    }
+
+    case 'CLIENT_ANALYSIS': {
+      reportData = await reportService.collectClientsData(userId, filters);
+      break;
+    }
+
+    case 'PROJECTION_REPORT': {
+      // Para projeções, usar dados financeiros como base
+      reportData = await reportService.collectFinancialData(userId, filters);
+      break;
+    }
+
+    case 'CUSTOM': {
+      // Para relatórios customizados, coletar múltiplos tipos de dados
+      const [salesData, financialData, clientsData] = await Promise.all([
+        reportService.collectSalesData(userId, filters),
+        reportService.collectFinancialData(userId, filters),
+        reportService.collectClientsData(userId, filters),
+      ]);
+      reportData = { salesData, financialData, clientsData };
+      break;
+    }
+
+    default:
+      throw new Error(`Tipo de relatório desconhecido: ${type}`);
     }
 
     logger.info('Report data collected successfully', { reportId, type });
@@ -125,9 +125,9 @@ export async function processReportJob(job: Job<ReportJobData>): Promise<void> {
     let fileExtension: string;
 
     // Para CUSTOM, usar salesData como padrão
-    const dataForGeneration = (type === 'CUSTOM' && 'salesData' in reportData 
-      ? reportData.salesData 
-      : reportData) as 
+    const dataForGeneration = (type === 'CUSTOM' && 'salesData' in reportData
+      ? reportData.salesData
+      : reportData) as
         | Awaited<ReturnType<typeof reportService.collectSalesData>>
         | Awaited<ReturnType<typeof reportService.collectFinancialData>>
         | Awaited<ReturnType<typeof reportService.collectClientsData>>
@@ -143,9 +143,9 @@ export async function processReportJob(job: Job<ReportJobData>): Promise<void> {
       throw new Error(`Formato de relatório não suportado: ${format}`);
     }
 
-    logger.info('Report file generated successfully', { 
-      reportId, 
-      format, 
+    logger.info('Report file generated successfully', {
+      reportId,
+      format,
       fileSize: fileBuffer.length,
     });
 
@@ -158,8 +158,8 @@ export async function processReportJob(job: Job<ReportJobData>): Promise<void> {
       logger.info('Report file uploaded successfully', { reportId, fileUrl });
     } catch (uploadError) {
       // Se upload falhar, usar placeholder local temporário
-      logger.warn('File upload failed, using local placeholder', { 
-        reportId, 
+      logger.warn('File upload failed, using local placeholder', {
+        reportId,
         error: uploadError instanceof Error ? uploadError.message : 'Unknown error',
       });
       fileUrl = `/temp/reports/${filename}`;
@@ -189,9 +189,9 @@ export async function processReportJob(job: Job<ReportJobData>): Promise<void> {
         //   downloadUrl: fileUrl,
         //   expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         // });
-        
-        logger.info('Report ready email sent', { 
-          reportId, 
+
+        logger.info('Report ready email sent', {
+          reportId,
           recipients: emailRecipients,
         });
       } catch (emailError) {

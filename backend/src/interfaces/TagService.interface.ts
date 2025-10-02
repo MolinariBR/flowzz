@@ -1,6 +1,6 @@
 /**
  * Tag Service Interfaces
- * 
+ *
  * Referências:
  * - openapi.yaml: Tag schema (id, nome, cor)
  * - design.md: Clean Architecture + Repository Pattern

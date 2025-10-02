@@ -1,11 +1,11 @@
 /**
  * Coinzz Validators - Zod Schemas
- * 
+ *
  * Referências:
  * - webhookcoinzz.md: Estrutura dos webhooks
  * - tasks.md: Task 5.2 - Implementar CoinzzService
  * - design.md: Validation Strategy
- * 
+ *
  * Schemas de validação para integração Coinzz usando Zod
  */
 
@@ -166,7 +166,7 @@ export function mapCoinzzStatus(coinzzStatus: string): string {
 export function formatDocument(document: string): string {
   // Remove caracteres não numéricos
   const cleaned = document.replace(/\D/g, '');
-  
+
   // Retorna formatado com zeros à esquerda se necessário
   return cleaned.padStart(11, '0'); // Mínimo CPF
 }
@@ -177,7 +177,7 @@ export function formatDocument(document: string): string {
 export function formatCep(cep: string): string {
   // Remove caracteres não numéricos
   const cleaned = cep.replace(/\D/g, '');
-  
+
   // Retorna com 8 dígitos
   return cleaned.padStart(8, '0');
 }
@@ -199,11 +199,11 @@ export function parseCoinzzDate(dateString: string): Date {
 export function formatPhone(phone: string): string {
   // Remove caracteres não numéricos
   const cleaned = phone.replace(/\D/g, '');
-  
+
   // Se não começa com código do país, adiciona +55
   if (!cleaned.startsWith('55')) {
     return `+55${cleaned}`;
   }
-  
+
   return `+${cleaned}`;
 }

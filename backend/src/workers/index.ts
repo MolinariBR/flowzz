@@ -1,7 +1,7 @@
 /**
  * Workers Index
  * Centraliza inicialização e gerenciamento de todos os workers
- * 
+ *
  * Referências:
  * - tasks.md: Task 4.0.3 - Implementar workers
  * - design.md: Background Jobs

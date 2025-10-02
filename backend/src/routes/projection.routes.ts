@@ -1,8 +1,8 @@
 /**
  * Projection Routes
- * 
+ *
  * Rotas REST para endpoints de projeções financeiras
- * 
+ *
  * Referências:
  * - design.md: §Routes - REST endpoints com autenticação JWT
  * - tasks.md: Task 9.1.4 - Criar endpoints de projeções

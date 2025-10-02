@@ -1,8 +1,8 @@
 /**
  * Projection Validators
- * 
+ *
  * Schemas de validação Zod para endpoints de projeções financeiras
- * 
+ *
  * Referências:
  * - design.md: §Validation - Zod schemas compartilhados
  * - dev-stories.md: Dev Story 4.1 - Validação de queries
@@ -30,12 +30,12 @@ export const salesProjectionQuerySchema = z.object({
         required_error: 'Período é obrigatório',
         invalid_type_error: 'Período deve ser um número',
       })
-      .refine(
-        (val) => validProjectionPeriods.includes(val as typeof validProjectionPeriods[number]),
-        {
-          message: `Período deve ser um dos seguintes: ${validProjectionPeriods.join(', ')} dias`,
-        }
-      )
+        .refine(
+          (val) => validProjectionPeriods.includes(val as typeof validProjectionPeriods[number]),
+          {
+            message: `Período deve ser um dos seguintes: ${validProjectionPeriods.join(', ')} dias`,
+          },
+        ),
     ),
 });
 
@@ -52,12 +52,12 @@ export const cashflowProjectionQuerySchema = z.object({
         required_error: 'Período é obrigatório',
         invalid_type_error: 'Período deve ser um número',
       })
-      .refine(
-        (val) => validProjectionPeriods.includes(val as typeof validProjectionPeriods[number]),
-        {
-          message: `Período deve ser um dos seguintes: ${validProjectionPeriods.join(', ')} dias`,
-        }
-      )
+        .refine(
+          (val) => validProjectionPeriods.includes(val as typeof validProjectionPeriods[number]),
+          {
+            message: `Período deve ser um dos seguintes: ${validProjectionPeriods.join(', ')} dias`,
+          },
+        ),
     ),
 });
 

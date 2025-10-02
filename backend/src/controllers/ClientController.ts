@@ -3,11 +3,11 @@
 
 import type { Request, Response } from 'express';
 import { ClientService } from '../services/ClientService';
-import { 
-  clientFiltersSchema, 
-  clientParamsSchema, 
-  createClientSchema, 
-  updateClientSchema 
+import {
+  clientFiltersSchema,
+  clientParamsSchema,
+  createClientSchema,
+  updateClientSchema,
 } from '../validators/client.validator';
 
 interface AuthenticatedRequest extends Request {
@@ -34,33 +34,33 @@ export class ClientController {
 
       const validation = clientFiltersSchema.safeParse(req.query);
       if (!validation.success) {
-        res.status(400).json({ 
+        res.status(400).json({
           error: 'Parâmetros inválidos',
-          details: validation.error.errors
+          details: validation.error.errors,
         });
         return;
       }
 
       const { page, limit, search, status, tags } = validation.data;
-      
+
       const cleanFilters = {
         search: search || undefined,
         status: status || undefined,
-        tags: tags || undefined
+        tags: tags || undefined,
       };
 
       const result = await this.clientService.getClients(
         req.user.userId,
         page,
         limit,
-        cleanFilters
+        cleanFilters,
       );
 
       res.status(200).json(result);
     } catch (error) {
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Erro interno do servidor',
-        message: error instanceof Error ? error.message : 'Erro desconhecido'
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   };
@@ -75,9 +75,9 @@ export class ClientController {
 
       const validation = clientParamsSchema.safeParse(req.params);
       if (!validation.success) {
-        res.status(400).json({ 
+        res.status(400).json({
           error: 'ID inválido',
-          details: validation.error.errors
+          details: validation.error.errors,
         });
         return;
       }
@@ -98,9 +98,9 @@ export class ClientController {
         }
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Erro interno do servidor',
-        message: error instanceof Error ? error.message : 'Erro desconhecido'
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   };
@@ -115,15 +115,15 @@ export class ClientController {
 
       const validation = createClientSchema.safeParse(req.body);
       if (!validation.success) {
-        res.status(400).json({ 
+        res.status(400).json({
           error: 'Dados inválidos',
-          details: validation.error.errors
+          details: validation.error.errors,
         });
         return;
       }
 
       const clientData = validation.data;
-      
+
       // Convert optional fields to proper types
       const processedData = {
         name: clientData.name,
@@ -135,7 +135,7 @@ export class ClientController {
         state: clientData.state || undefined,
         cep: clientData.cep || undefined,
         status: clientData.status,
-        external_id: clientData.external_id || undefined
+        external_id: clientData.external_id || undefined,
       };
 
       const client = await this.clientService.createClient(processedData, req.user.userId);
@@ -143,16 +143,16 @@ export class ClientController {
       res.status(201).json(client);
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes('Já existe um cliente') || 
+        if (error.message.includes('Já existe um cliente') ||
             error.message.includes('inválido')) {
           res.status(400).json({ error: error.message });
           return;
         }
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Erro interno do servidor',
-        message: error instanceof Error ? error.message : 'Erro desconhecido'
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   };
@@ -167,18 +167,18 @@ export class ClientController {
 
       const paramsValidation = clientParamsSchema.safeParse(req.params);
       if (!paramsValidation.success) {
-        res.status(400).json({ 
+        res.status(400).json({
           error: 'ID inválido',
-          details: paramsValidation.error.errors
+          details: paramsValidation.error.errors,
         });
         return;
       }
 
       const bodyValidation = updateClientSchema.safeParse(req.body);
       if (!bodyValidation.success) {
-        res.status(400).json({ 
+        res.status(400).json({
           error: 'Dados inválidos',
-          details: bodyValidation.error.errors
+          details: bodyValidation.error.errors,
         });
         return;
       }
@@ -195,16 +195,16 @@ export class ClientController {
           res.status(403).json({ error: error.message });
           return;
         }
-        if (error.message.includes('Já existe um cliente') || 
+        if (error.message.includes('Já existe um cliente') ||
             error.message.includes('inválido')) {
           res.status(400).json({ error: error.message });
           return;
         }
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Erro interno do servidor',
-        message: error instanceof Error ? error.message : 'Erro desconhecido'
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   };
@@ -219,9 +219,9 @@ export class ClientController {
 
       const validation = clientParamsSchema.safeParse(req.params);
       if (!validation.success) {
-        res.status(400).json({ 
+        res.status(400).json({
           error: 'ID inválido',
-          details: validation.error.errors
+          details: validation.error.errors,
         });
         return;
       }
@@ -238,9 +238,9 @@ export class ClientController {
         }
       }
 
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Erro interno do servidor',
-        message: error instanceof Error ? error.message : 'Erro desconhecido'
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   };

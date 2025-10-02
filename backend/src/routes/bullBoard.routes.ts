@@ -1,10 +1,10 @@
 /**
  * Bull Board Dashboard Configuration
- * 
+ *
  * Referências:
  * - tasks.md: Task 4.0.4 - Configurar Bull Board
  * - design.md: Admin Tools - Queue Monitoring
- * 
+ *
  * Rota: GET /admin/queues
  * Acesso: Apenas ADMIN (protegido via authenticate middleware + role check)
  */
@@ -19,7 +19,7 @@ import { logger } from '../shared/utils/logger';
 
 /**
  * Cria e configura o router do Bull Board
- * 
+ *
  * @returns Express Router configurado com Bull Board
  */
 export function createBullBoardRouter(): Router {

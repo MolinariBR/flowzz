@@ -1,6 +1,6 @@
 /**
  * Tag Routes
- * 
+ *
  * Referências:
  * - openapi.yaml: Tag endpoints specification
  * - design.md: REST API patterns and middleware
@@ -28,7 +28,7 @@ router.use(authenticate);
  */
 router.get(
   '/',
-  (req, res) => tagController.getAll(req, res)
+  (req, res) => tagController.getAll(req, res),
 );
 
 /**
@@ -39,7 +39,7 @@ router.get(
  */
 router.post(
   '/',
-  (req, res) => tagController.create(req, res)
+  (req, res) => tagController.create(req, res),
 );
 
 /**
@@ -49,7 +49,7 @@ router.post(
  */
 router.get(
   '/:id',
-  (req, res) => tagController.getById(req, res)
+  (req, res) => tagController.getById(req, res),
 );
 
 /**
@@ -60,7 +60,7 @@ router.get(
  */
 router.put(
   '/:id',
-  (req, res) => tagController.update(req, res)
+  (req, res) => tagController.update(req, res),
 );
 
 /**
@@ -71,7 +71,7 @@ router.put(
  */
 router.delete(
   '/:id',
-  (req, res) => tagController.delete(req, res)
+  (req, res) => tagController.delete(req, res),
 );
 
 /**
@@ -81,7 +81,7 @@ router.delete(
  */
 router.get(
   '/:id/clients',
-  (req, res) => tagController.getClients(req, res)
+  (req, res) => tagController.getClients(req, res),
 );
 
 /**
@@ -89,7 +89,7 @@ router.get(
  * Adicionar tag a um cliente
  * Many-to-many association
  * Referência: tasks.md Task 3.2.2
- * 
+ *
  * Nota: Esta rota será registrada em client.routes.ts
  * Incluída aqui para referência
  */
@@ -99,7 +99,7 @@ router.get(
  * Remover tag de um cliente
  * Remove associação many-to-many
  * Referência: tasks.md Task 3.2.2
- * 
+ *
  * Nota: Esta rota será registrada em client.routes.ts
  * Incluída aqui para referência
  */

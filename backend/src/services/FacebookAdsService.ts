@@ -1,8 +1,8 @@
 /**
  * Facebook Ads Service
- * 
+ *
  * Implementação completa da integração com Facebook Marketing API
- * 
+ *
  * Features:
  * - OAuth 2.0 flow completo
  * - Busca de insights com rate limiting (200 req/hora)
@@ -10,7 +10,7 @@
  * - Cálculo de ROAS
  * - Sync automática via Bull queue (6h)
  * - Encryption AES-256 para tokens
- * 
+ *
  * Referências:
  * - design.md: Facebook Ads Marketing API Integration
  * - dev-stories.md: Dev Story 3.2
@@ -48,7 +48,7 @@ import {
 
 /**
  * FacebookAdsService
- * 
+ *
  * Serviço principal para integração com Facebook Marketing API v18+
  */
 export class FacebookAdsService implements IFacebookAdsService {
@@ -92,10 +92,10 @@ export class FacebookAdsService implements IFacebookAdsService {
       (response) => response,
       async (error) => {
         const config = error.config;
-        
+
         if (!config || !config._retry && shouldRetry(error)) {
           config._retry = (config._retry || 0) + 1;
-          
+
           if (config._retry <= 3) {
             const delay = Math.min(1000 * 2 ** config._retry, 8000); // Exponential backoff
             logger.warn('Facebook API error, retrying...', {
@@ -103,14 +103,14 @@ export class FacebookAdsService implements IFacebookAdsService {
               delay,
               error: error.message,
             });
-            
+
             await new Promise((resolve) => setTimeout(resolve, delay));
             return this.axiosInstance(config);
           }
         }
-        
+
         throw error;
-      }
+      },
     );
 
     logger.info('FacebookAdsService initialized');
@@ -150,7 +150,7 @@ export class FacebookAdsService implements IFacebookAdsService {
   async handleOAuthCallback(
     userId: string,
     code: string,
-    state?: string
+    state?: string,
   ): Promise<IFacebookIntegrationConfig> {
     try {
       // 1. Validar state parameter (CSRF protection)
@@ -170,14 +170,14 @@ export class FacebookAdsService implements IFacebookAdsService {
 
       // Usar primeira ad account por padrão
       const primaryAdAccount = adAccounts[0];
-      
+
       if (!primaryAdAccount) {
         throw new Error('No primary ad account found');
       }
 
       // 4. Verificar permissões
       const permissions = await this.getGrantedPermissions(tokenResponse.access_token);
-      
+
       if (!hasRequiredPermissions(permissions)) {
         throw new Error('Required permissions (ads_read, ads_management) not granted');
       }
@@ -320,7 +320,7 @@ export class FacebookAdsService implements IFacebookAdsService {
    */
   async getAdAccountInsights(
     userId: string,
-    params: FacebookInsightsParamsDTO
+    params: FacebookInsightsParamsDTO,
   ): Promise<FacebookInsightsDTO> {
     try {
       // 1. Verificar rate limit
@@ -329,7 +329,7 @@ export class FacebookAdsService implements IFacebookAdsService {
       // 2. Verificar cache
       const cacheKey = this.getCacheKey(userId, params);
       const cached = await this.redis.get(cacheKey);
-      
+
       if (cached) {
         logger.debug('Returning cached Facebook insights', { userId, cacheKey });
         return JSON.parse(cached);
@@ -354,7 +354,7 @@ export class FacebookAdsService implements IFacebookAdsService {
             level: params.level || 'account',
             time_increment: params.timeIncrement || 1,
           },
-        }
+        },
       );
 
       // 6. Processar insights
@@ -412,7 +412,7 @@ export class FacebookAdsService implements IFacebookAdsService {
    */
   async syncInsights(
     empresaId: string,
-    forceFullSync = false
+    forceFullSync = false,
   ): Promise<FacebookSyncResultDTO> {
     try {
       logger.info('Starting Facebook insights sync', { empresaId, forceFullSync });
@@ -459,7 +459,7 @@ export class FacebookAdsService implements IFacebookAdsService {
       // - platform enum (FACEBOOK, GOOGLE, etc)
       // - conversions field
       // - Unique constraint user_id + external_id + date
-      
+
       logger.info('Facebook insights fetched (persistence pending schema update)', {
         empresaId,
         insightsSynced,
@@ -514,7 +514,7 @@ export class FacebookAdsService implements IFacebookAdsService {
   async calculateROAS(
     empresaId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<number> {
     try {
       // 1. Buscar receita de vendas no período
@@ -607,11 +607,11 @@ export class FacebookAdsService implements IFacebookAdsService {
         permissions: config.permissions,
         syncEnabled: true,
       };
-      
+
       if (config.lastSyncAt) {
         result.lastSyncAt = config.lastSyncAt;
       }
-      
+
       return result;
     } catch (error) {
       logger.error('Failed to get Facebook status', {
@@ -655,7 +655,7 @@ export class FacebookAdsService implements IFacebookAdsService {
         valid: true,
         permissions,
       };
-      
+
       if (adAccounts[0]?.account_id) {
         result.adAccountId = adAccounts[0].account_id;
       }
@@ -665,7 +665,7 @@ export class FacebookAdsService implements IFacebookAdsService {
       if (config?.tokenExpiresAt) {
         result.expiresAt = config.tokenExpiresAt;
       }
-      
+
       return result;
     } catch (error) {
       logger.error('Facebook connection test failed', {
@@ -721,10 +721,10 @@ export class FacebookAdsService implements IFacebookAdsService {
   encryptToken(token: string): string {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(this.ENCRYPTION_ALGORITHM, this.ENCRYPTION_KEY, iv);
-    
+
     let encrypted = cipher.update(token, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     return `${iv.toString('hex')}:${encrypted}`;
   }
 
@@ -733,19 +733,19 @@ export class FacebookAdsService implements IFacebookAdsService {
    */
   decryptToken(encryptedToken: string): string {
     const parts = encryptedToken.split(':');
-    
+
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
       throw new Error('Invalid encrypted token format');
     }
-    
+
     const iv = Buffer.from(parts[0], 'hex');
     const encrypted = parts[1];
-    
+
     const decipher = crypto.createDecipheriv(this.ENCRYPTION_ALGORITHM, this.ENCRYPTION_KEY, iv);
-    
+
     let decrypted: string = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 
@@ -767,18 +767,24 @@ export class FacebookAdsService implements IFacebookAdsService {
     try {
       const decoded = Buffer.from(state, 'base64').toString('utf8');
       const parts = decoded.split(':');
-      
-      if (parts.length !== 3 || !parts[0] || !parts[1]) return false;
-      
+
+      if (parts.length !== 3 || !parts[0] || !parts[1]) {
+        return false;
+      }
+
       const [stateUserId, timestamp] = parts;
-      
+
       // Verificar userId
-      if (stateUserId !== userId) return false;
-      
+      if (stateUserId !== userId) {
+        return false;
+      }
+
       // Verificar se state não expirou (15 minutos)
       const stateAge = Date.now() - parseInt(timestamp, 10);
-      if (stateAge > 15 * 60 * 1000) return false;
-      
+      if (stateAge > 15 * 60 * 1000) {
+        return false;
+      }
+
       return true;
     } catch {
       return false;
@@ -824,7 +830,7 @@ export class FacebookAdsService implements IFacebookAdsService {
         '/me/permissions',
         {
           params: { access_token: accessToken },
-        }
+        },
       );
 
       return response.data.data
@@ -849,7 +855,7 @@ export class FacebookAdsService implements IFacebookAdsService {
             fields: 'id,name,status,objective,daily_budget,lifetime_budget,created_time,updated_time',
             limit: 100,
           },
-        }
+        },
       );
 
       return response.data.data;
@@ -957,7 +963,7 @@ export class FacebookAdsService implements IFacebookAdsService {
     const dateKey = params.startDate && params.endDate
       ? `${params.startDate}_${params.endDate}`
       : params.datePreset || 'last_30d';
-    
+
     return `${this.CACHE_KEY_PREFIX}${userId}:${params.adAccountId}:${dateKey}:${params.level || 'account'}`;
   }
 

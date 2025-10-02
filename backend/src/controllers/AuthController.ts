@@ -14,7 +14,7 @@ import {
   type RegisterData,
   type LoginData,
   type RefreshTokenData,
-  type LogoutData
+  type LogoutData,
 } from '../shared/schemas/auth';
 
 export class AuthController {
@@ -35,15 +35,15 @@ export class AuthController {
     try {
       // Validate request body
       const validationResult = registerSchema.safeParse(req.body);
-      
+
       if (!validationResult.success) {
         res.status(400).json({
           error: 'Validation failed',
           message: 'Dados inválidos',
           details: validationResult.error.issues.map(issue => ({
             field: issue.path.join('.'),
-            message: issue.message
-          }))
+            message: issue.message,
+          })),
         });
         return;
       }
@@ -54,12 +54,12 @@ export class AuthController {
       const result = await this.authService.register({
         email: data.email,
         password: data.password,
-        nome: data.nome
+        nome: data.nome,
       });
 
-      logger.info('User registered successfully', { 
+      logger.info('User registered successfully', {
         userId: result.user.id,
-        email: result.user.email 
+        email: result.user.email,
       });
 
       // Return user data without password hash
@@ -69,8 +69,8 @@ export class AuthController {
         message: 'Usuário cadastrado com sucesso',
         data: {
           user: userWithoutPassword,
-          tokens: result.tokens
-        }
+          tokens: result.tokens,
+        },
       });
     } catch (error) {
       logger.error('Registration failed', { error, body: req.body });
@@ -79,7 +79,7 @@ export class AuthController {
         if (error.message === 'User with this email already exists') {
           res.status(409).json({
             error: 'Conflict',
-            message: 'Usuário com este email já existe'
+            message: 'Usuário com este email já existe',
           });
           return;
         }
@@ -87,7 +87,7 @@ export class AuthController {
 
       res.status(500).json({
         error: 'Internal Server Error',
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   }
@@ -101,15 +101,15 @@ export class AuthController {
     try {
       // Validate request body
       const validationResult = loginSchema.safeParse(req.body);
-      
+
       if (!validationResult.success) {
         res.status(400).json({
           error: 'Validation failed',
           message: 'Dados inválidos',
           details: validationResult.error.issues.map(issue => ({
             field: issue.path.join('.'),
-            message: issue.message
-          }))
+            message: issue.message,
+          })),
         });
         return;
       }
@@ -119,12 +119,12 @@ export class AuthController {
       // Login user
       const result = await this.authService.login({
         email: data.email,
-        password: data.password
+        password: data.password,
       });
 
-      logger.info('User logged in successfully', { 
+      logger.info('User logged in successfully', {
         userId: result.user.id,
-        email: result.user.email 
+        email: result.user.email,
       });
 
       // Return user data without password hash
@@ -134,8 +134,8 @@ export class AuthController {
         message: 'Login realizado com sucesso',
         data: {
           user: userWithoutPassword,
-          tokens: result.tokens
-        }
+          tokens: result.tokens,
+        },
       });
     } catch (error) {
       logger.error('Login failed', { error, email: req.body?.email });
@@ -144,7 +144,7 @@ export class AuthController {
         if (error.message === 'Invalid credentials') {
           res.status(401).json({
             error: 'Unauthorized',
-            message: 'Email ou senha inválidos'
+            message: 'Email ou senha inválidos',
           });
           return;
         }
@@ -152,7 +152,7 @@ export class AuthController {
         if (error.message === 'Account is suspended') {
           res.status(403).json({
             error: 'Forbidden',
-            message: 'Conta suspensa'
+            message: 'Conta suspensa',
           });
           return;
         }
@@ -160,7 +160,7 @@ export class AuthController {
 
       res.status(500).json({
         error: 'Internal Server Error',
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   }
@@ -174,15 +174,15 @@ export class AuthController {
     try {
       // Validate request body
       const validationResult = refreshTokenSchema.safeParse(req.body);
-      
+
       if (!validationResult.success) {
         res.status(400).json({
           error: 'Validation failed',
           message: 'Dados inválidos',
           details: validationResult.error.issues.map(issue => ({
             field: issue.path.join('.'),
-            message: issue.message
-          }))
+            message: issue.message,
+          })),
         });
         return;
       }
@@ -197,19 +197,19 @@ export class AuthController {
       res.status(200).json({
         message: 'Token renovado com sucesso',
         data: {
-          accessToken: newAccessToken
-        }
+          accessToken: newAccessToken,
+        },
       });
     } catch (error) {
       logger.error('Token refresh failed', { error });
 
       if (error instanceof Error) {
-        if (error.message.includes('Invalid refresh token') || 
+        if (error.message.includes('Invalid refresh token') ||
             error.message.includes('Refresh token expired') ||
             error.message.includes('Account is suspended')) {
           res.status(401).json({
             error: 'Unauthorized',
-            message: 'Refresh token inválido ou expirado'
+            message: 'Refresh token inválido ou expirado',
           });
           return;
         }
@@ -217,7 +217,7 @@ export class AuthController {
 
       res.status(500).json({
         error: 'Internal Server Error',
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   }
@@ -231,15 +231,15 @@ export class AuthController {
     try {
       // Validate request body
       const validationResult = logoutSchema.safeParse(req.body);
-      
+
       if (!validationResult.success) {
         res.status(400).json({
           error: 'Validation failed',
           message: 'Dados inválidos',
           details: validationResult.error.issues.map(issue => ({
             field: issue.path.join('.'),
-            message: issue.message
-          }))
+            message: issue.message,
+          })),
         });
         return;
       }
@@ -252,14 +252,14 @@ export class AuthController {
       logger.info('User logged out successfully');
 
       res.status(200).json({
-        message: 'Logout realizado com sucesso'
+        message: 'Logout realizado com sucesso',
       });
     } catch (error) {
       logger.error('Logout failed', { error });
 
       res.status(500).json({
         error: 'Internal Server Error',
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   }
@@ -274,7 +274,7 @@ export class AuthController {
       if (!req.user) {
         res.status(401).json({
           error: 'Unauthorized',
-          message: 'Token inválido'
+          message: 'Token inválido',
         });
         return;
       }
@@ -285,7 +285,7 @@ export class AuthController {
       if (!user) {
         res.status(404).json({
           error: 'Not Found',
-          message: 'Usuário não encontrado'
+          message: 'Usuário não encontrado',
         });
         return;
       }
@@ -293,7 +293,7 @@ export class AuthController {
       if (!user.is_active) {
         res.status(403).json({
           error: 'Forbidden',
-          message: 'Conta suspensa'
+          message: 'Conta suspensa',
         });
         return;
       }
@@ -306,15 +306,15 @@ export class AuthController {
       res.status(200).json({
         message: 'Dados do usuário obtidos com sucesso',
         data: {
-          user: userWithoutPassword
-        }
+          user: userWithoutPassword,
+        },
       });
     } catch (error) {
       logger.error('Failed to get user data', { error, userId: req.user?.userId });
 
       res.status(500).json({
         error: 'Internal Server Error',
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   }
@@ -329,7 +329,7 @@ export class AuthController {
       if (!req.user?.userId) {
         res.status(401).json({
           error: 'Unauthorized',
-          message: 'Usuário não autenticado'
+          message: 'Usuário não autenticado',
         });
         return;
       }
@@ -338,14 +338,14 @@ export class AuthController {
 
       res.status(200).json({
         message: 'Status do trial obtido com sucesso',
-        data: trialStatus
+        data: trialStatus,
       });
     } catch (error) {
       logger.error('Failed to get trial status', { error, userId: req.user?.userId });
 
       res.status(500).json({
         error: 'Internal Server Error',
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   }
@@ -360,7 +360,7 @@ export class AuthController {
       if (!req.user?.userId) {
         res.status(401).json({
           error: 'Unauthorized',
-          message: 'Usuário não autenticado'
+          message: 'Usuário não autenticado',
         });
         return;
       }
@@ -369,14 +369,14 @@ export class AuthController {
 
       res.status(200).json({
         message: 'Informações da assinatura obtidas com sucesso',
-        data: subscriptionInfo
+        data: subscriptionInfo,
       });
     } catch (error) {
       logger.error('Failed to get subscription info', { error, userId: req.user?.userId });
 
       res.status(500).json({
         error: 'Internal Server Error',
-        message: 'Erro interno do servidor'
+        message: 'Erro interno do servidor',
       });
     }
   }

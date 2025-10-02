@@ -1,10 +1,10 @@
 /**
  * Health Check Routes
- * 
+ *
  * Referências:
  * - tasks.md: Task 4.0.5 - Criar health check endpoint
  * - design.md: Health Monitoring
- * 
+ *
  * Rota: GET /health/queues
  * Acesso: Público (para monitoramento externo)
  */
@@ -51,7 +51,7 @@ interface HealthCheckResponse {
 /**
  * GET /health/queues
  * Verifica saúde de todas as queues e Redis
- * 
+ *
  * Referência: tasks.md Task 4.0.5
  */
 router.get('/queues', async (_req: Request, res: Response) => {
@@ -59,7 +59,7 @@ router.get('/queues', async (_req: Request, res: Response) => {
     const queueHealthChecks = await Promise.all(
       allQueues.map(async (queue) => {
         const isHealthy = await checkQueueHealth(queue);
-        
+
         // Get queue stats
         const [waiting, active, completed, failed, delayed, isPaused] = await Promise.all([
           queue.getWaitingCount(),
@@ -82,7 +82,7 @@ router.get('/queues', async (_req: Request, res: Response) => {
             paused: isPaused,
           },
         };
-      })
+      }),
     );
 
     const healthyCount = queueHealthChecks.filter((q) => q.healthy).length;
@@ -140,7 +140,7 @@ router.get('/queues', async (_req: Request, res: Response) => {
 /**
  * GET /health/storage
  * Verifica saúde do serviço de storage (S3/R2)
- * 
+ *
  * Referência: tasks.md Task 10.1.5 - Storage health check
  */
 router.get('/storage', async (_req: Request, res: Response) => {

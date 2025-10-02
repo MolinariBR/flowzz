@@ -1,8 +1,8 @@
 /**
  * Facebook Ads Validation Schemas
- * 
+ *
  * Zod schemas para validação de inputs da integração Facebook Ads
- * 
+ *
  * Referências:
  * - design.md: Validation with Zod
  * - dev-stories.md: Dev Story 3.2 - Facebook Integration
@@ -37,7 +37,7 @@ export type FacebookConnectInput = z.infer<typeof facebookConnectSchema>;
 /**
  * Schema: Get Insights Parameters
  * Validação dos parâmetros para buscar insights
- * 
+ *
  * Referência: dev-stories.md - getInsights method
  */
 export const facebookInsightsParamsSchema = z.object({
@@ -59,17 +59,23 @@ export const facebookInsightsParamsSchema = z.object({
 }).refine(
   (data) => {
     // Se startDate fornecido, endDate também deve ser fornecido
-    if (data.startDate && !data.endDate) return false;
-    if (data.endDate && !data.startDate) return false;
-    
+    if (data.startDate && !data.endDate) {
+      return false;
+    }
+    if (data.endDate && !data.startDate) {
+      return false;
+    }
+
     // Não pode usar datePreset junto com startDate/endDate
-    if (data.datePreset && data.startDate) return false;
-    
+    if (data.datePreset && data.startDate) {
+      return false;
+    }
+
     return true;
   },
   {
     message: 'Use either datePreset OR (startDate + endDate), not both',
-  }
+  },
 ).refine(
   (data) => {
     // Validar que startDate < endDate
@@ -82,7 +88,7 @@ export const facebookInsightsParamsSchema = z.object({
   },
   {
     message: 'Start date must be before or equal to end date',
-  }
+  },
 );
 
 export type FacebookInsightsParamsInput = z.infer<typeof facebookInsightsParamsSchema>;
@@ -178,63 +184,63 @@ export function formatDateForFacebook(date: Date): string {
 export function getDateRangeFromPreset(preset: string): { startDate: string; endDate: string } {
   const now = new Date();
   const today = formatDateForFacebook(now);
-  
+
   let startDate: string;
   const endDate = today;
 
   switch (preset) {
-    case 'today':
-      startDate = today;
-      break;
-    case 'yesterday': {
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      startDate = formatDateForFacebook(yesterday);
-      break;
-    }
-    case 'last_7d': {
-      const last7d = new Date(now);
-      last7d.setDate(last7d.getDate() - 7);
-      startDate = formatDateForFacebook(last7d);
-      break;
-    }
-    case 'last_14d': {
-      const last14d = new Date(now);
-      last14d.setDate(last14d.getDate() - 14);
-      startDate = formatDateForFacebook(last14d);
-      break;
-    }
-    case 'last_30d': {
-      const last30d = new Date(now);
-      last30d.setDate(last30d.getDate() - 30);
-      startDate = formatDateForFacebook(last30d);
-      break;
-    }
-    case 'last_90d': {
-      const last90d = new Date(now);
-      last90d.setDate(last90d.getDate() - 90);
-      startDate = formatDateForFacebook(last90d);
-      break;
-    }
-    case 'this_month': {
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      startDate = formatDateForFacebook(firstDayOfMonth);
-      break;
-    }
-    case 'last_month': {
-      const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-      startDate = formatDateForFacebook(firstDayOfLastMonth);
-      // Para last_month, endDate é o último dia do mês passado
-      return { startDate, endDate: formatDateForFacebook(lastDayOfLastMonth) };
-    }
-    default: {
-      // Default: last 30 days
-      const defaultStart = new Date(now);
-      defaultStart.setDate(defaultStart.getDate() - 30);
-      startDate = formatDateForFacebook(defaultStart);
-      break;
-    }
+  case 'today':
+    startDate = today;
+    break;
+  case 'yesterday': {
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    startDate = formatDateForFacebook(yesterday);
+    break;
+  }
+  case 'last_7d': {
+    const last7d = new Date(now);
+    last7d.setDate(last7d.getDate() - 7);
+    startDate = formatDateForFacebook(last7d);
+    break;
+  }
+  case 'last_14d': {
+    const last14d = new Date(now);
+    last14d.setDate(last14d.getDate() - 14);
+    startDate = formatDateForFacebook(last14d);
+    break;
+  }
+  case 'last_30d': {
+    const last30d = new Date(now);
+    last30d.setDate(last30d.getDate() - 30);
+    startDate = formatDateForFacebook(last30d);
+    break;
+  }
+  case 'last_90d': {
+    const last90d = new Date(now);
+    last90d.setDate(last90d.getDate() - 90);
+    startDate = formatDateForFacebook(last90d);
+    break;
+  }
+  case 'this_month': {
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    startDate = formatDateForFacebook(firstDayOfMonth);
+    break;
+  }
+  case 'last_month': {
+    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    startDate = formatDateForFacebook(firstDayOfLastMonth);
+    // Para last_month, endDate é o último dia do mês passado
+    return { startDate, endDate: formatDateForFacebook(lastDayOfLastMonth) };
+  }
+  default: {
+    // Default: last 30 days
+    const defaultStart = new Date(now);
+    defaultStart.setDate(defaultStart.getDate() - 30);
+    startDate = formatDateForFacebook(defaultStart);
+    break;
+  }
   }
 
   return { startDate, endDate };
@@ -246,8 +252,12 @@ export function getDateRangeFromPreset(preset: string): { startDate: string; end
  */
 export function sanitizeFacebookMetrics(metrics: Record<string, string | number>): Record<string, number> {
   const toNumber = (value: string | number | undefined, defaultValue = 0): number => {
-    if (typeof value === 'number') return value;
-    if (typeof value === 'string') return parseFloat(value) || defaultValue;
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      return parseFloat(value) || defaultValue;
+    }
     return defaultValue;
   };
 
@@ -267,7 +277,9 @@ export function sanitizeFacebookMetrics(metrics: Record<string, string | number>
  * Facebook retorna actions como array de objetos
  */
 export function extractConversions(actions?: Array<{ action_type: string; value: string }>): number {
-  if (!actions || !Array.isArray(actions)) return 0;
+  if (!actions || !Array.isArray(actions)) {
+    return 0;
+  }
 
   const conversionTypes = [
     'offsite_conversion.fb_pixel_purchase',
@@ -294,9 +306,9 @@ export function extractConversions(actions?: Array<{ action_type: string; value:
  */
 export function hasRequiredPermissions(grantedPermissions: string[]): boolean {
   const requiredPermissions = ['ads_read', 'ads_management'];
-  
+
   return requiredPermissions.every((permission) =>
-    grantedPermissions.includes(permission)
+    grantedPermissions.includes(permission),
   );
 }
 

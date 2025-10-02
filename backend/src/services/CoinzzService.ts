@@ -1,12 +1,12 @@
 /**
  * Coinzz Service - Business Logic
- * 
+ *
  * Referências:
  * - tasks.md: Task 5.2 - Implementar CoinzzService
  * - user-stories.md: Story 1.3 - Sincronizar vendas automaticamente
  * - design.md: External Integrations - Coinzz, Security
  * - webhookcoinzz.md: Estrutura completa dos webhooks
- * 
+ *
  * Service responsável por toda a lógica de integração    const existingClient = await this.prisma.client.findFirst({
       where: {
         user_id: userId,
@@ -45,7 +45,7 @@ import {
 
 /**
  * CoinzzService Implementation
- * 
+ *
  * Padrão: Service Layer (Clean Architecture)
  * Dependências: PrismaClient injetado via constructor
  */
@@ -56,11 +56,11 @@ export class CoinzzService implements ICoinzzService {
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
-    
+
     // Encryption key deve estar em .env
     // Referência: design.md §Security - AES-256 encryption
     this.encryptionKey = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
-    
+
     if (this.encryptionKey === 'default-key-change-in-production') {
       logger.warn('⚠️ ENCRYPTION_KEY não configurada, usando chave padrão (INSEGURO)');
     }
@@ -68,7 +68,7 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Conecta integração Coinzz
-   * 
+   *
    * Referências:
    * - tasks.md: Task 5.2.1, 5.2.5
    * - user-stories.md: Story 1.3 Cenário 1
@@ -78,7 +78,7 @@ export class CoinzzService implements ICoinzzService {
 
     // 1. Testar conexão com API Key fornecida
     const testResult = await this.testConnection(dto.apiKey);
-    
+
     if (!testResult.connected) {
       logger.error('Coinzz connection test failed', { userId, error: testResult.message });
       throw new Error(`Falha ao conectar com Coinzz: ${testResult.message}`);
@@ -108,16 +108,16 @@ export class CoinzzService implements ICoinzzService {
       },
     });
 
-    type IntegrationRecord = { 
-      id: string; 
-      user_id: string; 
-      status: string; 
-      config: unknown; 
-      last_sync: Date | null; 
-      created_at: Date; 
-      updated_at: Date 
+    type IntegrationRecord = {
+      id: string;
+      user_id: string;
+      status: string;
+      config: unknown;
+      last_sync: Date | null;
+      created_at: Date;
+      updated_at: Date
     };
-    
+
     let integration: IntegrationRecord;
 
     if (existingIntegration) {
@@ -176,11 +176,11 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Testa conexão com Coinzz usando API Key
-   * 
+   *
    * Referências:
    * - tasks.md: Task 5.2.1
    * - design.md: External Integrations - Coinzz
-   * 
+   *
    * NOTA: A API real do Coinzz será implementada quando documentação estiver disponível
    * Por ora, retorna mock de sucesso se API Key tem formato válido
    */
@@ -197,10 +197,10 @@ export class CoinzzService implements ICoinzzService {
 
     // TODO: Quando API Coinzz estiver documentada, implementar chamada real
     // Exemplo: const response = await fetch('https://api.coinzz.com/v1/validate', ...)
-    
+
     // Por ora, retorna sucesso para permitir desenvolvimento
     logger.info('Coinzz connection test successful (mock)');
-    
+
     return {
       connected: true,
       message: 'Conexão bem-sucedida com Coinzz',
@@ -211,7 +211,7 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Desconecta integração Coinzz
-   * 
+   *
    * Referências:
    * - tasks.md: Task 5.2.5 - POST /integrations/coinzz/disconnect
    */
@@ -242,7 +242,7 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Obtém status atual da integração
-   * 
+   *
    * Referências:
    * - tasks.md: Task 5.2.5 - GET /integrations/coinzz/status
    */
@@ -282,12 +282,12 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Sincroniza vendas do Coinzz
-   * 
+   *
    * Referências:
    * - tasks.md: Task 5.2.2, 5.2.4
    * - user-stories.md: Story 1.3 - Sincronizar vendas automaticamente
    * - design.md: Cache Layer - Redis 1h TTL
-   * 
+   *
    * NOTA: Implementação mock até API real estar disponível
    */
   async syncSales(userId: string, forceFullSync = false): Promise<SyncResultDTO> {
@@ -306,14 +306,14 @@ export class CoinzzService implements ICoinzzService {
     }
 
     const config = integration.config as unknown as ICoinzzIntegrationConfig;
-    
+
     // Decriptar API key para usar na sincronização
     const _apiKey = this.decryptApiKey(config.apiKey);
 
     // TODO: Implementar chamada real à API Coinzz quando documentação estiver disponível
     // Por ora, retorna mock de sucesso
     // Exemplo: const sales = await coinzzAPI.getSales(_apiKey, { since: lastSync })
-    
+
     logger.info('Coinzz sync completed (mock)', { userId });
 
     // Atualizar última sincronização
@@ -336,7 +336,7 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Processa webhook de pedido do Coinzz
-   * 
+   *
    * Referências:
    * - tasks.md: Task 5.2.3
    * - webhookcoinzz.md: Webhook de Pedidos
@@ -437,7 +437,7 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Processa webhook de assinatura do Coinzz
-   * 
+   *
    * Referências:
    * - webhookcoinzz.md: Webhook de Assinaturas
    */
@@ -460,7 +460,7 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Mapeia dados do webhook Coinzz para modelo Sale
-   * 
+   *
    * Referências:
    * - tasks.md: Task 5.2.2
    * - webhookcoinzz.md: Estrutura completa
@@ -550,7 +550,7 @@ export class CoinzzService implements ICoinzzService {
 
   /**
    * Criptografa API Key com AES-256
-   * 
+   *
    * Referências:
    * - tasks.md: Task 5.2.1
    * - design.md: Security - AES-256 encryption
@@ -575,10 +575,10 @@ export class CoinzzService implements ICoinzzService {
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
       throw new Error('Formato inválido de API key criptografada');
     }
-    
+
     const ivHex = parts[0];
     const encrypted = parts[1];
-    
+
     const iv = Buffer.from(ivHex, 'hex');
     const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
     const decipher = crypto.createDecipheriv(this.encryptionAlgorithm, key, iv);

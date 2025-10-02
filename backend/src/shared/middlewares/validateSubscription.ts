@@ -14,7 +14,7 @@ export const validateSubscription = async (req: Request, res: Response, next: Ne
     if (!req.user?.userId) {
       res.status(401).json({
         error: 'Unauthorized',
-        message: 'User authentication required'
+        message: 'User authentication required',
       });
       return;
     }
@@ -26,14 +26,14 @@ export const validateSubscription = async (req: Request, res: Response, next: Ne
         id: true,
         subscription_status: true,
         trial_ends_at: true,
-        is_active: true
-      }
+        is_active: true,
+      },
     });
 
     if (!user) {
       res.status(404).json({
         error: 'User not found',
-        message: 'User account not found'
+        message: 'User account not found',
       });
       return;
     }
@@ -42,60 +42,60 @@ export const validateSubscription = async (req: Request, res: Response, next: Ne
     if (!user.is_active) {
       res.status(403).json({
         error: 'Account suspended',
-        message: 'Your account has been suspended. Contact support.'
+        message: 'Your account has been suspended. Contact support.',
       });
       return;
     }
 
     // Check subscription status
     const now = new Date();
-    
+
     switch (user.subscription_status) {
-      case 'ACTIVE':
-        // User has active paid subscription
-        next();
-        return;
-        
-      case 'TRIAL':
-        // Check if trial has expired
-        if (user.trial_ends_at && user.trial_ends_at < now) {
-          res.status(402).json({
-            error: 'Trial expired',
-            message: 'Your 7-day trial has expired. Please upgrade to continue using Flowzz.',
-            trial_ended_at: user.trial_ends_at.toISOString(),
-            upgrade_url: '/upgrade'
-          });
-          return;
-        }
-        
-        // Trial is still active
-        next();
-        return;
-        
-      case 'CANCELED':
-      case 'UNPAID':
-      case 'PAST_DUE':
+    case 'ACTIVE':
+      // User has active paid subscription
+      next();
+      return;
+
+    case 'TRIAL':
+      // Check if trial has expired
+      if (user.trial_ends_at && user.trial_ends_at < now) {
         res.status(402).json({
-          error: 'Payment required',
-          message: 'Your subscription is inactive. Please update your payment method to continue.',
-          status: user.subscription_status.toLowerCase(),
-          upgrade_url: '/billing'
+          error: 'Trial expired',
+          message: 'Your 7-day trial has expired. Please upgrade to continue using Flowzz.',
+          trial_ended_at: user.trial_ends_at.toISOString(),
+          upgrade_url: '/upgrade',
         });
         return;
-        
-      default:
-        res.status(402).json({
-          error: 'Subscription required',
-          message: 'Please activate a subscription to access this feature.',
-          upgrade_url: '/upgrade'
-        });
-        return;
+      }
+
+      // Trial is still active
+      next();
+      return;
+
+    case 'CANCELED':
+    case 'UNPAID':
+    case 'PAST_DUE':
+      res.status(402).json({
+        error: 'Payment required',
+        message: 'Your subscription is inactive. Please update your payment method to continue.',
+        status: user.subscription_status.toLowerCase(),
+        upgrade_url: '/billing',
+      });
+      return;
+
+    default:
+      res.status(402).json({
+        error: 'Subscription required',
+        message: 'Please activate a subscription to access this feature.',
+        upgrade_url: '/upgrade',
+      });
+      return;
     }
   } catch (error) {
     console.error('Subscription validation error:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: 'Failed to validate subscription status'
+      message: 'Failed to validate subscription status',
     });
   }
 };
@@ -109,7 +109,7 @@ export const validateSubscriptionWithWarning = async (req: Request, res: Respons
     if (!req.user?.userId) {
       res.status(401).json({
         error: 'Unauthorized',
-        message: 'User authentication required'
+        message: 'User authentication required',
       });
       return;
     }
@@ -120,14 +120,14 @@ export const validateSubscriptionWithWarning = async (req: Request, res: Respons
         id: true,
         subscription_status: true,
         trial_ends_at: true,
-        is_active: true
-      }
+        is_active: true,
+      },
     });
 
     if (!user || !user.is_active) {
       res.status(403).json({
         error: 'Account inactive',
-        message: 'Your account is not active'
+        message: 'Your account is not active',
       });
       return;
     }
@@ -137,7 +137,7 @@ export const validateSubscriptionWithWarning = async (req: Request, res: Respons
       const daysLeft = Math.ceil((user.trial_ends_at.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       res.setHeader('X-Trial-Days-Left', daysLeft.toString());
       res.setHeader('X-Trial-Ends-At', user.trial_ends_at.toISOString());
-      
+
       if (daysLeft <= 2) {
         res.setHeader('X-Trial-Warning', 'true');
       }
@@ -149,7 +149,7 @@ export const validateSubscriptionWithWarning = async (req: Request, res: Respons
     console.error('Subscription validation error:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: 'Failed to validate subscription status'
+      message: 'Failed to validate subscription status',
     });
   }
 };

@@ -1,13 +1,13 @@
 /**
  * Coinzz Controller - HTTP Handlers
- * 
+ *
  * Gerencia requisições HTTP relacionadas à integração com Coinzz
- * 
+ *
  * Referências:
  * - tasks.md: Task 5.2.5
  * - implement.md: §3 Controllers - Request validation, error handling, response formatting
  * - openapi.yaml: API Spec
- * 
+ *
  * @autor Flowzz Team
  * @data 2025-01-13
  */
@@ -19,7 +19,7 @@ import logger from '../shared/utils/logger';
 
 /**
  * CoinzzController - Handlers para endpoints de integração Coinzz
- * 
+ *
  * Endpoints:
  * - POST /integrations/coinzz/connect - Conectar integração
  * - GET /integrations/coinzz/status - Obter status da integração
@@ -31,12 +31,12 @@ export class CoinzzController {
 
   /**
    * POST /integrations/coinzz/connect
-   * 
+   *
    * Conecta ou atualiza integração com Coinzz
-   * 
+   *
    * Body: { apiKey: string, webhookUrl?: string }
    * Response: CoinzzStatusDTO
-   * 
+   *
    * Referência: tasks.md Task 5.2.1
    */
   async connect(req: Request, res: Response): Promise<void> {
@@ -83,11 +83,11 @@ export class CoinzzController {
 
   /**
    * GET /integrations/coinzz/status
-   * 
+   *
    * Retorna status atual da integração Coinzz
-   * 
+   *
    * Response: CoinzzStatusDTO
-   * 
+   *
    * Referência: tasks.md Task 5.2.5
    */
   async getStatus(req: Request, res: Response): Promise<void> {
@@ -114,12 +114,12 @@ export class CoinzzController {
 
   /**
    * POST /integrations/coinzz/sync
-   * 
+   *
    * Sincroniza manualmente vendas do Coinzz
-   * 
+   *
    * Body: { forceFullSync?: boolean }
    * Response: SyncResultDTO
-   * 
+   *
    * Referência: tasks.md Task 5.2.4
    */
   async syncManual(req: Request, res: Response): Promise<void> {
@@ -163,11 +163,11 @@ export class CoinzzController {
 
   /**
    * POST /integrations/coinzz/disconnect
-   * 
+   *
    * Desconecta integração com Coinzz
-   * 
+   *
    * Response: { success: true }
-   * 
+   *
    * Referência: tasks.md Task 5.2.5
    */
   async disconnect(req: Request, res: Response): Promise<void> {
@@ -196,7 +196,7 @@ export class CoinzzController {
 
   /**
    * Tratamento centralizado de erros
-   * 
+   *
    * Mapeia erros do serviço para respostas HTTP apropriadas
    */
   private handleError(res: Response, error: unknown, operation: string): void {

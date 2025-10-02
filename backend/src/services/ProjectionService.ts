@@ -1,10 +1,10 @@
 /**
  * ProjectionService Implementation
- * 
+ *
  * Sistema de projeções financeiras com 3 cenários (    // Aplicar tendência ao cenário realista
     const trendMultiplier = trend === TrendType.GROWTH ? 1.1 : trend === TrendType.DECLINE ? 0.9 : 1.0;ssimista/realista/otimista)
  * Baseado em médias móveis, detecção de tendências e ajuste de sazonalidade
- * 
+ *
  * Referências:
  * - plan.md: Persona Maria - "Ter projeções financeiras confiáveis para tomar decisões"
  * - design.md: §Financial Projections - Algoritmo de médias móveis, cache strategy
@@ -37,7 +37,7 @@ export class ProjectionService implements IProjectionService {
 
   /**
    * Calcula projeções de vendas para período especificado
-   * 
+   *
    * Critérios de Aceitação (user-stories.md Story 4.1):
    * - Mínimo 30 dias de histórico necessário
    * - Considera sazonalidade (dia da semana)
@@ -47,7 +47,7 @@ export class ProjectionService implements IProjectionService {
    */
   async calculateSalesProjection(
     userId: string,
-    period: ProjectionPeriod
+    period: ProjectionPeriod,
   ): Promise<ProjectionResult> {
     try {
       // Verificar cache primeiro
@@ -71,7 +71,7 @@ export class ProjectionService implements IProjectionService {
       if (daysCovered < this.MIN_HISTORICAL_DAYS) {
         throw new Error(
           `Dados históricos insuficientes. Necessário ${this.MIN_HISTORICAL_DAYS} dias, encontrado ${daysCovered} dias. ` +
-          `Coletando dados: ${daysCovered}/${this.MIN_HISTORICAL_DAYS} dias.`
+          `Coletando dados: ${daysCovered}/${this.MIN_HISTORICAL_DAYS} dias.`,
         );
       }
 
@@ -160,7 +160,7 @@ export class ProjectionService implements IProjectionService {
    */
   async calculateCashflowProjection(
     userId: string,
-    period: ProjectionPeriod
+    period: ProjectionPeriod,
   ): Promise<CashflowProjection> {
     try {
       // Verificar cache
@@ -242,7 +242,7 @@ export class ProjectionService implements IProjectionService {
 
   /**
    * Calcula score de saúde financeira (0-100%)
-   * 
+   *
    * Score baseado em:
    * - Tendência (30%): Crescimento vs Queda
    * - Lucratividade (40%): Margem de lucro
@@ -259,7 +259,7 @@ export class ProjectionService implements IProjectionService {
 
       // Buscar dados históricos (90 dias)
       const sales = await this.getHistoricalSales(userId, 90);
-      
+
       if (sales.length === 0) {
         throw new Error('Dados insuficientes para calcular score de saúde');
       }
@@ -273,12 +273,16 @@ export class ProjectionService implements IProjectionService {
       const adsExpenses = await this.getHistoricalAdsExpenses(userId, 90);
       const totalAdsExpenses = adsExpenses.reduce((sum, exp) => sum + exp, 0);
       const profitMargin = totalRevenue > 0 ? ((totalRevenue - totalAdsExpenses) / totalRevenue) * 100 : 0;
-      
+
       // Profit margin > 60% = 100, 40-60% = 80, 20-40% = 60, < 20% = 30
       let profitabilityScore = 30;
-      if (profitMargin > 60) profitabilityScore = 100;
-      else if (profitMargin > 40) profitabilityScore = 80;
-      else if (profitMargin > 20) profitabilityScore = 60;
+      if (profitMargin > 60) {
+        profitabilityScore = 100;
+      } else if (profitMargin > 40) {
+        profitabilityScore = 80;
+      } else if (profitMargin > 20) {
+        profitabilityScore = 60;
+      }
 
       // 3. Score de Consistência (30%)
       const variance = this.calculateVariance(sales);
@@ -287,29 +291,50 @@ export class ProjectionService implements IProjectionService {
 
       // Calcular score geral
       const overallScore = Math.round(
-        trendScore * 0.3 + profitabilityScore * 0.4 + consistencyScore * 0.3
+        trendScore * 0.3 + profitabilityScore * 0.4 + consistencyScore * 0.3,
       );
 
       // Gerar interpretação
       let interpretation = '';
-      if (overallScore >= 80) interpretation = 'Excelente! Seu negócio está muito saudável.';
-      else if (overallScore >= 60) interpretation = 'Bom! Seu negócio está estável com espaço para crescimento.';
-      else if (overallScore >= 40) interpretation = 'Regular. Atenção necessária em algumas áreas.';
-      else interpretation = 'Crítico. Ação imediata necessária.';
+      if (overallScore >= 80) {
+        interpretation = 'Excelente! Seu negócio está muito saudável.';
+      } else if (overallScore >= 60) {
+        interpretation = 'Bom! Seu negócio está estável com espaço para crescimento.';
+      } else if (overallScore >= 40) {
+        interpretation = 'Regular. Atenção necessária em algumas áreas.';
+      } else {
+        interpretation = 'Crítico. Ação imediata necessária.';
+      }
 
       // Gerar alertas
       const alerts: string[] = [];
-      if (trend === TrendType.DECLINE) alerts.push('Tendência de queda nas vendas detectada');
-      if (profitMargin < 20) alerts.push('Margem de lucro abaixo de 20%');
-      if (variance > 0.7) alerts.push('Alta variação nas vendas (inconsistência)');
-      if (totalRevenue === 0) alerts.push('Nenhuma receita nos últimos 90 dias');
+      if (trend === TrendType.DECLINE) {
+        alerts.push('Tendência de queda nas vendas detectada');
+      }
+      if (profitMargin < 20) {
+        alerts.push('Margem de lucro abaixo de 20%');
+      }
+      if (variance > 0.7) {
+        alerts.push('Alta variação nas vendas (inconsistência)');
+      }
+      if (totalRevenue === 0) {
+        alerts.push('Nenhuma receita nos últimos 90 dias');
+      }
 
       // Gerar recomendações
       const recommendations: string[] = [];
-      if (trend === TrendType.DECLINE) recommendations.push('Revisar estratégia de marketing e anúncios');
-      if (profitMargin < 40) recommendations.push('Reduzir gastos com anúncios ou aumentar ticket médio');
-      if (variance > 0.5) recommendations.push('Trabalhar na consistência de vendas diárias');
-      if (profitMargin > 60 && trend === TrendType.STABLE) recommendations.push('Considerar aumentar investimento em ads para crescer');
+      if (trend === TrendType.DECLINE) {
+        recommendations.push('Revisar estratégia de marketing e anúncios');
+      }
+      if (profitMargin < 40) {
+        recommendations.push('Reduzir gastos com anúncios ou aumentar ticket médio');
+      }
+      if (variance > 0.5) {
+        recommendations.push('Trabalhar na consistência de vendas diárias');
+      }
+      if (profitMargin > 60 && trend === TrendType.STABLE) {
+        recommendations.push('Considerar aumentar investimento em ads para crescer');
+      }
 
       const result: HealthScore = {
         overall_score: overallScore,
@@ -342,15 +367,17 @@ export class ProjectionService implements IProjectionService {
 
   /**
    * Detecta tendência nos dados de vendas
-   * 
+   *
    * Compara média dos últimos 7 dias com média dos 7-14 dias anteriores
    * Crescimento: >5% | Estável: -5% a +5% | Queda: <-5%
    */
   detectTrend(sales: SaleData[]): TrendType {
-    if (sales.length < 14) return TrendType.STABLE;
+    if (sales.length < 14) {
+      return TrendType.STABLE;
+    }
 
-    const sortedSales = [...sales].sort((a, b) => 
-      new Date(b.data_venda).getTime() - new Date(a.data_venda).getTime()
+    const sortedSales = [...sales].sort((a, b) =>
+      new Date(b.data_venda).getTime() - new Date(a.data_venda).getTime(),
     );
 
     const recent7 = sortedSales.slice(0, 7);
@@ -359,12 +386,18 @@ export class ProjectionService implements IProjectionService {
     const recentAvg = recent7.reduce((sum, sale) => sum + Number(sale.valor), 0) / 7;
     const previousAvg = previous7.reduce((sum, sale) => sum + Number(sale.valor), 0) / 7;
 
-    if (previousAvg === 0) return TrendType.STABLE;
+    if (previousAvg === 0) {
+      return TrendType.STABLE;
+    }
 
     const changePercent = ((recentAvg - previousAvg) / previousAvg) * 100;
 
-    if (changePercent > 5) return TrendType.GROWTH;
-    if (changePercent < -5) return TrendType.DECLINE;
+    if (changePercent > 5) {
+      return TrendType.GROWTH;
+    }
+    if (changePercent < -5) {
+      return TrendType.DECLINE;
+    }
     return TrendType.STABLE;
   }
 
@@ -372,14 +405,18 @@ export class ProjectionService implements IProjectionService {
    * Calcula média móvel para período específico
    */
   calculateMovingAverage(sales: SaleData[], days: number): number {
-    if (sales.length === 0) return 0;
+    if (sales.length === 0) {
+      return 0;
+    }
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
     const recentSales = sales.filter(sale => new Date(sale.data_venda) >= cutoffDate);
-    
-    if (recentSales.length === 0) return 0;
+
+    if (recentSales.length === 0) {
+      return 0;
+    }
 
     const totalValue = recentSales.reduce((sum, sale) => sum + Number(sale.valor), 0);
     const daysCovered = this.getDaysCovered(recentSales);
@@ -389,23 +426,29 @@ export class ProjectionService implements IProjectionService {
 
   /**
    * Calcula variância para determinar confiança
-   * 
+   *
    * Retorna variância normalizada (0-1)
    * 0 = sem variação (perfeito), 1 = alta variação
    */
   calculateVariance(sales: SaleData[]): number {
-    if (sales.length < 2) return 1;
+    if (sales.length < 2) {
+      return 1;
+    }
 
     // Agrupar vendas por dia
     const dailySales = this.groupSalesByDay(sales);
     const dailyValues = Object.values(dailySales);
 
-    if (dailyValues.length < 2) return 1;
+    if (dailyValues.length < 2) {
+      return 1;
+    }
 
     // Calcular média
     const mean = dailyValues.reduce((sum, val) => sum + val, 0) / dailyValues.length;
 
-    if (mean === 0) return 1;
+    if (mean === 0) {
+      return 1;
+    }
 
     // Calcular variância
     const squaredDiffs = dailyValues.map(val => Math.pow(val - mean, 2));
@@ -423,7 +466,7 @@ export class ProjectionService implements IProjectionService {
 
   /**
    * Ajusta valor considerando sazonalidade do dia da semana
-   * 
+   *
    * Baseado em análise histórica:
    * - Segunda-Sexta tendem a ter mais vendas
    * - Sábado-Domingo tendem a ter menos vendas
@@ -570,10 +613,12 @@ export class ProjectionService implements IProjectionService {
    * Calcula quantos dias únicos têm vendas
    */
   private getDaysCovered(sales: SaleData[]): number {
-    if (sales.length === 0) return 0;
+    if (sales.length === 0) {
+      return 0;
+    }
 
     const uniqueDates = new Set(
-      sales.map(sale => new Date(sale.data_venda).toDateString())
+      sales.map(sale => new Date(sale.data_venda).toDateString()),
     );
 
     return uniqueDates.size;

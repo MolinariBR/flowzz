@@ -1,9 +1,9 @@
 /**
  * GoalService Interface
- * 
+ *
  * Sistema de metas financeiras personalizadas com cálculo automático de progresso
  * e notificações em marcos importantes (80%, 100%)
- * 
+ *
  * Referências:
  * - plan.md: Persona João - "Acompanhar progresso e se manter motivado"
  * - design.md: §Goals System - CRUD, Progress tracking, Notifications
@@ -98,12 +98,12 @@ export interface GoalStatistics {
 export interface IGoalService {
   /**
    * Cria nova meta para usuário
-   * 
+   *
    * Critérios de Aceitação (user-stories.md Story 4.2):
    * - Máximo 5 metas ativas simultâneas por usuário
    * - Validar se period_end > period_start
    * - Target_value deve ser positivo
-   * 
+   *
    * @param userId - ID do usuário
    * @param data - Dados da meta
    * @returns Meta criada com progresso calculado
@@ -113,7 +113,7 @@ export interface IGoalService {
 
   /**
    * Lista metas do usuário com filtros
-   * 
+   *
    * @param userId - ID do usuário
    * @param filters - Filtros opcionais
    * @returns Array de metas com progresso
@@ -129,7 +129,7 @@ export interface IGoalService {
 
   /**
    * Busca meta por ID com cálculo de progresso
-   * 
+   *
    * @param goalId - ID da meta
    * @param userId - ID do usuário (para validação)
    * @returns Meta com progresso atualizado
@@ -139,11 +139,11 @@ export interface IGoalService {
 
   /**
    * Atualiza meta existente
-   * 
+   *
    * Não pode alterar:
    * - target_type (tipo de meta)
    * - period_start (data início)
-   * 
+   *
    * @param goalId - ID da meta
    * @param userId - ID do usuário
    * @param data - Dados a atualizar
@@ -157,7 +157,7 @@ export interface IGoalService {
 
   /**
    * Remove meta (soft delete - marca is_active = false)
-   * 
+   *
    * @param goalId - ID da meta
    * @param userId - ID do usuário
    */
@@ -165,12 +165,12 @@ export interface IGoalService {
 
   /**
    * Calcula progresso atual da meta
-   * 
+   *
    * Busca current_value baseado em target_type:
    * - REVENUE: SUM(sales.valor) WHERE status = 'PAID'
    * - PROFIT: SUM(sales.valor - ads.spent)
    * - SALES_COUNT: COUNT(sales)
-   * 
+   *
    * @param goal - Meta a calcular
    * @returns Meta enriquecida com dados de progresso
    */
@@ -178,14 +178,14 @@ export interface IGoalService {
 
   /**
    * Atualiza progresso de todas as metas ativas do usuário
-   * 
+   *
    * Deve ser chamado quando:
    * - Nova venda registrada
    * - Sync Coinzz completo
    * - Dashboard atualizado
-   * 
+   *
    * Envia notificações se atingir marcos (80%, 100%)
-   * 
+   *
    * @param userId - ID do usuário
    * @returns Array de metas atualizadas
    */
@@ -193,11 +193,11 @@ export interface IGoalService {
 
   /**
    * Verifica e envia notificações de progresso
-   * 
+   *
    * Notifica quando atingir:
    * - 80% do progresso (primeira vez)
    * - 100% do progresso (meta completa)
-   * 
+   *
    * @param goal - Meta a verificar
    * @returns Notificação enviada (ou null se não aplicável)
    */
@@ -205,16 +205,16 @@ export interface IGoalService {
 
   /**
    * Verifica metas expiradas e marca como incomplete
-   * 
+   *
    * Executado diariamente via cron job
-   * 
+   *
    * @returns Quantidade de metas expiradas
    */
   expireOldGoals(): Promise<number>;
 
   /**
    * Obtém estatísticas de metas do usuário
-   * 
+   *
    * @param userId - ID do usuário
    * @returns Estatísticas gerais
    */
@@ -222,9 +222,9 @@ export interface IGoalService {
 
   /**
    * Valida se usuário pode criar mais metas
-   * 
+   *
    * Limite: 5 metas ativas simultâneas
-   * 
+   *
    * @param userId - ID do usuário
    * @returns true se pode criar, false se atingiu limite
    */
@@ -232,7 +232,7 @@ export interface IGoalService {
 
   /**
    * Calcula valor diário necessário para atingir meta
-   * 
+   *
    * @param goal - Meta a calcular
    * @returns Valor diário necessário
    */

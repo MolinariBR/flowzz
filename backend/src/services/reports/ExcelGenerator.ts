@@ -1,12 +1,12 @@
 /**
  * ExcelGenerator - Geração de relatórios em formato Excel (.xlsx)
- * 
+ *
  * Referências:
  * - design.md §Task 10.1.2: Excel com biblioteca XLSX
  * - dev-stories.md §Dev Story 4.2: Geração assíncrona de relatórios
  * - user-stories.md §Story 6.1: Relatórios em PDF/Excel
  * - tasks.md §Task 10.1.2: XLSX Generator
- * 
+ *
  * Features:
  * - Múltiplas sheets (vendas, resumo, gráficos)
  * - Formatação de células (moeda, percentual, datas)

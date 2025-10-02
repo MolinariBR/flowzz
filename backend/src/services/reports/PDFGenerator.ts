@@ -8,13 +8,13 @@ import { generateSalesReportTemplate } from './templates';
 
 /**
  * PDFGenerator - Gera PDFs usando Puppeteer
- * 
+ *
  * Features:
  * - Gera PDF a partir de HTML
  * - Usa templates com Tailwind CSS
  * - Suporte a logos customizadas
  * - Formato A4
- * 
+ *
  * Referência: user-stories.md Story 6.1 - "formato PDF"
  */
 export class PDFGenerator {
@@ -23,7 +23,7 @@ export class PDFGenerator {
    */
   async generateSalesReportPDF(
     data: SalesReportData,
-    options: { title: string; includeLogo?: boolean }
+    options: { title: string; includeLogo?: boolean },
   ): Promise<Buffer> {
     const html = generateSalesReportTemplate(data, options);
     return this.generatePDFFromHTML(html);
@@ -34,7 +34,7 @@ export class PDFGenerator {
    */
   async generateFinancialReportPDF(
     data: FinancialReportData,
-    options: { title: string; includeLogo?: boolean }
+    options: { title: string; includeLogo?: boolean },
   ): Promise<Buffer> {
     // Template simplificado inline por agora
     const html = this.generateFinancialTemplate(data, options);
@@ -46,7 +46,7 @@ export class PDFGenerator {
    */
   async generateAdsReportPDF(
     data: AdsReportData,
-    options: { title: string; includeLogo?: boolean }
+    options: { title: string; includeLogo?: boolean },
   ): Promise<Buffer> {
     const html = this.generateAdsTemplate(data, options);
     return this.generatePDFFromHTML(html);
@@ -57,7 +57,7 @@ export class PDFGenerator {
    */
   async generateClientsReportPDF(
     data: ClientsReportData,
-    options: { title: string; includeLogo?: boolean }
+    options: { title: string; includeLogo?: boolean },
   ): Promise<Buffer> {
     const html = this.generateClientsTemplate(data, options);
     return this.generatePDFFromHTML(html);
@@ -69,7 +69,7 @@ export class PDFGenerator {
    */
   private async generatePDFFromHTML(html: string): Promise<Buffer> {
     let browser;
-    
+
     try {
       logger.info('Starting PDF generation with Puppeteer');
 
@@ -125,7 +125,7 @@ export class PDFGenerator {
   private generateFinancialTemplate(data: FinancialReportData, options: { title: string; includeLogo?: boolean }): string {
     const { title, includeLogo } = options;
     const logoSection = includeLogo
-      ? `<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>`
+      ? '<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>'
       : '';
 
     return `
@@ -171,7 +171,7 @@ export class PDFGenerator {
   private generateAdsTemplate(data: AdsReportData, options: { title: string; includeLogo?: boolean }): string {
     const { title, includeLogo } = options;
     const logoSection = includeLogo
-      ? `<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>`
+      ? '<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>'
       : '';
 
     return `
@@ -236,7 +236,7 @@ export class PDFGenerator {
   private generateClientsTemplate(data: ClientsReportData, options: { title: string; includeLogo?: boolean }): string {
     const { title, includeLogo } = options;
     const logoSection = includeLogo
-      ? `<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>`
+      ? '<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>'
       : '';
 
     return `

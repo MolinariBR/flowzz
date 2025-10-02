@@ -1,8 +1,8 @@
 /**
  * Goal Validators
- * 
+ *
  * Schemas de validação Zod para CRUD de metas financeiras
- * 
+ *
  * Referências:
  * - design.md: §Validation - Zod schemas compartilhados
  * - dev-stories.md: Dev Story 4.2 - Validação de metas
@@ -16,7 +16,7 @@ import { GoalTargetType, PeriodType } from '@prisma/client';
 /**
  * Schema para criação de meta
  * POST /goals
- * 
+ *
  * Critérios de Aceitação (user-stories.md Story 4.2):
  * - Máximo 5 metas ativas simultâneas
  * - period_end > period_start
@@ -74,13 +74,13 @@ export const createGoalSchema = z.object({
   {
     message: 'Data de término deve ser posterior à data de início',
     path: ['period_end'],
-  }
+  },
 );
 
 /**
  * Schema para atualização de meta
  * PUT /goals/:id
- * 
+ *
  * Campos não alteráveis:
  * - target_type (tipo de meta)
  * - period_start (data início)
@@ -172,7 +172,7 @@ export const goalWithProgressSchema = z.object({
   is_active: z.boolean(),
   created_at: z.date(),
   updated_at: z.date(),
-  
+
   // Campos calculados de progresso
   progress_percentage: z.number().min(0),
   progress_status: z.enum(['not_started', 'in_progress', 'almost_there', 'completed', 'expired_incomplete']),

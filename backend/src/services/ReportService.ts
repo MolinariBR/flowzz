@@ -26,13 +26,13 @@ import { StorageService } from './StorageService';
 
 /**
  * ReportService - Serviço de geração e gerenciamento de relatórios
- * 
+ *
  * Funcionalidades:
  * - Coleta de dados para relatórios (vendas, financeiro, anúncios, clientes)
  * - Geração assíncrona via Bull queue
  * - CRUD completo de relatórios
  * - Estatísticas de uso
- * 
+ *
  * Padrão: Clean Architecture + Repository Pattern
  */
 export class ReportService implements IReportService {
@@ -87,7 +87,7 @@ export class ReportService implements IReportService {
             type: 'exponential',
             delay: 2000,
           },
-        }
+        },
       );
 
       logger.info('Report generation queued', {
@@ -314,7 +314,7 @@ export class ReportService implements IReportService {
         acc[status].count++;
         acc[status].revenue += Number(sale.total_price);
         return acc;
-      }, {})
+      }, {}),
     ).map(([status, data]) => ({
       status,
       count: data.count,
@@ -447,7 +447,7 @@ export class ReportService implements IReportService {
     const averageCPC = totalClicks > 0 ? totalSpent / totalClicks : 0;
     const averageCPM = totalImpressions > 0 ? (totalSpent / totalImpressions) * 1000 : 0;
     const averageCTR = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-    
+
     // ROAS: precisaria das vendas relacionadas (simplificado)
     const averageROAS = 0;
 
@@ -468,7 +468,7 @@ export class ReportService implements IReportService {
         acc[platform].clicks += ad.clicks || 0;
         acc[platform].conversions += 0; // Campo results não existe
         return acc;
-      }, {})
+      }, {}),
     ).map(([platform, data]) => ({
       platform,
       ...data,
@@ -538,25 +538,25 @@ export class ReportService implements IReportService {
     });
 
     const totalClients = clients.length;
-    
+
     // Clientes com vendas no período
     const activeClients = clients.filter((c) => c.sales.length > 0).length;
 
     // Novos clientes (cadastrados no período)
     const newClients = clients.filter(
-      (c) => c.created_at >= filters.startDate && c.created_at <= filters.endDate
+      (c) => c.created_at >= filters.startDate && c.created_at <= filters.endDate,
     ).length;
 
     // Churned (simplificado - sem vendas há mais de 90 dias)
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
     const churned = clients.filter(
-      (c) => c.sales.length > 0 && c.sales.every((s) => s.created_at < ninetyDaysAgo)
+      (c) => c.sales.length > 0 && c.sales.every((s) => s.created_at < ninetyDaysAgo),
     ).length;
 
     // LTV médio
     const totalRevenue = clients.reduce(
       (sum, c) => sum + c.sales.reduce((s, sale) => s + Number(sale.total_price), 0),
-      0
+      0,
     );
     const averageLTV = totalClients > 0 ? totalRevenue / totalClients : 0;
 
@@ -575,7 +575,7 @@ export class ReportService implements IReportService {
           acc[tagName] = (acc[tagName] || 0) + 1;
         });
         return acc;
-      }, {})
+      }, {}),
     ).map(([tag, count]) => ({ tag, count }));
 
     // Top clientes
@@ -610,20 +610,20 @@ export class ReportService implements IReportService {
    */
   async generatePDF(
     data: SalesReportData | FinancialReportData | AdsReportData | ClientsReportData,
-    options: ReportOptions
+    options: ReportOptions,
   ): Promise<Buffer> {
     try {
       // Determinar tipo de relatório baseado na estrutura dos dados
       if ('totalSales' in data) {
-        return await this.pdfGenerator.generateSalesReportPDF(data as SalesReportData, options);
+        return await this.pdfGenerator.generateSalesReportPDF(data, options);
       } else if ('totalRevenue' in data && 'totalExpenses' in data) {
-        return await this.pdfGenerator.generateFinancialReportPDF(data as FinancialReportData, options);
+        return await this.pdfGenerator.generateFinancialReportPDF(data, options);
       } else if ('totalSpent' in data && 'totalImpressions' in data) {
-        return await this.pdfGenerator.generateAdsReportPDF(data as AdsReportData, options);
+        return await this.pdfGenerator.generateAdsReportPDF(data, options);
       } else if ('totalClients' in data && 'activeClients' in data) {
-        return await this.pdfGenerator.generateClientsReportPDF(data as ClientsReportData, options);
+        return await this.pdfGenerator.generateClientsReportPDF(data, options);
       }
-      
+
       throw new Error('Tipo de relatório não identificado para geração de PDF');
     } catch (error) {
       logger.error('Erro ao gerar PDF:', error);
@@ -637,20 +637,20 @@ export class ReportService implements IReportService {
    */
   async generateExcel(
     data: SalesReportData | FinancialReportData | AdsReportData | ClientsReportData,
-    options: ReportOptions
+    options: ReportOptions,
   ): Promise<Buffer> {
     try {
       // Determinar tipo de relatório baseado na estrutura dos dados
       if ('totalSales' in data) {
-        return await this.excelGenerator.generateSalesReportExcel(data as SalesReportData, options);
+        return await this.excelGenerator.generateSalesReportExcel(data, options);
       } else if ('totalRevenue' in data && 'totalExpenses' in data) {
-        return await this.excelGenerator.generateFinancialReportExcel(data as FinancialReportData, options);
+        return await this.excelGenerator.generateFinancialReportExcel(data, options);
       } else if ('totalSpent' in data && 'totalImpressions' in data) {
-        return await this.excelGenerator.generateAdsReportExcel(data as AdsReportData, options);
+        return await this.excelGenerator.generateAdsReportExcel(data, options);
       } else if ('totalClients' in data && 'activeClients' in data) {
-        return await this.excelGenerator.generateClientsReportExcel(data as ClientsReportData, options);
+        return await this.excelGenerator.generateClientsReportExcel(data, options);
       }
-      
+
       throw new Error('Tipo de relatório não identificado para geração de Excel');
     } catch (error) {
       logger.error('Erro ao gerar Excel:', error);
@@ -661,7 +661,7 @@ export class ReportService implements IReportService {
   /**
    * Faz upload do arquivo para S3/R2 e retorna signed URL
    * Referência: tasks.md Task 10.1.5 - Storage Service
-   * 
+   *
    * @param buffer - Buffer do arquivo gerado (PDF ou Excel)
    * @param filename - Nome do arquivo (ex: report-uuid.pdf)
    * @returns Signed URL válida por 7 dias para download
@@ -730,7 +730,7 @@ export class ReportService implements IReportService {
       reports.reduce((acc: Record<string, number>, report) => {
         acc[report.type] = (acc[report.type] || 0) + 1;
         return acc;
-      }, {})
+      }, {}),
     ).map(([type, count]) => ({ type: type as ReportType, count }));
 
     // Format simplificado (assumir PDF por padrão)
@@ -749,10 +749,10 @@ export class ReportService implements IReportService {
     const averageGenerationTime = 30;
 
     const lastGenerated = reports.length > 0 && reports[0]
-      ? reports.reduce((latest, report) => 
-          report.created_at > latest ? report.created_at : latest, 
-          reports[0].created_at
-        )
+      ? reports.reduce((latest, report) =>
+        report.created_at > latest ? report.created_at : latest,
+      reports[0].created_at,
+      )
       : null;
 
     return {
@@ -784,7 +784,9 @@ export class ReportService implements IReportService {
   }
 
   private isExpired(expiresAt: Date | null): boolean {
-    if (!expiresAt) return false;
+    if (!expiresAt) {
+      return false;
+    }
     return new Date() > expiresAt;
   }
 
@@ -826,11 +828,11 @@ export class ReportService implements IReportService {
     });
 
     const clientIds = clientSales.map((cs) => cs.client_id).filter((id): id is string => id !== null);
-    
+
     if (clientIds.length === 0) {
       return [];
     }
-    
+
     const clients = await this.prisma.client.findMany({
       where: {
         id: { in: clientIds },

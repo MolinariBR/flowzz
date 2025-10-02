@@ -15,28 +15,28 @@ const router = Router();
 
 // Exemplo: Dashboard básico (disponível durante trial)
 router.get('/dashboard', authenticate, validateSubscriptionWithWarning, (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Dashboard data',
     user_id: req.user?.userId,
-    note: 'Trial users have access to this feature'
+    note: 'Trial users have access to this feature',
   });
 });
 
 // Exemplo: Funcionalidade premium (requer subscription ativa)
 router.get('/analytics', authenticate, validateSubscription, (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Advanced analytics data',
     user_id: req.user?.userId,
-    note: 'This feature requires active subscription'
+    note: 'This feature requires active subscription',
   });
 });
 
 // Exemplo: Relatórios (requer subscription ativa)
 router.get('/reports', authenticate, validateSubscription, (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Reports data',
     user_id: req.user?.userId,
-    note: 'This feature requires active subscription'
+    note: 'This feature requires active subscription',
   });
 });
 

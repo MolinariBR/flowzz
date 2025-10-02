@@ -1,10 +1,10 @@
 /**
  * Worker para enviar mensagens WhatsApp
- * 
+ *
  * Referências:
  * - tasks.md: Task 4.0.3 - Implementar workers
  * - design.md: Background Jobs - WhatsApp Messages
- * 
+ *
  * Execução: On-demand (disparado por ações do usuário)
  * Responsabilidade: Chamar WhatsAppService.sendMessage para enviar mensagens via API WhatsApp Business
  */
@@ -15,7 +15,7 @@ import { logger } from '../shared/utils/logger';
 
 /**
  * Processa job de envio de mensagem WhatsApp
- * 
+ *
  * @param job - Job do Bull contendo dados da mensagem
  * @returns Promise com resultado do envio
  */
@@ -40,7 +40,7 @@ export async function processWhatsAppJob(job: Job<WhatsAppJobData>): Promise<voi
     //   templateName,
     //   templateParams,
     // });
-    
+
     // Mock temporário para não quebrar o build
     await new Promise((resolve) => setTimeout(resolve, 800));
     const result = { messageId: `msg_${Date.now()}`, status: 'sent' };

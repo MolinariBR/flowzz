@@ -33,7 +33,7 @@ export class AuthService {
     return jwt.sign(
       { userId, role },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_ACCESS_EXPIRES_IN } as jwt.SignOptions
+      { expiresIn: env.JWT_ACCESS_EXPIRES_IN } as jwt.SignOptions,
     );
   }
 
@@ -45,7 +45,7 @@ export class AuthService {
     return jwt.sign(
       { type: 'refresh' },
       env.JWT_REFRESH_SECRET,
-      { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions
+      { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions,
     );
   }
 
@@ -70,7 +70,7 @@ export class AuthService {
   async register(data: RegisterUserDTO): Promise<{ user: User; tokens: AuthTokens }> {
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.email }
+      where: { email: data.email },
     });
 
     if (existingUser) {
@@ -89,8 +89,8 @@ export class AuthService {
         role: 'USER',
         subscription_status: 'TRIAL',
         trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        is_active: true
-      }
+        is_active: true,
+      },
     });
 
     // Generate tokens
@@ -102,16 +102,16 @@ export class AuthService {
       data: {
         token: refreshToken,
         user_id: user.id,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-      }
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      },
     });
 
     return {
       user,
       tokens: {
         accessToken,
-        refreshToken
-      }
+        refreshToken,
+      },
     };
   }
 
@@ -122,7 +122,7 @@ export class AuthService {
   async login(data: LoginDTO): Promise<{ user: User; tokens: AuthTokens }> {
     // Find user by email
     const user = await this.prisma.user.findUnique({
-      where: { email: data.email }
+      where: { email: data.email },
     });
 
     if (!user) {
@@ -149,16 +149,16 @@ export class AuthService {
       data: {
         token: refreshToken,
         user_id: user.id,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-      }
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      },
     });
 
     return {
       user,
       tokens: {
         accessToken,
-        refreshToken
-      }
+        refreshToken,
+      },
     };
   }
 
@@ -177,7 +177,7 @@ export class AuthService {
     // Find refresh token in database
     const tokenRecord = await this.prisma.refreshToken.findUnique({
       where: { token: refreshToken },
-      include: { user: true }
+      include: { user: true },
     });
 
     if (!tokenRecord) {
@@ -188,7 +188,7 @@ export class AuthService {
     if (tokenRecord.expires_at < new Date()) {
       // Delete expired token
       await this.prisma.refreshToken.delete({
-        where: { id: tokenRecord.id }
+        where: { id: tokenRecord.id },
       });
       throw new Error('Refresh token expired');
     }
@@ -201,7 +201,7 @@ export class AuthService {
     // Generate new access token
     const newAccessToken = this.generateAccessToken(
       tokenRecord.user.id,
-      tokenRecord.user.role
+      tokenRecord.user.role,
     );
 
     return newAccessToken;
@@ -214,7 +214,7 @@ export class AuthService {
   async logout(refreshToken: string): Promise<void> {
     // Delete refresh token from database
     await this.prisma.refreshToken.deleteMany({
-      where: { token: refreshToken }
+      where: { token: refreshToken },
     });
   }
 
@@ -223,7 +223,7 @@ export class AuthService {
    */
   async getUserById(userId: string): Promise<User | null> {
     return this.prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     });
   }
 
@@ -232,7 +232,7 @@ export class AuthService {
    */
   async revokeAllTokens(userId: string): Promise<void> {
     await this.prisma.refreshToken.deleteMany({
-      where: { user_id: userId }
+      where: { user_id: userId },
     });
   }
 }

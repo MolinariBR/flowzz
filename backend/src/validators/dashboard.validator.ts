@@ -12,7 +12,7 @@ export const dashboardMetricsQuerySchema = z.object({
   end_date: z.string()
     .datetime()
     .transform(val => new Date(val))
-    .optional()
+    .optional(),
 }).refine(
   (data) => {
     // Validar que end_date é posterior a start_date
@@ -23,14 +23,14 @@ export const dashboardMetricsQuerySchema = z.object({
   },
   {
     message: 'Data final deve ser posterior à data inicial',
-    path: ['end_date']
-  }
+    path: ['end_date'],
+  },
 ).refine(
   (data) => {
     // Validar período máximo de 1 ano
     if (data.start_date && data.end_date) {
       const diffInDays = Math.ceil(
-        (data.end_date.getTime() - data.start_date.getTime()) / (1000 * 60 * 60 * 24)
+        (data.end_date.getTime() - data.start_date.getTime()) / (1000 * 60 * 60 * 24),
       );
       return diffInDays <= 365;
     }
@@ -38,8 +38,8 @@ export const dashboardMetricsQuerySchema = z.object({
   },
   {
     message: 'Período máximo permitido é de 1 ano',
-    path: ['end_date']
-  }
+    path: ['end_date'],
+  },
 );
 
 // Schema para query parameters do endpoint /dashboard/chart
@@ -54,7 +54,7 @@ export const dashboardChartQuerySchema = z.object({
     .optional(),
   period: z.enum(['7d', '30d', '90d', '1y', 'custom'])
     .optional()
-    .default('30d')
+    .default('30d'),
 }).refine(
   (data) => {
     // Se period for custom, start_date e end_date são obrigatórios
@@ -65,8 +65,8 @@ export const dashboardChartQuerySchema = z.object({
   },
   {
     message: 'Para período customizado, start_date e end_date são obrigatórios',
-    path: ['period']
-  }
+    path: ['period'],
+  },
 ).refine(
   (data) => {
     // Validar que end_date é posterior a start_date
@@ -77,14 +77,14 @@ export const dashboardChartQuerySchema = z.object({
   },
   {
     message: 'Data final deve ser posterior à data inicial',
-    path: ['end_date']
-  }
+    path: ['end_date'],
+  },
 ).refine(
   (data) => {
     // Validar período máximo de 2 anos para gráficos
     if (data.start_date && data.end_date) {
       const diffInDays = Math.ceil(
-        (data.end_date.getTime() - data.start_date.getTime()) / (1000 * 60 * 60 * 24)
+        (data.end_date.getTime() - data.start_date.getTime()) / (1000 * 60 * 60 * 24),
       );
       return diffInDays <= 730; // 2 anos
     }
@@ -92,8 +92,8 @@ export const dashboardChartQuerySchema = z.object({
   },
   {
     message: 'Período máximo permitido para gráficos é de 2 anos',
-    path: ['end_date']
-  }
+    path: ['end_date'],
+  },
 );
 
 // Schema para query parameters do endpoint /dashboard/activities
@@ -112,7 +112,7 @@ export const dashboardActivitiesQuerySchema = z.object({
     .transform(val => parseInt(val, 10))
     .refine(val => val >= 1 && val <= 90, 'Days deve estar entre 1 e 90')
     .optional()
-    .default('7')
+    .default('7'),
 });
 
 // Schema para resposta das métricas básicas
@@ -120,7 +120,7 @@ export const dashboardMetricsResponseSchema = z.object({
   vendas_hoje: z.number().min(0),
   gasto_anuncios: z.number().min(0),
   lucro_liquido: z.number(),
-  pagamentos_agendados: z.number().min(0)
+  pagamentos_agendados: z.number().min(0),
 });
 
 // Schema para resposta das métricas com comparações
@@ -129,9 +129,9 @@ export const dashboardMetricsWithComparisonsResponseSchema = dashboardMetricsRes
     vendas_hoje: z.number(),
     gasto_anuncios: z.number(),
     lucro_liquido: z.number(),
-    pagamentos_agendados: z.number()
+    pagamentos_agendados: z.number(),
   }),
-  ultima_atualizacao: z.date()
+  ultima_atualizacao: z.date(),
 });
 
 // Schema para item de dados do gráfico
@@ -139,7 +139,7 @@ export const dashboardChartDataItemSchema = z.object({
   date: z.union([z.string(), z.date()]),
   vendas: z.number().min(0),
   gastos: z.number().min(0),
-  lucro: z.number()
+  lucro: z.number(),
 });
 
 // Schema para resposta do gráfico
@@ -150,9 +150,9 @@ export const dashboardChartResponseSchema = z.object({
     period: z.object({
       start: z.string(),
       end: z.string(),
-      days: z.number()
-    })
-  })
+      days: z.number(),
+    }),
+  }),
 });
 
 // Schema para atividade do dashboard
@@ -163,7 +163,7 @@ export const dashboardActivitySchema = z.object({
   description: z.string().min(1).max(500),
   amount: z.number().optional(),
   timestamp: z.date(),
-  metadata: z.record(z.unknown()).optional()
+  metadata: z.record(z.unknown()).optional(),
 });
 
 // Schema para resposta das atividades
@@ -172,8 +172,8 @@ export const dashboardActivitiesResponseSchema = z.object({
   data: z.array(dashboardActivitySchema),
   meta: z.object({
     total: z.number(),
-    limit: z.number()
-  })
+    limit: z.number(),
+  }),
 });
 
 // Schema para validação de cache stats (admin)
@@ -181,7 +181,7 @@ export const dashboardCacheStatsSchema = z.object({
   total_keys: z.number().min(0),
   avg_ttl: z.number().min(0),
   hit_rate: z.number().min(0).max(100).optional(),
-  miss_rate: z.number().min(0).max(100).optional()
+  miss_rate: z.number().min(0).max(100).optional(),
 });
 
 // Schemas para validação de período predefinido
@@ -209,7 +209,7 @@ export const predefinedPeriods = {
     const start = new Date(end);
     start.setFullYear(start.getFullYear() - 1);
     return { start, end };
-  }
+  },
 };
 
 // Helper para obter período baseado no parâmetro
@@ -217,11 +217,11 @@ export const getPeriodDates = (period: string, customStart?: Date, customEnd?: D
   if (period === 'custom' && customStart && customEnd) {
     return { start: customStart, end: customEnd };
   }
-  
+
   if (period in predefinedPeriods) {
     return predefinedPeriods[period as keyof typeof predefinedPeriods]();
   }
-  
+
   // Default: últimos 30 dias
   return predefinedPeriods['30d']();
 };

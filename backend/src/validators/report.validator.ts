@@ -55,7 +55,7 @@ export const reportFiltersSchema = z.object({
   {
     message: 'Data de fim deve ser maior ou igual à data de início',
     path: ['endDate'],
-  }
+  },
 );
 
 /**
@@ -88,7 +88,7 @@ export const createReportSchema = z.object({
   {
     message: 'Ao menos um destinatário de email deve ser fornecido quando sendEmail é true',
     path: ['emailRecipients'],
-  }
+  },
 );
 
 /**

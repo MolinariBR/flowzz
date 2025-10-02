@@ -92,7 +92,7 @@ app.use((req, res, next) => {
 // Health check endpoint
 app.get('/health', async (_req, res) => {
   const dbHealthy = await checkDatabaseHealth();
-  
+
   res.status(dbHealthy ? 200 : 503).json({
     status: dbHealthy ? 'healthy' : 'unhealthy',
     timestamp: new Date().toISOString(),
@@ -170,7 +170,7 @@ app.use((err: Error, req: express.Request, res: express.Response, _next: express
 
 // Start server
 const server = app.listen(env.PORT, () => {
-  logger.info(`🚀 Flowzz API started successfully`, {
+  logger.info('🚀 Flowzz API started successfully', {
     port: env.PORT,
     environment: env.NODE_ENV,
     baseUrl: env.API_BASE_URL,
@@ -202,10 +202,10 @@ const server = app.listen(env.PORT, () => {
 // Graceful shutdown
 const shutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
-  
+
   server.close(async () => {
     logger.info('HTTP server closed');
-    
+
     // Stop all workers
     try {
       await stopAllWorkers();
@@ -225,7 +225,7 @@ const shutdown = async (signal: string) => {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-    
+
     // Close all queues
     try {
       await closeAllQueues(allQueues);
@@ -235,14 +235,14 @@ const shutdown = async (signal: string) => {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-    
+
     // Disconnect from database
     await disconnectPrisma();
-    
+
     logger.info('Graceful shutdown completed');
     process.exit(0);
   });
-  
+
   // Force shutdown if graceful shutdown takes too long
   setTimeout(() => {
     logger.error('Forcing shutdown after timeout');

@@ -1,13 +1,13 @@
 /**
  * Coinzz Routes - Endpoints de Integração
- * 
+ *
  * Define rotas para gerenciamento da integração com Coinzz
- * 
+ *
  * Referências:
  * - tasks.md: Task 5.2.5
  * - openapi.yaml: API Spec
  * - implement.md: §4 Routes
- * 
+ *
  * @autor Flowzz Team
  * @data 2025-01-13
  */
@@ -28,19 +28,19 @@ const router = Router();
 
 /**
  * Middleware de autenticação - Aplicado em todas as rotas
- * 
+ *
  * Referência: implement.md §4.2
  */
 router.use(authenticate);
 
 /**
  * POST /integrations/coinzz/connect
- * 
+ *
  * Conecta ou atualiza integração com Coinzz
- * 
+ *
  * Body: { apiKey: string, webhookUrl?: string }
  * Response: CoinzzStatusDTO
- * 
+ *
  * Referência: tasks.md Task 5.2.1
  */
 router.post('/connect', async (req, res) => {
@@ -50,11 +50,11 @@ router.post('/connect', async (req, res) => {
 
 /**
  * GET /integrations/coinzz/status
- * 
+ *
  * Retorna status atual da integração Coinzz
- * 
+ *
  * Response: CoinzzStatusDTO
- * 
+ *
  * Referência: tasks.md Task 5.2.5
  */
 router.get('/status', async (req, res) => {
@@ -64,12 +64,12 @@ router.get('/status', async (req, res) => {
 
 /**
  * POST /integrations/coinzz/sync
- * 
+ *
  * Sincroniza manualmente vendas do Coinzz
- * 
+ *
  * Body: { forceFullSync?: boolean }
  * Response: SyncResultDTO
- * 
+ *
  * Referência: tasks.md Task 5.2.4
  */
 router.post('/sync', async (req, res) => {
@@ -79,11 +79,11 @@ router.post('/sync', async (req, res) => {
 
 /**
  * POST /integrations/coinzz/disconnect
- * 
+ *
  * Desconecta integração com Coinzz
- * 
+ *
  * Response: { success: true }
- * 
+ *
  * Referência: tasks.md Task 5.2.5
  */
 router.post('/disconnect', async (req, res) => {
