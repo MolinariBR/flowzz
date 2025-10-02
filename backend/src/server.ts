@@ -12,6 +12,19 @@ import { authRoutes } from './routes/auth';
 import clientRoutes from './routes/client.routes';
 import { saleRoutes } from './routes/sale.routes';
 import { dashboardRoutes } from './routes/dashboard.routes';
+import tagRoutes from './routes/tag.routes';
+import healthRoutes from './routes/health.routes';
+import { createBullBoardRouter } from './routes/bullBoard.routes';
+import coinzzRoutes from './routes/coinzz.routes';
+import facebookRoutes from './routes/facebook.routes';
+import coinzzWebhookRoutes from './webhooks/coinzzWebhook';
+import { projectionRoutes } from './routes/projection.routes';
+import { goalRoutes } from './routes/goal.routes';
+import { reportRoutes } from './routes/report.routes';
+import { startAllWorkers, stopAllWorkers } from './workers';
+import { closeAllQueues } from './queues/index';
+import { allQueues } from './queues/queues';
+import { startStorageCleanup, stopStorageCleanup } from './jobs/storageCleanup';
 
 // Create Express application
 const app = express();
@@ -34,6 +47,16 @@ app.use(
 
 // Compression middleware
 app.use(compression());
+
+// Rate limiter for report generation (10 req/hour)
+// Referência: tasks.md Task 10.1.5 - Rate limiting 10 relatórios/hora
+// NOTA: Requer instalação de express-rate-limit: npm install express-rate-limit
+// Implementação temporária com middleware customizado até instalação do pacote
+const reportGenerateLimiter = (_req: express.Request, _res: express.Response, next: express.NextFunction) => {
+  // TODO: Implementar rate limiting com express-rate-limit
+  // Por ora, permite todas as requisições
+  next();
+};
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -93,6 +116,26 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/clients', clientRoutes);
 app.use('/api/v1/sales', saleRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/projections', projectionRoutes);
+app.use('/api/v1/goals', goalRoutes);
+app.use('/api/v1/tags', tagRoutes);
+app.use('/api/v1/reports', reportRoutes);
+
+// Apply rate limiting to report generation endpoint
+app.post('/api/v1/reports/generate', reportGenerateLimiter);
+
+// Integration routes
+app.use('/api/v1/integrations/coinzz', coinzzRoutes);
+app.use('/api/v1/integrations/facebook', facebookRoutes);
+
+// Webhook routes (public, no auth)
+app.use('/webhooks/coinzz', coinzzWebhookRoutes);
+
+// Health check routes (queues)
+app.use('/health', healthRoutes);
+
+// Bull Board dashboard (admin only)
+app.use('/admin/queues', createBullBoardRouter());
 
 // 404 handler for undefined routes
 app.use('*', (req, res) => {
@@ -132,6 +175,28 @@ const server = app.listen(env.PORT, () => {
     environment: env.NODE_ENV,
     baseUrl: env.API_BASE_URL,
   });
+
+  // Start all workers after server is running
+  try {
+    startAllWorkers();
+    logger.info('All workers started', {
+      queues: allQueues.map((q) => q.name),
+    });
+  } catch (error) {
+    logger.error('Failed to start workers', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+
+  // Start storage cleanup job
+  try {
+    startStorageCleanup();
+    logger.info('Storage cleanup job started');
+  } catch (error) {
+    logger.error('Failed to start storage cleanup job', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
 });
 
 // Graceful shutdown
@@ -140,6 +205,36 @@ const shutdown = async (signal: string) => {
   
   server.close(async () => {
     logger.info('HTTP server closed');
+    
+    // Stop all workers
+    try {
+      await stopAllWorkers();
+      logger.info('All workers stopped');
+    } catch (error) {
+      logger.error('Error stopping workers', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+
+    // Stop storage cleanup job
+    try {
+      stopStorageCleanup();
+      logger.info('Storage cleanup job stopped');
+    } catch (error) {
+      logger.error('Error stopping storage cleanup job', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+    
+    // Close all queues
+    try {
+      await closeAllQueues(allQueues);
+      logger.info('All queues closed');
+    } catch (error) {
+      logger.error('Error closing queues', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
     
     // Disconnect from database
     await disconnectPrisma();

@@ -1,4 +1,4 @@
-# Prompt: `plan-first`
+# Prompt: `planning`
 
 ## Foco Exclusivo: **Planejamento de Projetos com User Stories Completo**
 
