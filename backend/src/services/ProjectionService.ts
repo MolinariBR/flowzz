@@ -14,7 +14,6 @@
  * - tasks.md: Task 9.1 - ProjectionService com algoritmos
  */
 
-import { PrismaClient } from '@prisma/client';
 import type {
   IProjectionService,
   ProjectionResult,
@@ -27,8 +26,7 @@ import type {
 import { TrendType } from '../interfaces/ProjectionService.interface';
 import { redisService } from '../shared/services/RedisService';
 import { logger } from '../shared/utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '../shared/config/database';
 
 export class ProjectionService implements IProjectionService {
   private readonly CACHE_PREFIX = 'projections';
@@ -63,12 +61,8 @@ export class ProjectionService implements IProjectionService {
       const sales = await this.getHistoricalSales(userId, historicalDays);
 
       // Validar dados suficientes
-      if (sales.length === 0) {
-        throw new Error('Nenhuma venda encontrada para calcular projeções');
-      }
-
       const daysCovered = this.getDaysCovered(sales);
-      if (daysCovered < this.MIN_HISTORICAL_DAYS) {
+      if (sales.length === 0 || daysCovered < this.MIN_HISTORICAL_DAYS) {
         throw new Error(
           `Dados históricos insuficientes. Necessário ${this.MIN_HISTORICAL_DAYS} dias, encontrado ${daysCovered} dias. ` +
           `Coletando dados: ${daysCovered}/${this.MIN_HISTORICAL_DAYS} dias.`,
@@ -383,11 +377,15 @@ export class ProjectionService implements IProjectionService {
     const recent7 = sortedSales.slice(0, 7);
     const previous7 = sortedSales.slice(7, 14);
 
-    const recentAvg = recent7.reduce((sum, sale) => sum + Number(sale.valor), 0) / 7;
-    const previousAvg = previous7.reduce((sum, sale) => sum + Number(sale.valor), 0) / 7;
+    const recentAvg = recent7.reduce((sum, sale) => sum + Number(sale.total_price || sale.valor || 0), 0) / 7;
+    const previousAvg = previous7.reduce((sum, sale) => sum + Number(sale.total_price || sale.valor || 0), 0) / 7;
+
+    if (previousAvg === 0 && recentAvg === 0) {
+      return TrendType.STABLE;
+    }
 
     if (previousAvg === 0) {
-      return TrendType.STABLE;
+      return recentAvg > 0 ? TrendType.GROWTH : TrendType.STABLE;
     }
 
     const changePercent = ((recentAvg - previousAvg) / previousAvg) * 100;
@@ -477,9 +475,9 @@ export class ProjectionService implements IProjectionService {
     // Multiplicadores por dia da semana (baseado em padrão típico e-commerce)
     const multipliers: Record<number, number> = {
       0: 0.85, // Domingo - 15% menos
-      1: 1.05, // Segunda - 5% mais
+      1: 1.10, // Segunda - 10% mais (início semana forte)
       2: 1.10, // Terça - 10% mais
-      3: 1.10, // Quarta - 10% mais
+      3: 1.05, // Quarta - 5% mais
       4: 1.10, // Quinta - 10% mais
       5: 1.05, // Sexta - 5% mais
       6: 0.85, // Sábado - 15% menos

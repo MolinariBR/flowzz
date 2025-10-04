@@ -42,6 +42,17 @@ export class DashboardController {
         return;
       }
 
+      // Validar period se fornecido
+      const period = req.query.period as string | undefined;
+      if (period && !['7', '30', '90'].includes(period)) {
+        res.status(400).json({
+          success: false,
+          error: 'Período inválido',
+          message: 'Período deve ser: 7, 30 ou 90 dias',
+        });
+        return;
+      }
+
       // Validar query parameters (se houver)
       const validatedQuery = dashboardMetricsQuerySchema.parse(req.query);
 
@@ -279,6 +290,56 @@ export class DashboardController {
       });
     } catch (error) {
       console.error('Error fetching cache stats:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+      });
+    }
+  };
+
+  /**
+   * GET /dashboard/top-clients - Top clientes por compra
+   * Referência: Teste E2E dashboard
+   */
+  getTopClients = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          error: 'Usuário não autenticado',
+        });
+        return;
+      }
+
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      // Buscar top clientes ordenados por total gasto
+      const { prisma } = await import('../shared/config/database');
+      const topClients = await prisma.client.findMany({
+        where: {
+          user_id: userId,
+        },
+        orderBy: {
+          total_spent: 'desc',
+        },
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          total_spent: true,
+          total_orders: true,
+          last_order_at: true,
+        },
+      });
+
+      res.status(200).json({
+        success: true,
+        data: topClients,
+      });
+    } catch (error) {
+      console.error('Error fetching top clients:', error);
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',

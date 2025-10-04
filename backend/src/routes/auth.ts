@@ -4,6 +4,7 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { authenticate } from '../shared/middlewares/authenticate';
+import { loginRateLimiter, registerRateLimiter } from '../shared/middlewares/rateLimiter';
 
 const router = Router();
 const authController = new AuthController();
@@ -13,11 +14,11 @@ const authController = new AuthController();
  * Referência: openapi.yaml Auth paths, dev-stories.md Dev Story 1.3
  */
 
-// POST /auth/register - Register new user
-router.post('/register', (req, res) => authController.register(req, res));
+// POST /auth/register - Register new user (rate limited: 3/hour)
+router.post('/register', registerRateLimiter, (req, res) => authController.register(req, res));
 
-// POST /auth/login - Login user
-router.post('/login', (req, res) => authController.login(req, res));
+// POST /auth/login - Login user (rate limited: 5/15min)
+router.post('/login', loginRateLimiter, (req, res) => authController.login(req, res));
 
 // POST /auth/refresh - Refresh access token
 router.post('/refresh', (req, res) => authController.refresh(req, res));

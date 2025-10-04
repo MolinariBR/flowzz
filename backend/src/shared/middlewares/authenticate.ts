@@ -106,11 +106,16 @@ export const authorize = (allowedRoles: string[]) => {
 };
 
 /**
- * Admin-only authorization middleware
+ * Admin-only authorization middleware (ADMIN or SUPER_ADMIN)
  */
-export const requireAdmin = authorize(['ADMIN']);
+export const requireAdmin = authorize(['ADMIN', 'SUPER_ADMIN']);
+
+/**
+ * Super Admin-only authorization middleware
+ */
+export const requireSuperAdmin = authorize(['SUPER_ADMIN']);
 
 /**
  * User or Admin authorization middleware
  */
-export const requireAuth = authorize(['USER', 'ADMIN']);
+export const requireAuth = authorize(['USER', 'ADMIN', 'SUPER_ADMIN']);

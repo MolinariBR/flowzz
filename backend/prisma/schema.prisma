@@ -43,6 +43,8 @@ model User {
   activities   Activity[]
   subscriptions Subscription[]
   refresh_tokens RefreshToken[]
+  admin_actions AuditLog[] @relation("AdminActions")
+  user_actions  AuditLog[] @relation("UserActions")
   plan         Plan?     @relation(fields: [plan_id], references: [id])
 
   // Indexes for performance
@@ -371,6 +373,7 @@ model Activity {
 enum Role {
   USER
   ADMIN
+  SUPER_ADMIN
 }
 
 enum SubscriptionStatus {
@@ -432,4 +435,32 @@ enum PeriodType {
   MONTHLY
   QUARTERLY
   YEARLY
+}
+
+// ================================
+// AUDIT LOG MODEL
+// ================================
+
+// AuditLog model - Track admin actions for security and compliance
+// Referência: tasks.md Task 11.2.3, design.md Security - Audit Logs
+model AuditLog {
+  id            String   @id @default(uuid())
+  admin_id      String
+  action        String   // suspend, reactivate, impersonate, update, delete, reset_password
+  target_user_id String?
+  details       Json?    // Detalhes adicionais da ação
+  ip_address    String?
+  user_agent    String?
+  created_at    DateTime @default(now())
+
+  // Relations
+  admin User @relation("AdminActions", fields: [admin_id], references: [id], onDelete: Cascade)
+  target_user User? @relation("UserActions", fields: [target_user_id], references: [id], onDelete: SetNull)
+
+  // Indexes for performance
+  @@index([admin_id])
+  @@index([target_user_id])
+  @@index([action])
+  @@index([created_at])
+  @@map("audit_logs")
 }

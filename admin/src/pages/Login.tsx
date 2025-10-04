@@ -32,10 +32,17 @@ export const Login: React.FC = () => {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true)
     try {
+      console.log('📝 Submetendo login...');
       await login(data.email, data.password)
+      console.log('✅ Login concluído, navegando para /dashboard');
       toast.success('Login realizado com sucesso!')
-      navigate('/dashboard')
+      
+      // Dar um pequeno delay para garantir que o estado foi persistido
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true })
+      }, 100);
     } catch (error) {
+      console.error('❌ Erro no login:', error);
       toast.error('Erro ao fazer login. Verifique suas credenciais.')
     } finally {
       setIsLoading(false)

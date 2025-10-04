@@ -47,6 +47,11 @@ export const AdminTopbar: React.FC = () => {
     const breadcrumbs = [{ label: 'Admin', href: '/dashboard' }]
 
     pathSegments.forEach((segment, index) => {
+      // Pular 'dashboard' se for o primeiro segmento (já está em 'Admin')
+      if (segment === 'dashboard' && index === 0) {
+        return
+      }
+      
       const href = '/' + pathSegments.slice(0, index + 1).join('/')
       let label = segment.charAt(0).toUpperCase() + segment.slice(1)
       

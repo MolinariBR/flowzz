@@ -8,6 +8,8 @@ import compression from 'compression';
 import { env } from './shared/config/env';
 import { logger } from './shared/utils/logger';
 import { checkDatabaseHealth, disconnectPrisma } from './shared/config/database';
+import { globalRateLimiter } from './shared/middlewares/rateLimiter';
+import { sanitizeInput, preventNoSqlInjection } from './shared/middlewares/sanitize';
 import { authRoutes } from './routes/auth';
 import clientRoutes from './routes/client.routes';
 import { saleRoutes } from './routes/sale.routes';
@@ -21,6 +23,7 @@ import coinzzWebhookRoutes from './webhooks/coinzzWebhook';
 import { projectionRoutes } from './routes/projection.routes';
 import { goalRoutes } from './routes/goal.routes';
 import { reportRoutes } from './routes/report.routes';
+import adminRoutes from './routes/admin.routes';
 import { startAllWorkers, stopAllWorkers } from './workers';
 import { closeAllQueues } from './queues/index';
 import { allQueues } from './queues/queues';
@@ -36,9 +39,29 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // CORS configuration
+const allowedOrigins = [
+  env.FRONTEND_USER_URL,
+  env.FRONTEND_ADMIN_URL,
+  env.FRONTEND_LANDING_URL,
+];
+
+// Add production URLs if available
+if (env.NODE_ENV === 'production') {
+  allowedOrigins.push(env.API_BASE_URL);
+}
+
 app.use(
   cors({
-    origin: env.NODE_ENV === 'production' ? [env.API_BASE_URL] : true,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.includes(origin) || env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
@@ -48,19 +71,20 @@ app.use(
 // Compression middleware
 app.use(compression());
 
-// Rate limiter for report generation (10 req/hour)
-// Referência: tasks.md Task 10.1.5 - Rate limiting 10 relatórios/hora
-// NOTA: Requer instalação de express-rate-limit: npm install express-rate-limit
-// Implementação temporária com middleware customizado até instalação do pacote
-const reportGenerateLimiter = (_req: express.Request, _res: express.Response, next: express.NextFunction) => {
-  // TODO: Implementar rate limiting com express-rate-limit
-  // Por ora, permite todas as requisições
-  next();
-};
-
-// Body parsing middleware
+// Body parsing middleware (BEFORE sanitization)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Security middlewares - CRITICAL ORDER
+// Referência: tasks.md Task 12.2, 12.3
+// 1. Global rate limiter (100 req/min per IP)
+app.use(globalRateLimiter);
+
+// 2. XSS sanitization (sanitize all inputs)
+app.use(sanitizeInput);
+
+// 3. NoSQL injection prevention
+app.use(preventNoSqlInjection);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -120,9 +144,7 @@ app.use('/api/v1/projections', projectionRoutes);
 app.use('/api/v1/goals', goalRoutes);
 app.use('/api/v1/tags', tagRoutes);
 app.use('/api/v1/reports', reportRoutes);
-
-// Apply rate limiting to report generation endpoint
-app.post('/api/v1/reports/generate', reportGenerateLimiter);
+app.use('/api/v1/admin', adminRoutes);
 
 // Integration routes
 app.use('/api/v1/integrations/coinzz', coinzzRoutes);
@@ -256,7 +278,7 @@ process.on('unhandledRejection', (reason, promise) => {
     reason,
     promise,
   });
-  // Don't exit in development
+  // Don't exit in development or test
   if (env.NODE_ENV === 'production') {
     process.exit(1);
   }
@@ -271,7 +293,10 @@ process.on('uncaughtException', error => {
       stack: error.stack,
     },
   });
-  process.exit(1);
+  // Don't exit in test environment
+  if (env.NODE_ENV !== 'test') {
+    process.exit(1);
+  }
 });
 
 // Handle process termination signals

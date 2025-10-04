@@ -4,15 +4,44 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DashboardService } from '../services/DashboardService';
 
-// Mock das dependências
-vi.mock('../repositories/DashboardRepository');
-vi.mock('../shared/services/RedisService');
+// Mock do DashboardRepository
+const mockGetVendas = vi.fn();
+const mockGetChartData = vi.fn();
+const mockGetActivities = vi.fn();
+
+vi.mock('../repositories/DashboardRepository', () => ({
+  DashboardRepository: vi.fn().mockImplementation(() => ({
+    getVendas: mockGetVendas,
+    getGastos: vi.fn().mockResolvedValue([]),
+    getChartData: mockGetChartData,
+    getActivities: mockGetActivities,
+    getClientCount: vi.fn().mockResolvedValue(0),
+    getPendingSalesCount: vi.fn().mockResolvedValue(0),
+  }))
+}));
+
+// Mock do RedisService
+vi.mock('../shared/services/RedisService', () => ({
+  redisService: {
+    getDashboardMetrics: vi.fn().mockResolvedValue(null),
+    setDashboardMetrics: vi.fn().mockResolvedValue(undefined),
+    deleteDashboardMetrics: vi.fn().mockResolvedValue(undefined),
+    deletePattern: vi.fn().mockResolvedValue(undefined),
+    getStats: vi.fn().mockResolvedValue({ hits: 0, misses: 0 }),
+  },
+}));
 
 describe('DashboardService', () => {
   let dashboardService: DashboardService;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Configurar mocks padrão
+    mockGetVendas.mockResolvedValue([]);
+    mockGetChartData.mockResolvedValue([]);
+    mockGetActivities.mockResolvedValue([]);
+    
     dashboardService = new DashboardService();
   });
 

@@ -8,6 +8,15 @@ coverage/
 *.lcov
 .nyc_output
 
+# Playwright
+playwright-report/
+playwright-results.json
+test-results/
+e2e/.auth/*.json
+e2e/screenshots/
+e2e/videos/
+.playwright/
+
 # Production
 build/
 dist/

@@ -13,13 +13,54 @@
 // - Cálculo de progresso para REVENUE, PROFIT, ORDERS, CUSTOM
 // - Soft delete (is_active = false)
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { GoalTargetType, PeriodType } from '@prisma/client';
+import { GoalProgressStatus } from '../../interfaces/GoalService.interface';
+
+// Mock do prisma ANTES do import do service
+// Usar factory function para evitar problemas de hoisting
+vi.mock('../../shared/config/database', () => ({
+  prisma: {
+    goal: {
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+      delete: vi.fn(),
+      count: vi.fn(),
+    },
+    sale: {
+      aggregate: vi.fn(),
+      count: vi.fn(),
+    },
+    ad: {
+      aggregate: vi.fn(),
+      findMany: vi.fn(),
+    },
+  },
+}));
+
+// Importar service DEPOIS do mock
 import { GoalService } from '../../services/GoalService';
+import { prisma } from '../../shared/config/database';
+
+interface CreateGoalDTO {
+  title: string;
+  target_type: GoalTargetType;
+  target_value: number;
+  period_type: PeriodType;
+  period_start: Date;
+  period_end: Date;
+}
+
+const testUserId = 'test-user-123';
 
 describe('GoalService', () => {
   let goalService: GoalService;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     goalService = new GoalService();
   });
 
@@ -47,10 +88,10 @@ describe('GoalService', () => {
   describe('createGoal - Story 4.2 Cenário: Criar primeira meta', () => {
     it('deve criar primeira meta com sucesso', async () => {
       // Gherkin: "Dado que não tenho metas ativas"
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(0);
+      vi.mocked(prisma.goal.count).mockResolvedValue(0);
 
       // Mock sales para calcular progresso inicial
-      vi.mocked(mockPrisma.sale.aggregate).mockResolvedValue({
+      vi.mocked(prisma.sale.aggregate).mockResolvedValue({
         _sum: { total_price: 10950 }, // R$ 10.950 já faturado
       });
 
@@ -69,7 +110,7 @@ describe('GoalService', () => {
         updated_at: new Date(),
       };
 
-      vi.mocked(mockPrisma.goal.create).mockResolvedValue(newGoal);
+      vi.mocked(prisma.goal.create).mockResolvedValue(newGoal);
 
       // Gherkin: "Quando clico em 'Criar Meta'"
       const goalData: CreateGoalDTO = {
@@ -97,7 +138,7 @@ describe('GoalService', () => {
       expect(result.days_remaining).toBeGreaterThanOrEqual(0);
 
       // Verificar que foi criada no banco
-      expect(mockPrisma.goal.create).toHaveBeenCalledWith({
+      expect(prisma.goal.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           user_id: testUserId,
           title: goalData.title,
@@ -109,7 +150,7 @@ describe('GoalService', () => {
 
     it('deve lançar erro quando atingir limite de 5 metas ativas', async () => {
       // Gherkin: "Critério: Máximo 5 metas ativas simultâneas"
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(5);
+      vi.mocked(prisma.goal.count).mockResolvedValue(5);
 
       const goalData: CreateGoalDTO = {
         title: 'Meta extra',
@@ -126,13 +167,13 @@ describe('GoalService', () => {
     });
 
     it('deve criar meta com target_type PROFIT', async () => {
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(0);
-      vi.mocked(mockPrisma.sale.aggregate).mockResolvedValue({
-        _sum: { total_price: 10000 },
-      });
-      vi.mocked(mockPrisma.adsExpense.aggregate).mockResolvedValue({
-        _sum: { amount_spent: 3000 },
-      });
+      vi.mocked(prisma.goal.count).mockResolvedValue(0);
+      vi.mocked(prisma.sale.aggregate).mockResolvedValue({
+        _sum: { total_price: 10000 as any },
+      } as any);
+      vi.mocked(prisma.ad.aggregate).mockResolvedValue({
+        _sum: { spend: 3000 as any },
+      } as any);
 
       const newGoal = {
         id: 'goal-456',
@@ -149,7 +190,7 @@ describe('GoalService', () => {
         updated_at: new Date(),
       };
 
-      vi.mocked(mockPrisma.goal.create).mockResolvedValue(newGoal);
+      vi.mocked(prisma.goal.create).mockResolvedValue(newGoal);
 
       const goalData: CreateGoalDTO = {
         title: 'Lucrar R$ 5.000',
@@ -167,8 +208,8 @@ describe('GoalService', () => {
     });
 
     it('deve criar meta com target_type ORDERS', async () => {
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(0);
-      vi.mocked(mockPrisma.sale.count).mockResolvedValue(150);
+      vi.mocked(prisma.goal.count).mockResolvedValue(0);
+      vi.mocked(prisma.sale.count).mockResolvedValue(150);
 
       const newGoal = {
         id: 'goal-789',
@@ -185,7 +226,7 @@ describe('GoalService', () => {
         updated_at: new Date(),
       };
 
-      vi.mocked(mockPrisma.goal.create).mockResolvedValue(newGoal);
+      vi.mocked(prisma.goal.create).mockResolvedValue(newGoal);
 
       const goalData: CreateGoalDTO = {
         title: 'Realizar 200 vendas',
@@ -203,7 +244,7 @@ describe('GoalService', () => {
     });
 
     it('deve criar meta com target_type CUSTOM', async () => {
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(0);
+      vi.mocked(prisma.goal.count).mockResolvedValue(0);
 
       const newGoal = {
         id: 'goal-custom',
@@ -220,7 +261,7 @@ describe('GoalService', () => {
         updated_at: new Date(),
       };
 
-      vi.mocked(mockPrisma.goal.create).mockResolvedValue(newGoal);
+      vi.mocked(prisma.goal.create).mockResolvedValue(newGoal);
 
       const goalData: CreateGoalDTO = {
         title: 'Meta personalizada',
@@ -240,10 +281,10 @@ describe('GoalService', () => {
 
   describe('createGoal - Story 4.2 Cenário: Atingir meta antes do prazo', () => {
     it('deve marcar meta como COMPLETED quando current_value >= target_value', async () => {
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(0);
+      vi.mocked(prisma.goal.count).mockResolvedValue(0);
 
       // Gherkin: "Dado que tenho meta de R$ 15.000 E já faturei R$ 15.200"
-      vi.mocked(mockPrisma.sale.aggregate).mockResolvedValue({
+      vi.mocked(prisma.sale.aggregate).mockResolvedValue({
         _sum: { total_price: 15200 }, // Já atingiu a meta!
       });
 
@@ -262,7 +303,7 @@ describe('GoalService', () => {
         updated_at: new Date(),
       };
 
-      vi.mocked(mockPrisma.goal.create).mockResolvedValue(newGoal);
+      vi.mocked(prisma.goal.create).mockResolvedValue(newGoal);
 
       const goalData: CreateGoalDTO = {
         title: 'Faturar R$ 15.000',
@@ -291,7 +332,7 @@ describe('GoalService', () => {
         createMockGoal('goal-2', 'Meta 2', 'PROFIT', 5000, 3000, true),
       ];
 
-      vi.mocked(mockPrisma.goal.findMany).mockResolvedValue(mockGoals);
+      vi.mocked(prisma.goal.findMany).mockResolvedValue(mockGoals);
 
       const result = await goalService.getGoals(testUserId, { is_active: true });
 
@@ -306,7 +347,7 @@ describe('GoalService', () => {
         createMockGoal('goal-monthly', 'Meta Mensal', 'REVENUE', 10000, 5000, true, 'MONTHLY'),
       ];
 
-      vi.mocked(mockPrisma.goal.findMany).mockResolvedValue(mockGoals);
+      vi.mocked(prisma.goal.findMany).mockResolvedValue(mockGoals);
 
       const result = await goalService.getGoals(testUserId, { period_type: 'MONTHLY' as PeriodType });
 
@@ -319,7 +360,7 @@ describe('GoalService', () => {
         createMockGoal('goal-revenue', 'Meta Receita', 'REVENUE', 10000, 5000, true),
       ];
 
-      vi.mocked(mockPrisma.goal.findMany).mockResolvedValue(mockGoals);
+      vi.mocked(prisma.goal.findMany).mockResolvedValue(mockGoals);
 
       const result = await goalService.getGoals(testUserId, { target_type: 'REVENUE' as GoalTargetType });
 
@@ -328,7 +369,7 @@ describe('GoalService', () => {
     });
 
     it('deve retornar array vazio quando não há metas', async () => {
-      vi.mocked(mockPrisma.goal.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.goal.findMany).mockResolvedValue([]);
 
       const result = await goalService.getGoals(testUserId);
 
@@ -340,7 +381,7 @@ describe('GoalService', () => {
   describe('getGoalById', () => {
     it('deve retornar meta específica com progresso calculado', async () => {
       const mockGoal = createMockGoal('goal-123', 'Minha Meta', 'REVENUE', 15000, 10950, true);
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(mockGoal);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(mockGoal);
 
       const result = await goalService.getGoalById(testUserId, 'goal-123');
 
@@ -352,7 +393,7 @@ describe('GoalService', () => {
     });
 
     it('deve lançar erro quando meta não existe', async () => {
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(null);
 
       await expect(
         goalService.getGoalById(testUserId, 'non-existent')
@@ -362,7 +403,7 @@ describe('GoalService', () => {
     it('deve lançar erro quando meta não pertence ao usuário', async () => {
       const mockGoal = createMockGoal('goal-other', 'Meta de outro', 'REVENUE', 10000, 5000, true);
       mockGoal.user_id = 'other-user-456';
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(mockGoal);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(mockGoal);
 
       await expect(
         goalService.getGoalById(testUserId, 'goal-other')
@@ -373,10 +414,10 @@ describe('GoalService', () => {
   describe('updateGoal', () => {
     it('deve atualizar meta parcialmente', async () => {
       const mockGoal = createMockGoal('goal-update', 'Meta Original', 'REVENUE', 15000, 10000, true);
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(mockGoal);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(mockGoal);
 
       const updatedGoal = { ...mockGoal, title: 'Meta Atualizada' };
-      vi.mocked(mockPrisma.goal.update).mockResolvedValue(updatedGoal);
+      vi.mocked(prisma.goal.update).mockResolvedValue(updatedGoal);
 
       const updateData: UpdateGoalDTO = {
         title: 'Meta Atualizada',
@@ -385,7 +426,7 @@ describe('GoalService', () => {
       const result = await goalService.updateGoal(testUserId, 'goal-update', updateData);
 
       expect(result.title).toBe('Meta Atualizada');
-      expect(mockPrisma.goal.update).toHaveBeenCalledWith({
+      expect(prisma.goal.update).toHaveBeenCalledWith({
         where: { id: 'goal-update' },
         data: expect.objectContaining({
           title: 'Meta Atualizada',
@@ -396,10 +437,10 @@ describe('GoalService', () => {
 
     it('deve atualizar target_value', async () => {
       const mockGoal = createMockGoal('goal-update-value', 'Meta', 'REVENUE', 15000, 10000, true);
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(mockGoal);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(mockGoal);
 
       const updatedGoal = { ...mockGoal, target_value: 20000 };
-      vi.mocked(mockPrisma.goal.update).mockResolvedValue(updatedGoal);
+      vi.mocked(prisma.goal.update).mockResolvedValue(updatedGoal);
 
       const updateData: UpdateGoalDTO = {
         target_value: 20000,
@@ -412,11 +453,11 @@ describe('GoalService', () => {
 
     it('deve atualizar period_end', async () => {
       const mockGoal = createMockGoal('goal-update-date', 'Meta', 'REVENUE', 15000, 10000, true);
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(mockGoal);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(mockGoal);
 
       const newEndDate = new Date('2025-12-31');
       const updatedGoal = { ...mockGoal, period_end: newEndDate };
-      vi.mocked(mockPrisma.goal.update).mockResolvedValue(updatedGoal);
+      vi.mocked(prisma.goal.update).mockResolvedValue(updatedGoal);
 
       const updateData: UpdateGoalDTO = {
         period_end: newEndDate,
@@ -428,7 +469,7 @@ describe('GoalService', () => {
     });
 
     it('deve lançar erro quando meta não existe', async () => {
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(null);
 
       await expect(
         goalService.updateGoal(testUserId, 'non-existent', { title: 'Novo' })
@@ -438,7 +479,7 @@ describe('GoalService', () => {
     it('deve lançar erro quando meta não pertence ao usuário', async () => {
       const mockGoal = createMockGoal('goal-other', 'Meta de outro', 'REVENUE', 10000, 5000, true);
       mockGoal.user_id = 'other-user-456';
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(mockGoal);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(mockGoal);
 
       await expect(
         goalService.updateGoal(testUserId, 'goal-other', { title: 'Novo' })
@@ -449,14 +490,14 @@ describe('GoalService', () => {
   describe('deleteGoal - Soft Delete', () => {
     it('deve fazer soft delete marcando is_active como false', async () => {
       const mockGoal = createMockGoal('goal-delete', 'Meta', 'REVENUE', 15000, 10000, true);
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(mockGoal);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(mockGoal);
 
       const deletedGoal = { ...mockGoal, is_active: false };
-      vi.mocked(mockPrisma.goal.update).mockResolvedValue(deletedGoal);
+      vi.mocked(prisma.goal.update).mockResolvedValue(deletedGoal);
 
       await goalService.deleteGoal(testUserId, 'goal-delete');
 
-      expect(mockPrisma.goal.update).toHaveBeenCalledWith({
+      expect(prisma.goal.update).toHaveBeenCalledWith({
         where: { id: 'goal-delete' },
         data: {
           is_active: false,
@@ -466,7 +507,7 @@ describe('GoalService', () => {
     });
 
     it('deve lançar erro quando meta não existe', async () => {
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(null);
 
       await expect(
         goalService.deleteGoal(testUserId, 'non-existent')
@@ -476,7 +517,7 @@ describe('GoalService', () => {
     it('deve lançar erro quando meta não pertence ao usuário', async () => {
       const mockGoal = createMockGoal('goal-other', 'Meta de outro', 'REVENUE', 10000, 5000, true);
       mockGoal.user_id = 'other-user-456';
-      vi.mocked(mockPrisma.goal.findUnique).mockResolvedValue(mockGoal);
+      vi.mocked(prisma.goal.findUnique).mockResolvedValue(mockGoal);
 
       await expect(
         goalService.deleteGoal(testUserId, 'goal-other')
@@ -485,11 +526,15 @@ describe('GoalService', () => {
   });
 
   describe('calculateProgress', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
     it('deve calcular progresso para meta REVENUE', async () => {
       const mockGoal = createMockGoal('goal-revenue', 'Meta Receita', 'REVENUE', 15000, 0, true);
-      vi.mocked(mockPrisma.sale.aggregate).mockResolvedValue({
+      vi.mocked(prisma.sale.aggregate).mockResolvedValue({
         _sum: { total_price: 10950 },
-      });
+      } as any);
 
       const result = await goalService.calculateProgress(mockGoal);
 
@@ -500,12 +545,12 @@ describe('GoalService', () => {
 
     it('deve calcular progresso para meta PROFIT', async () => {
       const mockGoal = createMockGoal('goal-profit', 'Meta Lucro', 'PROFIT', 5000, 0, true);
-      vi.mocked(mockPrisma.sale.aggregate).mockResolvedValue({
+      vi.mocked(prisma.sale.aggregate).mockResolvedValue({
         _sum: { total_price: 10000 },
-      });
-      vi.mocked(mockPrisma.adsExpense.aggregate).mockResolvedValue({
-        _sum: { amount_spent: 3000 },
-      });
+      } as any);
+      vi.mocked(prisma.ad.aggregate).mockResolvedValue({
+        _sum: { spend: 3000 },
+      } as any);
 
       const result = await goalService.calculateProgress(mockGoal);
 
@@ -516,7 +561,7 @@ describe('GoalService', () => {
 
     it('deve calcular progresso para meta ORDERS', async () => {
       const mockGoal = createMockGoal('goal-orders', 'Meta Vendas', 'ORDERS', 200, 0, true);
-      vi.mocked(mockPrisma.sale.count).mockResolvedValue(150);
+      vi.mocked(prisma.sale.count).mockResolvedValue(150);
 
       const result = await goalService.calculateProgress(mockGoal);
 
@@ -537,7 +582,7 @@ describe('GoalService', () => {
 
     it('deve retornar NOT_STARTED quando current_value = 0', async () => {
       const mockGoal = createMockGoal('goal-not-started', 'Meta', 'REVENUE', 15000, 0, true);
-      vi.mocked(mockPrisma.sale.aggregate).mockResolvedValue({
+      vi.mocked(prisma.sale.aggregate).mockResolvedValue({
         _sum: { total_price: 0 },
       });
 
@@ -549,7 +594,7 @@ describe('GoalService', () => {
 
     it('deve retornar ALMOST_THERE quando progresso >= 80% e < 100%', async () => {
       const mockGoal = createMockGoal('goal-almost', 'Meta', 'REVENUE', 10000, 0, true);
-      vi.mocked(mockPrisma.sale.aggregate).mockResolvedValue({
+      vi.mocked(prisma.sale.aggregate).mockResolvedValue({
         _sum: { total_price: 8500 }, // 85%
       });
 
@@ -561,7 +606,7 @@ describe('GoalService', () => {
 
     it('deve retornar COMPLETED quando progresso >= 100%', async () => {
       const mockGoal = createMockGoal('goal-completed', 'Meta', 'REVENUE', 10000, 0, true);
-      vi.mocked(mockPrisma.sale.aggregate).mockResolvedValue({
+      vi.mocked(prisma.sale.aggregate).mockResolvedValue({
         _sum: { total_price: 12000 }, // 120%
       });
 
@@ -578,14 +623,14 @@ describe('GoalService', () => {
       const expiredGoal = createMockGoal('goal-expired', 'Meta Expirada', 'REVENUE', 15000, 12500, true);
       expiredGoal.period_end = new Date('2024-10-31'); // Data passada
 
-      vi.mocked(mockPrisma.goal.findMany).mockResolvedValue([expiredGoal]);
-      vi.mocked(mockPrisma.goal.update).mockResolvedValue(expiredGoal);
+      vi.mocked(prisma.goal.findMany).mockResolvedValue([expiredGoal]);
+      vi.mocked(prisma.goal.update).mockResolvedValue(expiredGoal);
 
       // Gherkin: "Quando data vence"
       await goalService.expireOldGoals();
 
       // Gherkin: "Então meta fica marcada como 'Não atingida' E vejo '83% atingido'"
-      expect(mockPrisma.goal.update).toHaveBeenCalledWith({
+      expect(prisma.goal.update).toHaveBeenCalledWith({
         where: { id: 'goal-expired' },
         data: {
           is_active: false,
@@ -598,18 +643,18 @@ describe('GoalService', () => {
       const completedGoal = createMockGoal('goal-completed', 'Meta Completa', 'REVENUE', 15000, 15200, true);
       completedGoal.period_end = new Date('2024-10-31');
 
-      vi.mocked(mockPrisma.goal.findMany).mockResolvedValue([completedGoal]);
+      vi.mocked(prisma.goal.findMany).mockResolvedValue([completedGoal]);
 
       await goalService.expireOldGoals();
 
       // Não deve atualizar meta já completa
-      expect(mockPrisma.goal.update).not.toHaveBeenCalled();
+      expect(prisma.goal.update).not.toHaveBeenCalled();
     });
   });
 
   describe('canCreateGoal', () => {
     it('deve retornar true quando tem menos de 5 metas ativas', async () => {
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(3);
+      vi.mocked(prisma.goal.count).mockResolvedValue(3);
 
       const canCreate = await goalService.canCreateGoal(testUserId);
 
@@ -617,7 +662,7 @@ describe('GoalService', () => {
     });
 
     it('deve retornar false quando tem 5 metas ativas', async () => {
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(5);
+      vi.mocked(prisma.goal.count).mockResolvedValue(5);
 
       const canCreate = await goalService.canCreateGoal(testUserId);
 
@@ -625,7 +670,7 @@ describe('GoalService', () => {
     });
 
     it('deve retornar true quando tem 0 metas ativas', async () => {
-      vi.mocked(mockPrisma.goal.count).mockResolvedValue(0);
+      vi.mocked(prisma.goal.count).mockResolvedValue(0);
 
       const canCreate = await goalService.canCreateGoal(testUserId);
 
@@ -686,7 +731,7 @@ describe('GoalService', () => {
       mockGoals[1].period_end = new Date('2025-03-03');
       mockGoals[1].updated_at = new Date('2025-03-03');
 
-      vi.mocked(mockPrisma.goal.findMany).mockResolvedValue(mockGoals);
+      vi.mocked(prisma.goal.findMany).mockResolvedValue(mockGoals);
 
       const stats = await goalService.getGoalStatistics(testUserId);
 
@@ -699,7 +744,7 @@ describe('GoalService', () => {
     });
 
     it('deve retornar estatísticas vazias quando não há metas', async () => {
-      vi.mocked(mockPrisma.goal.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.goal.findMany).mockResolvedValue([]);
 
       const stats = await goalService.getGoalStatistics(testUserId);
 

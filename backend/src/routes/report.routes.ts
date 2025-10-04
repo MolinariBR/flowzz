@@ -14,6 +14,7 @@
 import { Router } from 'express';
 import { ReportController } from '../controllers/ReportController';
 import { authenticate } from '../shared/middlewares/authenticate';
+import { reportGenerationRateLimiter } from '../shared/middlewares/rateLimiter';
 
 const router = Router();
 const reportController = new ReportController();
@@ -53,7 +54,7 @@ const reportController = new ReportController();
  *   }
  * }
  */
-router.post('/generate', authenticate, reportController.generateReport);
+router.post('/generate', authenticate, reportGenerationRateLimiter, reportController.generateReport);
 
 /**
  * GET /api/v1/reports/:id/status

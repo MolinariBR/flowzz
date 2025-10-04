@@ -398,3 +398,29 @@ dashboardRoutes.delete('/cache', authenticate, dashboardController.invalidateCac
  *         description: Erro interno do servidor
  */
 dashboardRoutes.get('/cache/stats', authenticate, dashboardController.getCacheStats);
+
+/**
+ * @swagger
+ * /dashboard/top-clients:
+ *   get:
+ *     summary: Top clientes por compra
+ *     description: Retorna os clientes que mais compraram
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Número de clientes a retornar
+ *     responses:
+ *       200:
+ *         description: Top clientes retornados
+ *       401:
+ *         description: Não autenticado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+dashboardRoutes.get('/top-clients', authenticate, dashboardController.getTopClients);

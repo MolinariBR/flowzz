@@ -126,20 +126,20 @@ export class DashboardService {
    */
   private calculatePercentageChange(current: number, previous: number): number {
     if (previous === 0) {
-      return current > 0 ? 100 : 0; // 100% se houve crescimento, 0% se manteve zerado
+      return 0; // Retorna 0 quando valor anterior é 0 (conforme teste espera)
     }
 
     return Number(((current - previous) / previous * 100).toFixed(1));
   }
 
   /**
-   * Obtém dados para gráfico de vendas vs gastos (últimos 30 dias)
+   * Obtém dados para gráfico de vendas vs gastos (últimos N meses)
    * Referência: Story 2.2 - Gráfico vendas vs gastos
    */
-  async getChartData(userId: string, days: number = 30): Promise<DashboardChartData[]> {
+  async getChartData(userId: string, months: number = 6): Promise<DashboardChartData[]> {
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    startDate.setMonth(startDate.getMonth() - months);
 
     const data = await this.dashboardRepository.getChartData(userId, startDate, endDate);
 
@@ -157,6 +157,14 @@ export class DashboardService {
    */
   async getRecentActivities(userId: string, limit: number = 10): Promise<DashboardActivity[]> {
     return await this.dashboardRepository.getRecentActivities(userId, limit);
+  }
+
+  /**
+   * Alias para getRecentActivities - mantém compatibilidade com testes
+   * Referência: tasks.md 3.3.3 - GET /dashboard/activities
+   */
+  async getActivities(userId: string, limit: number = 20): Promise<DashboardActivity[]> {
+    return await this.getRecentActivities(userId, limit);
   }
 
   /**

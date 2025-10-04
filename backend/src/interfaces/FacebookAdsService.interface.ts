@@ -281,13 +281,13 @@ export interface IFacebookAdsService {
    * @param empresaId - ID da empresa
    * @param startDate - Data inicial
    * @param endDate - Data final
-   * @returns ROAS percentual
+   * @returns ROAS percentual ou undefined se não houver dados suficientes
    */
   calculateROAS(
     empresaId: string,
     startDate: Date,
     endDate: Date
-  ): Promise<number>;
+  ): Promise<number | undefined>;
 
   /**
    * Obter status da integração

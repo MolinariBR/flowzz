@@ -515,7 +515,7 @@ export class FacebookAdsService implements IFacebookAdsService {
     empresaId: string,
     startDate: Date,
     endDate: Date,
-  ): Promise<number> {
+  ): Promise<number | undefined> {
     try {
       // 1. Buscar receita de vendas no período
       const sales = await prisma.sale.aggregate({
@@ -553,8 +553,8 @@ export class FacebookAdsService implements IFacebookAdsService {
       const totalSpend = ads._sum?.spend || 0;
 
       // 3. Calcular ROAS
-      if (totalSpend === 0) {
-        return 0;
+      if (totalSpend === 0 || totalRevenue === 0) {
+        return undefined; // Retorna undefined quando não há dados suficientes
       }
 
       const roas = (Number(totalRevenue) / Number(totalSpend)) * 100;

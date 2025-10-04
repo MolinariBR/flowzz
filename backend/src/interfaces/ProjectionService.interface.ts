@@ -41,6 +41,7 @@ export enum TrendType {
 export interface SaleData {
   id: string;
   valor: Decimal;
+  total_price?: Decimal; // Agregado do Prisma
   data_venda: Date;
   status: string;
 }

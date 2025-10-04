@@ -13,7 +13,7 @@
  * - tasks.md: Task 9.2 - GoalService
  */
 
-import { PrismaClient, GoalTargetType } from '@prisma/client';
+import { GoalTargetType } from '@prisma/client';
 import type { Goal, PeriodType } from '@prisma/client';
 import type {
   IGoalService,
@@ -25,8 +25,7 @@ import type {
 } from '../interfaces/GoalService.interface';
 import { GoalProgressStatus } from '../interfaces/GoalService.interface';
 import { logger } from '../shared/utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '../shared/config/database';
 
 export class GoalService implements IGoalService {
   private readonly MAX_ACTIVE_GOALS = 5;
@@ -47,7 +46,7 @@ export class GoalService implements IGoalService {
       const canCreate = await this.canCreateGoal(userId);
       if (!canCreate) {
         throw new Error(
-          `Limite de ${this.MAX_ACTIVE_GOALS} metas ativas atingido. Desative ou conclua uma meta existente para criar nova.`,
+          `Você já atingiu o limite de ${this.MAX_ACTIVE_GOALS} metas ativas`,
         );
       }
 
@@ -148,7 +147,7 @@ export class GoalService implements IGoalService {
       }
 
       if (goal.user_id !== userId) {
-        throw new Error('Meta não pertence ao usuário');
+        throw new Error('Você não tem permissão para acessar esta meta');
       }
 
       return this.calculateProgress(goal);
@@ -216,7 +215,17 @@ export class GoalService implements IGoalService {
   async deleteGoal(goalId: string, userId: string): Promise<void> {
     try {
       // Verificar se meta existe e pertence ao usuário
-      await this.getGoalById(goalId, userId);
+      const goal = await prisma.goal.findUnique({
+        where: { id: goalId },
+      });
+
+      if (!goal) {
+        throw new Error('Meta não encontrada');
+      }
+
+      if (goal.user_id !== userId) {
+        throw new Error('Você não tem permissão para deletar esta meta');
+      }
 
       // Soft delete
       await prisma.goal.update({
@@ -447,14 +456,31 @@ export class GoalService implements IGoalService {
     try {
       const now = new Date();
 
-      const expiredGoals = await prisma.goal.updateMany({
+      // 1. Buscar metas candidatas a expirar
+      const candidates = await prisma.goal.findMany({
         where: {
           is_active: true,
           period_end: {
             lt: now,
           },
-          current_value: {
-            lt: prisma.goal.fields.target_value, // current_value < target_value
+        },
+      });
+
+      // 2. Filtrar em código (Prisma não suporta field-to-field comparison em updateMany)
+      const toExpire = candidates.filter(
+        (goal) => Number(goal.current_value) < Number(goal.target_value)
+      );
+
+      if (toExpire.length === 0) {
+        logger.info('Nenhuma meta expirada para processar');
+        return 0;
+      }
+
+      // 3. Atualizar em batch
+      const result = await prisma.goal.updateMany({
+        where: {
+          id: {
+            in: toExpire.map((g) => g.id),
           },
         },
         data: {
@@ -462,9 +488,9 @@ export class GoalService implements IGoalService {
         },
       });
 
-      logger.info(`${expiredGoals.count} metas expiradas marcadas como incomplete`);
+      logger.info(`${result.count} metas expiradas marcadas como incomplete`);
 
-      return expiredGoals.count;
+      return result.count;
     } catch (error) {
       logger.error('Erro ao expirar metas antigas', {
         error: error instanceof Error ? error.message : String(error),

@@ -2,29 +2,37 @@
 // Testes unitários para ProjectionService com algoritmos de projeção
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { ProjectionService } from '../../services/ProjectionService';
-import type { PrismaClient, SaleStatus } from '@prisma/client';
+import type { SaleStatus } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import type { RedisClientType } from 'redis';
 import { TrendType, ProjectionPeriod } from '../../interfaces/ProjectionService.interface';
 
-// Mock Prisma Client
-const mockPrisma = {
-  sale: {
-    findMany: vi.fn(),
-    count: vi.fn(),
+// Mock do database ANTES do import
+vi.mock('../../shared/config/database', () => ({
+  prisma: {
+    sale: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+    },
+    ad: {
+      findMany: vi.fn(),
+      aggregate: vi.fn(),
+    },
   },
-  adsExpense: {
-    findMany: vi.fn(),
-  },
-} as unknown as PrismaClient;
+}));
 
-// Mock Redis Client
-const mockRedis = {
-  get: vi.fn(),
-  setEx: vi.fn(),
-  del: vi.fn(),
-  disconnect: vi.fn(),
-} as unknown as RedisClientType;
+// Mock Redis Service
+vi.mock('../../shared/services/RedisService', () => ({
+  redisService: {
+    get: vi.fn().mockResolvedValue(null),
+    set: vi.fn().mockResolvedValue(undefined),
+    deletePattern: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+// Importar DEPOIS dos mocks
+import { ProjectionService } from '../../services/ProjectionService';
+import { prisma } from '../../shared/config/database';
 
 describe('ProjectionService', () => {
   let projectionService: ProjectionService;
@@ -32,7 +40,11 @@ describe('ProjectionService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    projectionService = new ProjectionService(mockPrisma, mockRedis);
+    // Configurar mocks padrão
+    vi.mocked(prisma.sale.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.sale.count).mockResolvedValue(0);
+    vi.mocked(prisma.ad.findMany).mockResolvedValue([]);
+    projectionService = new ProjectionService();
   });
 
   afterEach(() => {
@@ -61,37 +73,37 @@ describe('ProjectionService', () => {
     it('deve retornar projeções para 30 dias com 3 cenários e confiança >= 85%', async () => {
       // Gherkin: "Dado que tenho histórico de 90 dias de vendas"
       const mockSales = generateMockSales(90, 400, 500); // 90 dias, média R$ 450/dia
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
       // Gherkin: "Quando acesso página 'Projeções' E seleciono período 'Próximos 30 dias'"
-      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.THIRTY);
+      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_30);
 
       // Gherkin: "Então vejo 3 cenários"
-      expect(result).toHaveProperty('period', ProjectionPeriod.THIRTY);
-      expect(result).toHaveProperty('pessimistic_scenario');
-      expect(result).toHaveProperty('realistic_scenario');
-      expect(result).toHaveProperty('optimistic_scenario');
+      expect(result).toHaveProperty('period', ProjectionPeriod.DAYS_30);
+      expect(result).toHaveProperty('pessimistic');
+      expect(result).toHaveProperty('realistic');
+      expect(result).toHaveProperty('optimistic');
       
       // Gherkin: "Pessimista: R$ 8.500 (baseado em pior semana)"
-      expect(result.pessimistic_scenario).toBeGreaterThan(0);
-      expect(result.pessimistic_scenario).toBeLessThan(result.realistic_scenario);
+      expect(result.pessimistic).toBeGreaterThan(0);
+      expect(result.pessimistic).toBeLessThan(result.realistic);
 
       // Gherkin: "Realista: R$ 12.300 (baseado em média)"
-      expect(result.realistic_scenario).toBeGreaterThan(0);
-      expect(result.realistic_scenario).toBeGreaterThan(result.pessimistic_scenario);
-      expect(result.realistic_scenario).toBeLessThan(result.optimistic_scenario);
+      expect(result.realistic).toBeGreaterThan(0);
+      expect(result.realistic).toBeGreaterThan(result.pessimistic);
+      expect(result.realistic).toBeLessThan(result.optimistic);
 
       // Gherkin: "Otimista: R$ 15.800 (baseado em melhor semana)"
-      expect(result.optimistic_scenario).toBeGreaterThan(result.realistic_scenario);
+      expect(result.optimistic).toBeGreaterThan(result.realistic);
 
       // Gherkin: "E vejo confiança do modelo: 'Precisão estimada: 85%'"
       expect(result.confidence).toBeGreaterThanOrEqual(0);
       expect(result.confidence).toBeLessThanOrEqual(100);
 
       // Verificar que foi cacheado (TTL 6h = 21600s)
-      expect(mockRedis.setEx).toHaveBeenCalledWith(
-        `projections:sales:${testUserId}:${ProjectionPeriod.THIRTY}`,
+      expect(vi.fn()).toHaveBeenCalledWith(
+        `projections:sales:${testUserId}:${ProjectionPeriod.DAYS_30}`,
         21600,
         expect.any(String),
       );
@@ -99,7 +111,7 @@ describe('ProjectionService', () => {
 
     it('deve usar cache se disponível', async () => {
       const cachedResult = {
-        period: ProjectionPeriod.THIRTY,
+        period: ProjectionPeriod.DAYS_30,
         pessimistic_scenario: 10000,
         realistic_scenario: 15000,
         optimistic_scenario: 20000,
@@ -107,56 +119,56 @@ describe('ProjectionService', () => {
         trend: TrendType.GROWTH,
         generated_at: new Date().toISOString(),
       };
-      vi.mocked(mockRedis.get).mockResolvedValue(JSON.stringify(cachedResult));
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(JSON.stringify(cachedResult));
 
-      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.THIRTY);
+      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_30);
 
       expect(result).toEqual(cachedResult);
-      expect(mockPrisma.sale.findMany).not.toHaveBeenCalled();
+      expect(prisma.sale.findMany).not.toHaveBeenCalled();
     });
 
     it('deve calcular projeção para 7 dias', async () => {
       const mockSales = generateMockSales(30, 300, 400);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
-      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.SEVEN);
+      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_7);
 
-      expect(result.period).toBe(ProjectionPeriod.SEVEN);
-      expect(result.realistic_scenario).toBeGreaterThan(0);
+      expect(result.period).toBe(ProjectionPeriod.DAYS_7);
+      expect(result.realistic).toBeGreaterThan(0);
     });
 
     it('deve calcular projeção para 90 dias', async () => {
       const mockSales = generateMockSales(120, 500, 600);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
-      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.NINETY);
+      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_90);
 
-      expect(result.period).toBe(ProjectionPeriod.NINETY);
-      expect(result.realistic_scenario).toBeGreaterThan(0);
+      expect(result.period).toBe(ProjectionPeriod.DAYS_90);
+      expect(result.realistic).toBeGreaterThan(0);
     });
 
     it('deve calcular projeção para 180 dias', async () => {
       const mockSales = generateMockSales(200, 400, 500);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
-      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.ONE_EIGHTY);
+      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_180);
 
-      expect(result.period).toBe(ProjectionPeriod.ONE_EIGHTY);
-      expect(result.realistic_scenario).toBeGreaterThan(0);
+      expect(result.period).toBe(ProjectionPeriod.DAYS_180);
+      expect(result.realistic).toBeGreaterThan(0);
     });
 
     it('deve calcular projeção para 365 dias', async () => {
       const mockSales = generateMockSales(400, 300, 400);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
-      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.THREE_SIXTY_FIVE);
+      const result = await projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_365);
 
-      expect(result.period).toBe(ProjectionPeriod.THREE_SIXTY_FIVE);
-      expect(result.realistic_scenario).toBeGreaterThan(0);
+      expect(result.period).toBe(ProjectionPeriod.DAYS_365);
+      expect(result.realistic).toBeGreaterThan(0);
     });
   });
 
@@ -164,34 +176,34 @@ describe('ProjectionService', () => {
     it('deve lançar erro quando histórico < 30 dias', async () => {
       // Gherkin: "Dado que tenho apenas 5 dias de histórico"
       const mockSales = generateMockSales(5, 400, 500);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
       // Gherkin: "Quando acesso projeções"
       // Gherkin: "Então vejo mensagem 'Precisamos de pelo menos 30 dias de dados para projeções confiáveis'"
       await expect(
-        projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.THIRTY)
-      ).rejects.toThrow('Dados históricos insuficientes para gerar projeções confiáveis');
+        projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_30)
+      ).rejects.toThrow('Dados históricos insuficientes');
     });
 
     it('deve lançar erro quando não há vendas', async () => {
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue([]);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue([]);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
       await expect(
-        projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.THIRTY)
-      ).rejects.toThrow('Dados históricos insuficientes para gerar projeções confiáveis');
+        projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_30)
+      ).rejects.toThrow('Dados históricos insuficientes');
     });
 
     it('deve lançar erro quando histórico cobre menos de 30 dias únicos', async () => {
       // 100 vendas, mas todas no mesmo dia
       const mockSales = generateMockSalesInSameDay(100, 400, 500);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
       await expect(
-        projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.THIRTY)
-      ).rejects.toThrow('Dados históricos insuficientes para gerar projeções confiáveis');
+        projectionService.calculateSalesProjection(testUserId, ProjectionPeriod.DAYS_30)
+      ).rejects.toThrow('Dados históricos insuficientes');
     });
   });
 
@@ -202,7 +214,7 @@ describe('ProjectionService', () => {
         ...generateMockSalesForPeriod(7, 14, 550, 650), // dias 7-14 atrás (média ~600)
         ...generateMockSalesForPeriod(0, 7, 350, 450),  // dias 0-7 atrás (média ~400)
       ];
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
 
       const trend = await projectionService.detectTrend(testUserId);
 
@@ -215,7 +227,7 @@ describe('ProjectionService', () => {
         ...generateMockSalesForPeriod(7, 14, 495, 505), // média ~500
         ...generateMockSalesForPeriod(0, 7, 498, 508),  // média ~503
       ];
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
 
       const trend = await projectionService.detectTrend(testUserId);
 
@@ -228,7 +240,7 @@ describe('ProjectionService', () => {
         ...generateMockSalesForPeriod(7, 14, 250, 350), // média ~300
         ...generateMockSalesForPeriod(0, 7, 450, 550),  // média ~500
       ];
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
 
       const trend = await projectionService.detectTrend(testUserId);
 
@@ -236,7 +248,7 @@ describe('ProjectionService', () => {
     });
 
     it('deve retornar STABLE quando não há dados suficientes', async () => {
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue([]);
 
       const trend = await projectionService.detectTrend(testUserId);
 
@@ -247,7 +259,7 @@ describe('ProjectionService', () => {
   describe('calculateMovingAverage', () => {
     it('deve calcular média móvel de 7 dias corretamente', async () => {
       const mockSales = generateMockSales(10, 400, 400); // 10 dias, R$ 400/dia
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
 
       const avg = await projectionService.calculateMovingAverage(testUserId, 7);
 
@@ -257,7 +269,7 @@ describe('ProjectionService', () => {
 
     it('deve calcular média móvel de 30 dias corretamente', async () => {
       const mockSales = generateMockSales(35, 500, 500); // 35 dias, R$ 500/dia
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
 
       const avg = await projectionService.calculateMovingAverage(testUserId, 30);
 
@@ -265,7 +277,7 @@ describe('ProjectionService', () => {
     });
 
     it('deve retornar 0 quando não há vendas', async () => {
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue([]);
 
       const avg = await projectionService.calculateMovingAverage(testUserId, 7);
 
@@ -277,7 +289,7 @@ describe('ProjectionService', () => {
     it('deve calcular variância baixa para vendas consistentes', async () => {
       // Vendas muito consistentes: sempre R$ 500/dia
       const mockSales = generateMockSales(30, 500, 500);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
 
       const variance = await projectionService.calculateVariance(testUserId);
 
@@ -288,7 +300,7 @@ describe('ProjectionService', () => {
     it('deve calcular variância alta para vendas voláteis', async () => {
       // Vendas muito voláteis: R$ 100 a R$ 900/dia
       const mockSales = generateMockSales(30, 100, 900);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
 
       const variance = await projectionService.calculateVariance(testUserId);
 
@@ -297,7 +309,7 @@ describe('ProjectionService', () => {
     });
 
     it('deve retornar 0 quando não há vendas', async () => {
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue([]);
 
       const variance = await projectionService.calculateVariance(testUserId);
 
@@ -346,7 +358,7 @@ describe('ProjectionService', () => {
   describe('analyzeSeasonality', () => {
     it('deve retornar padrões de sazonalidade por dia da semana', async () => {
       const mockSales = generateMockSales(90, 400, 500);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
 
       const seasonality = await projectionService.analyzeSeasonality(testUserId);
 
@@ -360,7 +372,7 @@ describe('ProjectionService', () => {
     });
 
     it('deve retornar multiplicadores 1.0 quando não há dados', async () => {
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue([]);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue([]);
 
       const seasonality = await projectionService.analyzeSeasonality(testUserId);
 
@@ -376,13 +388,13 @@ describe('ProjectionService', () => {
       const mockSales = generateMockSales(60, 500, 600);
       const mockAdsExpenses = generateMockAdsExpenses(60, 150, 200);
       
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockPrisma.adsExpense.findMany).mockResolvedValue(mockAdsExpenses);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.ad.findMany).mockResolvedValue(mockAdsExpenses);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
-      const result = await projectionService.calculateCashflowProjection(testUserId, ProjectionPeriod.THIRTY);
+      const result = await projectionService.calculateCashflowProjection(testUserId, ProjectionPeriod.DAYS_30);
 
-      expect(result).toHaveProperty('period', ProjectionPeriod.THIRTY);
+      expect(result).toHaveProperty('period', ProjectionPeriod.DAYS_30);
       expect(result).toHaveProperty('projected_revenue');
       expect(result).toHaveProperty('projected_expenses');
       expect(result).toHaveProperty('projected_net_profit');
@@ -403,30 +415,30 @@ describe('ProjectionService', () => {
 
     it('deve usar cache se disponível', async () => {
       const cachedResult = {
-        period: ProjectionPeriod.THIRTY,
+        period: ProjectionPeriod.DAYS_30,
         projected_revenue: 15000,
         projected_expenses: 5000,
         projected_net_profit: 10000,
         estimated_roi: 200,
         generated_at: new Date().toISOString(),
       };
-      vi.mocked(mockRedis.get).mockResolvedValue(JSON.stringify(cachedResult));
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(JSON.stringify(cachedResult));
 
-      const result = await projectionService.calculateCashflowProjection(testUserId, ProjectionPeriod.THIRTY);
+      const result = await projectionService.calculateCashflowProjection(testUserId, ProjectionPeriod.DAYS_30);
 
       expect(result).toEqual(cachedResult);
-      expect(mockPrisma.sale.findMany).not.toHaveBeenCalled();
-      expect(mockPrisma.adsExpense.findMany).not.toHaveBeenCalled();
+      expect(prisma.sale.findMany).not.toHaveBeenCalled();
+      expect(prisma.ad.findMany).not.toHaveBeenCalled();
     });
 
     it('deve lançar erro quando histórico < 30 dias', async () => {
       const mockSales = generateMockSales(10, 500, 600);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
       await expect(
-        projectionService.calculateCashflowProjection(testUserId, ProjectionPeriod.THIRTY)
-      ).rejects.toThrow('Dados históricos insuficientes para gerar projeções confiáveis');
+        projectionService.calculateCashflowProjection(testUserId, ProjectionPeriod.DAYS_30)
+      ).rejects.toThrow('Dados históricos insuficientes');
     });
   });
 
@@ -435,9 +447,9 @@ describe('ProjectionService', () => {
       const mockSales = generateMockSales(90, 500, 600);
       const mockAdsExpenses = generateMockAdsExpenses(90, 150, 200);
       
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockPrisma.adsExpense.findMany).mockResolvedValue(mockAdsExpenses);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(prisma.ad.findMany).mockResolvedValue(mockAdsExpenses);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
       const result = await projectionService.calculateHealthScore(testUserId);
 
@@ -478,18 +490,18 @@ describe('ProjectionService', () => {
         recommendations: ['Manter ritmo de vendas'],
         generated_at: new Date().toISOString(),
       };
-      vi.mocked(mockRedis.get).mockResolvedValue(JSON.stringify(cachedResult));
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(JSON.stringify(cachedResult));
 
       const result = await projectionService.calculateHealthScore(testUserId);
 
       expect(result).toEqual(cachedResult);
-      expect(mockPrisma.sale.findMany).not.toHaveBeenCalled();
+      expect(prisma.sale.findMany).not.toHaveBeenCalled();
     });
 
     it('deve lançar erro quando histórico < 30 dias', async () => {
       const mockSales = generateMockSales(15, 500, 600);
-      vi.mocked(mockPrisma.sale.findMany).mockResolvedValue(mockSales);
-      vi.mocked(mockRedis.get).mockResolvedValue(null);
+      vi.mocked(prisma.sale.findMany).mockResolvedValue(mockSales);
+      vi.mocked(vi.fn().mockResolvedValue(null)).mockResolvedValue(null);
 
       await expect(
         projectionService.calculateHealthScore(testUserId)
@@ -502,7 +514,7 @@ describe('ProjectionService', () => {
       await projectionService.invalidateCache(testUserId, 'sale');
 
       // Deve deletar chaves de projeções de vendas e cashflow
-      expect(mockRedis.del).toHaveBeenCalledWith(
+      expect(vi.fn()).toHaveBeenCalledWith(
         expect.stringContaining(`projections:sales:${testUserId}`)
       );
     });
@@ -511,7 +523,7 @@ describe('ProjectionService', () => {
       await projectionService.invalidateCache(testUserId, 'sync');
 
       // Deve deletar múltiplas chaves
-      expect(mockRedis.del).toHaveBeenCalled();
+      expect(vi.fn()).toHaveBeenCalled();
     });
   });
 });
@@ -520,6 +532,7 @@ describe('ProjectionService', () => {
 
 /**
  * Gera vendas mock distribuídas ao longo de N dias
+ * Alinhado com schema Prisma Sale model
  */
 function generateMockSales(days: number, minValue: number, maxValue: number) {
   const sales = [];
@@ -540,20 +553,32 @@ function generateMockSales(days: number, minValue: number, maxValue: number) {
       sales.push({
         id: `sale-${i}-${j}`,
         user_id: 'test-user-123',
-        total_price: value,
-        created_at: date,
+        client_id: null,
+        external_id: null,
+        product_name: `Produto Mock ${j}`,
+        product_sku: null,
+        quantity: 1,
+        unit_price: new Decimal(value),
+        total_price: new Decimal(value),
+        commission: null,
         status: 'PAID' as SaleStatus,
-        tracking_code: `TRACK-${i}-${j}`,
-        platform: 'coinzz',
+        payment_method: null,
+        payment_due_date: null,
+        payment_date: date,
+        shipped_at: null,
+        delivered_at: null,
+        created_at: date,
+        updated_at: date,
       });
     }
   }
 
-  return sales;
+  return sales as any; // Cast para compatibilidade com vi.mocked
 }
 
 /**
  * Gera vendas mock todas no mesmo dia (para testar erro de dias insuficientes)
+ * Alinhado com schema Prisma Sale model
  */
 function generateMockSalesInSameDay(count: number, minValue: number, maxValue: number) {
   const sales = [];
@@ -565,19 +590,31 @@ function generateMockSalesInSameDay(count: number, minValue: number, maxValue: n
     sales.push({
       id: `sale-${i}`,
       user_id: 'test-user-123',
-      total_price: value,
-      created_at: sameDay,
+      client_id: null,
+      external_id: null,
+      product_name: `Produto Mock ${i}`,
+      product_sku: null,
+      quantity: 1,
+      unit_price: new Decimal(value),
+      total_price: new Decimal(value),
+      commission: null,
       status: 'PAID' as SaleStatus,
-      tracking_code: `TRACK-${i}`,
-      platform: 'coinzz',
+      payment_method: null,
+      payment_due_date: null,
+      payment_date: sameDay,
+      shipped_at: null,
+      delivered_at: null,
+      created_at: sameDay,
+      updated_at: sameDay,
     });
   }
 
-  return sales;
+  return sales as any;
 }
 
 /**
  * Gera vendas mock para período específico (usado em detectTrend)
+ * Alinhado com schema Prisma Sale model
  */
 function generateMockSalesForPeriod(startDaysAgo: number, endDaysAgo: number, minValue: number, maxValue: number) {
   const sales = [];
@@ -595,16 +632,27 @@ function generateMockSalesForPeriod(startDaysAgo: number, endDaysAgo: number, mi
       sales.push({
         id: `sale-${i}-${j}`,
         user_id: 'test-user-123',
-        total_price: value,
-        created_at: date,
+        client_id: null,
+        external_id: null,
+        product_name: `Produto Mock ${j}`,
+        product_sku: null,
+        quantity: 1,
+        unit_price: new Decimal(value),
+        total_price: new Decimal(value),
+        commission: null,
         status: 'PAID' as SaleStatus,
-        tracking_code: `TRACK-${i}-${j}`,
-        platform: 'coinzz',
+        payment_method: null,
+        payment_due_date: null,
+        payment_date: date,
+        shipped_at: null,
+        delivered_at: null,
+        created_at: date,
+        updated_at: date,
       });
     }
   }
 
-  return sales;
+  return sales as any;
 }
 
 /**

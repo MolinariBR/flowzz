@@ -14,6 +14,7 @@
 import { Router } from 'express';
 import { FacebookAdsController } from '../controllers/FacebookAdsController';
 import { authenticate } from '../shared/middlewares/authenticate';
+import { integrationSyncRateLimiter } from '../shared/middlewares/rateLimiter';
 import { logger } from '../shared/utils/logger';
 
 const router = Router();

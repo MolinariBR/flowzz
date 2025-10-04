@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Debug - LocalStorage</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4F46E5;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #4338CA;
+        }
+        button.danger {
+            background: #EF4444;
+        }
+        button.danger:hover {
+            background: #DC2626;
+        }
+        pre {
+            background: #1F2937;
+            color: #10B981;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .status.ok {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status.error {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Admin Panel - Debug LocalStorage</h1>
+        
+        <div id="status"></div>
+        
+        <button onclick="showStorage()">📋 Ver Storage</button>
+        <button onclick="clearStorage()" class="danger">🗑️ Limpar Storage</button>
+        <button onclick="location.href='/'">🏠 Voltar ao Admin</button>
+        
+        <h2>📦 Conteúdo do LocalStorage:</h2>
+        <pre id="output">Clique em "Ver Storage" para visualizar...</pre>
+        
+        <h2>✅ Credenciais de Teste:</h2>
+        <div style="background: #EFF6FF; padding: 15px; border-radius: 6px; border-left: 4px solid #3B82F6;">
+            <strong>Email:</strong> admin@flowzz.com<br>
+            <strong>Senha:</strong> admin123
+        </div>
+    </div>
+
+    <script>
+        function showStorage() {
+            const output = document.getElementById('output');
+            const status = document.getElementById('status');
+            
+            const data = {
+                'access_token': localStorage.getItem('access_token'),
+                'refresh_token': localStorage.getItem('refresh_token'),
+                'admin-auth-storage': localStorage.getItem('admin-auth-storage')
+            };
+            
+            let parsedAuth = null;
+            try {
+                parsedAuth = JSON.parse(data['admin-auth-storage'] || '{}');
+            } catch (e) {
+                parsedAuth = { error: 'Failed to parse' };
+            }
+            
+            const formatted = {
+                ...data,
+                'admin-auth-storage (parsed)': parsedAuth
+            };
+            
+            output.textContent = JSON.stringify(formatted, null, 2);
+            
+            const hasToken = !!data['access_token'];
+            const hasAuth = parsedAuth && parsedAuth.state && parsedAuth.state.isAuthenticated;
+            
+            if (hasToken && hasAuth) {
+                status.innerHTML = '<div class="status ok">✅ Autenticado - Tokens e estado presentes</div>';
+            } else if (hasToken && !hasAuth) {
+                status.innerHTML = '<div class="status error">⚠️ Inconsistente - Token presente mas estado diz não autenticado</div>';
+            } else {
+                status.innerHTML = '<div class="status error">❌ Não autenticado - Faça login primeiro</div>';
+            }
+        }
+        
+        function clearStorage() {
+            if (confirm('Tem certeza que deseja limpar todo o localStorage?')) {
+                localStorage.clear();
+                showStorage();
+                document.getElementById('status').innerHTML = '<div class="status ok">✅ Storage limpo com sucesso! Recarregue a página.</div>';
+            }
+        }
+        
+        // Auto-load on page load
+        window.onload = showStorage;
+    </script>
+</body>
+</html>

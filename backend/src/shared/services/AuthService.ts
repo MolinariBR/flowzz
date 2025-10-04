@@ -43,7 +43,10 @@ export class AuthService {
    */
   generateRefreshToken(): string {
     return jwt.sign(
-      { type: 'refresh' },
+      { 
+        type: 'refresh',
+        jti: `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
+      },
       env.JWT_REFRESH_SECRET,
       { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions,
     );

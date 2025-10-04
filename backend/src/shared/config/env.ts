@@ -14,6 +14,11 @@ const envSchema = z.object({
   PORT: z.string().transform(Number).default('4000'),
   API_BASE_URL: z.string().url().default('http://localhost:3000'),
 
+  // Frontend URLs (para CORS)
+  FRONTEND_USER_URL: z.string().url().default('http://localhost:3000'),
+  FRONTEND_ADMIN_URL: z.string().url().default('http://localhost:5173'),
+  FRONTEND_LANDING_URL: z.string().url().default('http://localhost:3001'),
+
   // Database
   DATABASE_URL: z.string().url(),
 

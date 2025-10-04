@@ -13,10 +13,9 @@
  * - Multi-tenancy: tags isoladas por userId
  */
 
-import { PrismaClient, type Tag as PrismaTag } from '@prisma/client';
+import { type Tag as PrismaTag } from '@prisma/client';
 import type { CreateTagDTO, ITag, ITagService, UpdateTagDTO } from '../interfaces/TagService.interface';
-
-const prisma = new PrismaClient();
+import { prisma } from '../shared/config/database';
 
 /**
  * Helper para converter Tag do Prisma (snake_case) para ITag (camelCase)
