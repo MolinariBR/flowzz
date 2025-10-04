@@ -24,13 +24,13 @@ test.describe('Flow - Dashboard', () => {
     // Aguardar carregamento dos dados
     await page.waitForTimeout(1000);
 
-    // Verificar que há valores numéricos (R$ ou números)
-    const metricsCards = page.locator('[data-testid*="metric-card"], .metric-card, .dashboard-metric');
+    // Verificar que há cards de métricas
+    const metricsCards = page.locator('[data-testid="metric-card"]');
     await expect(metricsCards.first()).toBeVisible();
     
-    // Pelo menos uma métrica deve ter valor
-    const hasValue = await page.getByText(/R\$|[0-9]+/).isVisible();
-    expect(hasValue).toBeTruthy();
+    // Deve ter pelo menos 4 cards (Vendas, Gastos, Lucro, Pagamentos)
+    const count = await metricsCards.count();
+    expect(count).toBeGreaterThanOrEqual(4);
   });
 
   test('deve renderizar gráfico de vendas', async ({ page }) => {

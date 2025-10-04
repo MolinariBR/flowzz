@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import {
 	ArrowDownRight,
 	ArrowUpRight,
-	Calendar,
 	CreditCard,
 	DollarSign,
 	FileText,
@@ -12,6 +11,7 @@ import {
 	Users,
 	Zap,
 } from "lucide-react";
+import { useState } from "react";
 import {
 	Area,
 	AreaChart,
@@ -40,9 +40,11 @@ const MetricCard = ({
 	trend,
 }: MetricCardProps) => (
 	<motion.div
-		initial={{ opacity: 0, y: 20 }}
-		animate={{ opacity: 1, y: 0 }}
+		initial={{ opacity: 0, scale: 0.95 }}
+		animate={{ opacity: 1, scale: 1 }}
+		transition={{ duration: 0.3 }}
 		className="bg-white rounded-xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300"
+		data-testid="metric-card"
 	>
 		<div className="flex items-center justify-between">
 			<div>
@@ -68,6 +70,9 @@ const MetricCard = ({
 );
 
 export default function Dashboard() {
+	// State
+	const [period, setPeriod] = useState<'7d' | '30d'>('7d');
+	
 	// Mock data
 	const salesData = [
 		{ name: "Jan", vendas: 4000, gastos: 2400, lucro: 1600 },
@@ -127,13 +132,32 @@ export default function Dashboard() {
 					</p>
 				</div>
 				<div className="flex items-center space-x-3 mt-4 lg:mt-0">
-					<button
-						type="button"
-						className="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-					>
-						<Calendar className="h-4 w-4" />
-						<span>Últimos 7 dias</span>
-					</button>
+					<div className="flex items-center bg-white border border-slate-300 rounded-lg overflow-hidden">
+						<button
+							type="button"
+							onClick={() => setPeriod('7d')}
+							data-testid="period-7d"
+							className={`px-4 py-2 transition-colors ${
+								period === '7d'
+									? 'bg-indigo-500 text-white'
+									: 'hover:bg-slate-50'
+							}`}
+						>
+							7 dias
+						</button>
+						<button
+							type="button"
+							onClick={() => setPeriod('30d')}
+							data-testid="period-30d"
+							className={`px-4 py-2 transition-colors ${
+								period === '30d'
+									? 'bg-indigo-500 text-white'
+									: 'hover:bg-slate-50'
+							}`}
+						>
+							30 dias
+						</button>
+					</div>
 					<button
 						type="button"
 						className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all"
@@ -154,7 +178,7 @@ export default function Dashboard() {
 					trend="up"
 				/>
 				<MetricCard
-					title="Gasto Anúncios"
+					title="Gasto em Anúncios"
 					value="R$ 340,50"
 					change="-8,2%"
 					icon={DollarSign}

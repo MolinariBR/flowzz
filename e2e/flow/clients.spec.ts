@@ -9,12 +9,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Flow - Clients Management', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/clients');
+    await page.goto('/clientes');
   });
 
   test('deve carregar página de clientes', async ({ page }) => {
-    await expect(page).toHaveURL(/.*\/clients/);
-    await expect(page.getByText(/clientes/i)).toBeVisible();
+    await expect(page).toHaveURL(/.*\/clientes/);
+    await expect(page.getByRole('heading', { name: /clientes/i })).toBeVisible();
   });
 
   test('deve listar clientes existentes', async ({ page }) => {
