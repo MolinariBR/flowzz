@@ -98,16 +98,34 @@ setup('authenticate admin user', async ({ request }) => {
         origin: 'http://localhost:5173',
         localStorage: [
           {
-            name: 'accessToken',
+            name: 'access_token',
             value: tokens.accessToken,
           },
           {
-            name: 'refreshToken',
+            name: 'refresh_token',
             value: tokens.refreshToken,
           },
           {
             name: 'user',
             value: JSON.stringify(user),
+          },
+          {
+            name: 'admin-auth-storage',
+            value: JSON.stringify({
+              state: {
+                user: {
+                  id: user.id,
+                  name: user.nome,
+                  email: user.email,
+                  role: user.role,
+                  avatar: user.avatar_url || undefined
+                },
+                token: tokens.accessToken,
+                role: user.role,
+                isAuthenticated: true
+              },
+              version: 0
+            }),
           },
         ],
       },

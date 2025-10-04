@@ -37,8 +37,8 @@ test.describe('Admin - Authentication', () => {
     
     await page.getByRole('button', { name: /entrar/i }).click();
     
-    // Deve mostrar erro de permissão
-    await expect(page.getByText(/sem permissão|acesso negado|admin/i)).toBeVisible();
+    // Deve mostrar erro de permissão (toast ou mensagem de erro)
+    await expect(page.locator('[role="status"], [role="alert"], .Toastify, [data-sonner-toast]').filter({ hasText: /acesso negado|apenas administradores/i })).toBeVisible({ timeout: 10000 });
   });
 
   test('deve fazer logout do admin', async ({ page }) => {
@@ -50,8 +50,11 @@ test.describe('Admin - Authentication', () => {
     
     await expect(page).toHaveURL(/.*\/(dashboard|metrics)/);
     
+    // Abrir dropdown do perfil
+    await page.getByTestId('profile-dropdown-button').click();
+    
     // Logout
-    await page.getByRole('button', { name: /sair|logout/i }).click();
+    await page.getByTestId('logout-button').click();
     
     // Redirecionar para login
     await expect(page).toHaveURL(/.*\/login/);

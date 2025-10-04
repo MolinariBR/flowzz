@@ -214,6 +214,7 @@ export const AdminTopbar: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => setShowProfile(!showProfile)}
+            data-testid="profile-dropdown-button"
             className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <img
@@ -247,6 +248,7 @@ export const AdminTopbar: React.FC = () => {
                   <hr className="my-2" />
                   <button
                     onClick={logout}
+                    data-testid="logout-button"
                     className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-danger hover:bg-red-50 rounded"
                   >
                     <LogOut className="w-4 h-4" />

@@ -43,7 +43,8 @@ export const Login: React.FC = () => {
       }, 100);
     } catch (error) {
       console.error('❌ Erro no login:', error);
-      toast.error('Erro ao fazer login. Verifique suas credenciais.')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login. Verifique suas credenciais.'
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -68,13 +69,14 @@ export const Login: React.FC = () => {
         {/* Login Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 {...register('email')}
+                id="email"
                 type="email"
                 placeholder="admin@flowzz.com"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -86,13 +88,14 @@ export const Login: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Senha
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 {...register('password')}
+                id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"

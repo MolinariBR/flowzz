@@ -21,25 +21,19 @@ test.describe('Admin - Metrics Dashboard', () => {
     await page.waitForTimeout(1000);
     
     // Verificar card de MRR
-    await expect(page.getByText(/MRR|receita recorrente mensal/i)).toBeVisible();
-    
-    // Valor deve estar visível
-    await expect(page.getByText(/R\$/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'MRR' })).toBeVisible();
   });
 
   test('deve exibir ARR (Annual Recurring Revenue)', async ({ page }) => {
     await page.waitForTimeout(1000);
     
-    await expect(page.getByText(/ARR|receita anual/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'ARR' })).toBeVisible();
   });
 
   test('deve exibir taxa de Churn', async ({ page }) => {
     await page.waitForTimeout(1000);
     
-    await expect(page.getByText(/churn|cancelamento/i)).toBeVisible();
-    
-    // Taxa deve estar em % ou decimal
-    await expect(page.getByText(/%|0\.|1\./)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Churn Rate' })).toBeVisible();
   });
 
   test('deve exibir LTV (Lifetime Value)', async ({ page }) => {

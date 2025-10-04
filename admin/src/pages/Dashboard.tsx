@@ -1,5 +1,5 @@
 import React from 'react'
-import {Users, TrendingUp, DollarSign, UserX, UserPlus, AlertCircle, Ticket} from 'lucide-react'
+import {Users, TrendingUp, DollarSign, UserX, AlertCircle} from 'lucide-react'
 import { MetricCard } from '../components/ui/metric-card'
 import { UserGrowthChart } from '../components/charts/user-growth-chart'
 import { RevenueChart } from '../components/charts/revenue-chart'
@@ -23,7 +23,8 @@ export const Dashboard: React.FC = () => {
 
   if (!metrics) return null
 
-  const activeUserPercentage = ((metrics.active_users_30d / metrics.total_users) * 100).toFixed(1)
+  const activeUserPercentage = ((metrics.active_users / metrics.total_users) * 100).toFixed(1)
+  const ltvCacRatio = metrics.cac > 0 ? (metrics.ltv / metrics.cac).toFixed(2) : '0'
 
   return (
     <div className="space-y-6">
@@ -50,8 +51,8 @@ export const Dashboard: React.FC = () => {
         />
         
         <MetricCard
-          title="Usuários Ativos (30d)"
-          value={`${metrics.active_users_30d} (${activeUserPercentage}%)`}
+          title="Usuários Ativos"
+          value={`${metrics.active_users} (${activeUserPercentage}%)`}
           change={+8}
           trend="up"
           icon={TrendingUp}
@@ -75,32 +76,34 @@ export const Dashboard: React.FC = () => {
         />
       </div>
 
-      {/* Secondary KPIs */}
+      {/* Secondary KPIs - SaaS Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard
-          title="Novas Assinaturas"
-          value={metrics.new_subscriptions_month}
-          change={+18}
+          title="ARR"
+          value={metrics.arr}
+          change={+15}
           trend="up"
-          icon={UserPlus}
-          suffix=" este mês"
+          icon={TrendingUp}
+          prefix="R$ "
+          suffix=" anual"
         />
         
         <MetricCard
-          title="Cancelamentos"
-          value={metrics.cancellations_month}
-          change={-12}
+          title="LTV"
+          value={metrics.ltv}
+          change={+8}
           trend="up"
-          icon={AlertCircle}
-          suffix=" este mês"
+          icon={DollarSign}
+          prefix="R$ "
         />
         
         <MetricCard
-          title="Tickets Abertos"
-          value={metrics.tickets_open}
-          change={-25}
-          trend="up"
-          icon={Ticket}
+          title="CAC"
+          value={metrics.cac}
+          change={-5}
+          trend="down"
+          icon={UserX}
+          prefix="R$ "
         />
       </div>
 
