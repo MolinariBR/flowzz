@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Bell, ChevronRight, CreditCard, Crown, FileText, HelpCircle, LayoutDashboard, LogOut, Menu, Moon, PieChart, Search, Settings, TrendingUp, User, Users, X, Zap } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { logout } from '@/lib/api/auth'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -13,6 +15,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+
+  // Páginas de autenticação não devem ter sidebar/menu
+  const isAuthPage = pathname === '/login' || pathname === '/register'
+  
+  if (isAuthPage) {
+    return <>{children}</>
+  }
+
+  const handleLogout = async () => {
+    // Limpar localStorage
+    logout()
+    
+    toast.success('Logout realizado com sucesso!')
+    
+    // Redirecionar para login (forçar reload)
+    window.location.href = '/login'
+  }
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, description: 'Visão geral dos seus dados' },
@@ -228,7 +248,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <span>Configurações</span>
                   </Link>
                   <hr className="my-2 border-slate-200" />
-                  <button type="button" className="flex w-full items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                  <button 
+                    type="button" 
+                    onClick={handleLogout}
+                    aria-label="Sair da Conta"
+                    data-testid="logout-button"
+                    className="flex w-full items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
                     <LogOut className="h-4 w-4" />
                     <span>Sair da Conta</span>
                   </button>

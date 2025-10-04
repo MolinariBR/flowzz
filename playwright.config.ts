@@ -53,7 +53,7 @@ export default defineConfig({
       name: 'flow',
       use: { 
         ...devices['Desktop Chrome'],
-        baseURL: 'http://localhost:3000',
+        baseURL: 'http://localhost:3001',
         storageState: 'e2e/.auth/demo-user.json',
       },
       dependencies: ['setup'],
@@ -77,7 +77,7 @@ export default defineConfig({
       name: 'flow-mobile',
       use: {
         ...devices['iPhone 13'],
-        baseURL: 'http://localhost:3000',
+        baseURL: 'http://localhost:3001',
         storageState: 'e2e/.auth/demo-user.json',
       },
       dependencies: ['setup'],
