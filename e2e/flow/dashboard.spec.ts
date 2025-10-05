@@ -96,7 +96,7 @@ test.describe('Flow - Dashboard', () => {
     
     // Navegar para clientes e voltar
     await clientsLink.click();
-    await expect(page).toHaveURL(/.*\/clients/);
+    await expect(page).toHaveURL(/.*\/clientes/);
     
     await dashboardLink.click();
     await expect(page).toHaveURL(/.*\/dashboard/);

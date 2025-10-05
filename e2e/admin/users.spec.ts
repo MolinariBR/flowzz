@@ -14,7 +14,7 @@ test.describe('Admin - Users Management', () => {
 
   test('deve carregar página de usuários', async ({ page }) => {
     await expect(page).toHaveURL(/.*\/users/);
-    await expect(page.getByText(/usuários|lista de usuários/i)).toBeVisible();
+    await expect(page.getByText(/usuários|lista de usuários/i).first()).toBeVisible();
   });
 
   test('deve listar todos os usuários', async ({ page }) => {

@@ -11,6 +11,12 @@ test.describe('Admin - Authentication', () => {
   });
 
   test('deve redirecionar para /login quando não autenticado', async ({ page }) => {
+    // Limpar localStorage para simular usuário não autenticado
+    await page.evaluate(() => {
+      localStorage.clear();
+    });
+
+    await page.goto('/');
     await expect(page).toHaveURL(/.*\/login/);
   });
 

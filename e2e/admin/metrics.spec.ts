@@ -14,7 +14,7 @@ test.describe('Admin - Metrics Dashboard', () => {
 
   test('deve carregar dashboard de métricas', async ({ page }) => {
     await expect(page).toHaveURL(/.*\/metrics/);
-    await expect(page.getByText(/métricas|dashboard/i)).toBeVisible();
+    await expect(page.getByTestId('dashboard-heading')).toBeVisible();
   });
 
   test('deve exibir MRR (Monthly Recurring Revenue)', async ({ page }) => {
@@ -106,14 +106,14 @@ test.describe('Admin - Metrics Dashboard', () => {
     
     // Ou há indicador visual, ou há porcentagem
     const hasIndicator = await growthIndicator.isVisible();
-    const hasPercentage = await page.getByText(/[+-]?\d+%/).isVisible();
+    const hasPercentage = await page.getByText(/[+-]?\d+%/).first().isVisible();
     
     expect(hasIndicator || hasPercentage).toBeTruthy();
   });
 
   test('deve ter navegação para outras seções admin', async ({ page }) => {
     // Verificar links de navegação
-    const usersLink = page.getByRole('link', { name: /usuários|users/i });
+    const usersLink = page.getByRole('link', { name: /usuários|users/i }).first();
     
     if (await usersLink.isVisible()) {
       await usersLink.click();

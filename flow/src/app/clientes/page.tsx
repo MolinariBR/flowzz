@@ -259,7 +259,7 @@ export default function Clientes() {
 			<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
 				<div>
 					<h1 className="text-3xl font-bold text-slate-900">
-						Customer Intelligence
+						Clientes
 					</h1>
 					<p className="text-slate-600 mt-1">
 						Gerencie seus clientes com inteligência

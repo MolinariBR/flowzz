@@ -74,7 +74,7 @@ test.describe('Flow - Clients Management', () => {
 
   test('deve buscar clientes por nome', async ({ page }) => {
     // Localizar campo de busca
-    const searchInput = page.getByPlaceholder(/buscar|pesquisar/i);
+    const searchInput = page.getByPlaceholder(/buscar|pesquisar/i).first();
     
     if (await searchInput.isVisible()) {
       await searchInput.fill('Cliente');

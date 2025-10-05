@@ -392,43 +392,49 @@ export default function Dashboard() {
 							</button>
 						</div>
 						<div className="space-y-4">
-							{recentActivities.map((activity) => (
-								<div
-									key={activity.id}
-									className="flex items-center space-x-4 p-3 hover:bg-slate-50 rounded-lg transition-colors"
-								>
+							{recentActivities.length > 0 ? (
+								recentActivities.map((activity) => (
 									<div
-										className={`p-2 rounded-full ${
-											activity.type === "sale"
-												? "bg-green-100 text-green-600"
-												: activity.type === "payment"
-													? "bg-blue-100 text-blue-600"
-													: activity.type === "delivery"
-														? "bg-purple-100 text-purple-600"
-														: "bg-amber-100 text-amber-600"
-										}`}
+										key={activity.id}
+										className="flex items-center space-x-4 p-3 hover:bg-slate-50 rounded-lg transition-colors"
 									>
-										{activity.type === "sale" && (
-											<DollarSign className="h-4 w-4" />
-										)}
-										{activity.type === "payment" && (
-											<CreditCard className="h-4 w-4" />
-										)}
-										{activity.type === "delivery" && (
-											<Users className="h-4 w-4" />
-										)}
-										{activity.type === "ad" && <Zap className="h-4 w-4" />}
+										<div
+											className={`p-2 rounded-full ${
+												activity.type === "sale"
+													? "bg-green-100 text-green-600"
+													: activity.type === "payment"
+														? "bg-blue-100 text-blue-600"
+														: activity.type === "delivery"
+															? "bg-purple-100 text-purple-600"
+															: "bg-amber-100 text-amber-600"
+											}`}
+										>
+											{activity.type === "sale" && (
+												<DollarSign className="h-4 w-4" />
+											)}
+											{activity.type === "payment" && (
+												<CreditCard className="h-4 w-4" />
+											)}
+											{activity.type === "delivery" && (
+												<Users className="h-4 w-4" />
+											)}
+											{activity.type === "ad" && <Zap className="h-4 w-4" />}
+										</div>
+										<div className="flex-1">
+											<p className="text-sm font-medium text-slate-900">
+												{activity.message}
+											</p>
+											<p className="text-xs text-slate-600">
+												{activity.client} • {activity.time}
+											</p>
+										</div>
 									</div>
-									<div className="flex-1">
-										<p className="text-sm font-medium text-slate-900">
-											{activity.message}
-										</p>
-										<p className="text-xs text-slate-600">
-											{activity.client} • {activity.time}
-										</p>
-									</div>
+								))
+							) : (
+								<div className="text-center py-8 text-slate-500">
+									<p>Nenhuma atividade recente</p>
 								</div>
-							))}
+							)}
 						</div>
 					</motion.div>
 				</div>
