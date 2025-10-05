@@ -2,6 +2,7 @@
 // API endpoints para o painel administrativo
 
 import apiClient, { type ApiResponse, type PaginatedResponse } from './client';
+import type { User } from '../../types/admin';
 
 // ============================================
 // TYPES
@@ -100,14 +101,46 @@ export const adminApi = {
     plan?: string;
     status?: string;
     role?: string;
-  }): Promise<PaginatedResponse<AdminUser>> => {
+  }): Promise<PaginatedResponse<User>> => {
     const queryString = new URLSearchParams(
       Object.entries(params)
-        .filter(([_, value]) => value !== undefined)
+        .filter(([, value]) => value !== undefined && value !== '')
         .map(([key, value]) => [key, String(value)]),
     ).toString();
 
-    return apiClient.get(`/admin/users?${queryString}`);
+    interface BackendUser {
+      id: string;
+      nome: string;
+      email: string;
+      plan_id: string | null;
+      is_active: boolean;
+      created_at: string;
+      updated_at: string;
+    }
+
+    const responseData = (await apiClient.get(`/admin/users?${queryString}`)) as PaginatedResponse<BackendUser>;
+    
+    // Backend já retorna em formato PaginatedResponse graças ao interceptor
+    // Transformar dados do backend (snake_case) para frontend (camelCase)
+    const transformedUsers: User[] = responseData.data.map((user: BackendUser) => ({
+      id: user.id,
+      name: user.nome || 'Sem nome',
+      email: user.email,
+      plan: user.plan_id ? ('pro' as const) : ('trial' as const),
+      status: user.is_active ? ('active' as const) : ('suspended' as const),
+      mrr: 0, // TODO: calcular MRR real
+      lastLogin: user.updated_at ? new Date(user.updated_at) : new Date(),
+      signupDate: new Date(user.created_at),
+      avatar: undefined,
+    }));
+
+    return {
+      data: transformedUsers,
+      total: responseData.total,
+      page: responseData.page,
+      limit: responseData.limit,
+      totalPages: responseData.totalPages,
+    };
   },
 
   /**
