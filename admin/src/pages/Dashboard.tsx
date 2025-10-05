@@ -7,7 +7,7 @@ import { useAdminMetrics } from '../lib/hooks/use-admin-data'
 import { motion } from 'framer-motion'
 
 export const Dashboard: React.FC = () => {
-  const { data: metrics, isLoading } = useAdminMetrics()
+  const { data: metrics, isLoading, error } = useAdminMetrics()
 
   if (isLoading) {
     return (
@@ -23,7 +23,7 @@ export const Dashboard: React.FC = () => {
 
   if (!metrics) return null
 
-  const activeUserPercentage = ((metrics.active_users / metrics.total_users) * 100).toFixed(1)
+  const activeUserPercentage = ((metrics.activeUsers / metrics.totalUsers) * 100).toFixed(1)
   const ltvCacRatio = metrics.cac > 0 ? (metrics.ltv / metrics.cac).toFixed(2) : '0'
 
   return (
@@ -34,7 +34,7 @@ export const Dashboard: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white"
       >
-        <h1 className="text-2xl font-bold">Dashboard Administrativo</h1>
+        <h1 data-testid="dashboard-heading" className="text-2xl font-bold">Dashboard Administrativo</h1>
         <p className="text-primary-100 mt-2">
           Visão geral das métricas do FlowZZ SaaS
         </p>
@@ -44,7 +44,7 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total de Usuários"
-          value={metrics.total_users}
+          value={metrics.totalUsers}
           change={+12}
           trend="up"
           icon={Users}
@@ -52,7 +52,7 @@ export const Dashboard: React.FC = () => {
         
         <MetricCard
           title="Usuários Ativos"
-          value={`${metrics.active_users} (${activeUserPercentage}%)`}
+          value={`${metrics.activeUsers} (${activeUserPercentage}%)`}
           change={+8}
           trend="up"
           icon={TrendingUp}
@@ -69,7 +69,7 @@ export const Dashboard: React.FC = () => {
         
         <MetricCard
           title="Churn Rate"
-          value={`${metrics.churn_rate}%`}
+          value={`${metrics.churnRate}%`}
           change={+0.3}
           trend="down"
           icon={UserX}
@@ -77,7 +77,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Secondary KPIs - SaaS Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <MetricCard
           title="ARR"
           value={metrics.arr}
@@ -104,6 +104,15 @@ export const Dashboard: React.FC = () => {
           trend="down"
           icon={UserX}
           prefix="R$ "
+        />
+
+        <MetricCard
+          title="Novos Usuários"
+          value={metrics.newUsersThisMonth}
+          change={+100}
+          trend="up"
+          icon={Users}
+          suffix=" este mês"
         />
       </div>
 

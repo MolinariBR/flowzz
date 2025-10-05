@@ -19,13 +19,18 @@ export interface User {
 }
 
 export interface AdminMetrics {
-  total_users: number
-  active_users_30d: number
+  totalUsers: number
+  activeUsers: number
+  activeUsers30d: number
   mrr: number
-  churn_rate: number
-  new_subscriptions_month: number
-  cancellations_month: number
-  tickets_open: number
+  arr: number
+  churnRate: number
+  ltv: number
+  cac: number
+  newUsersThisMonth: number
+  cancellationsMonth: number
+  ticketsOpen: number
+  revenueGrowth: number
 }
 
 export interface UserGrowth {

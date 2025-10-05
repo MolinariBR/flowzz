@@ -1,34 +1,39 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { adminApi } from '../api/admin-api'
-import { useAdminStore } from '../stores/admin-store'
+import { adminApi, type AdminMetrics } from '../api/admin-api'
 import { toast } from 'react-hot-toast'
 
 export const useAdminMetrics = () => {
-  const setMetrics = useAdminStore((state) => state.setMetrics)
-  
-  return useQuery({
+  return useQuery<AdminMetrics>({
     queryKey: ['admin-metrics'],
     queryFn: adminApi.getMetrics,
     refetchInterval: 5 * 60 * 1000, // Auto-refresh a cada 5 minutos
-    onSuccess: (data) => {
-      setMetrics(data)
-    }
   })
 }
 
 export const useUserGrowth = (period: number = 12) => {
   return useQuery({
     queryKey: ['user-growth', period],
-    queryFn: () => adminApi.getUserGrowth(period),
+    queryFn: () => adminApi.getUsersGrowth(period),
     staleTime: 2 * 60 * 1000 // 2 minutos
   })
 }
 
-export const useRevenueData = (period: number = 12) => {
+// Mock temporário para useRevenueData - TODO: Implementar endpoint backend
+export const useRevenueData = () => {
   return useQuery({
-    queryKey: ['revenue-data', period],
-    queryFn: () => adminApi.getRevenueData(period),
-    staleTime: 2 * 60 * 1000
+    queryKey: ['revenue-data'],
+    queryFn: async () => {
+      // Mock data temporário
+      return [
+        { month: 'Jan', mrr: 0 },
+        { month: 'Fev', mrr: 0 },
+        { month: 'Mar', mrr: 0 },
+        { month: 'Abr', mrr: 0 },
+        { month: 'Mai', mrr: 0 },
+        { month: 'Jun', mrr: 0 },
+      ]
+    },
+    staleTime: 5 * 60 * 1000
   })
 }
 
@@ -40,8 +45,7 @@ export const useUsers = (params: {
 } = {}) => {
   return useQuery({
     queryKey: ['users', params],
-    queryFn: () => adminApi.getUsers(params),
-    keepPreviousData: true
+    queryFn: () => adminApi.listUsers(params)
   })
 }
 
@@ -49,7 +53,8 @@ export const useSuspendUser = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: adminApi.suspendUser,
+    mutationFn: ({ userId, reason }: { userId: string; reason: string }) => 
+      adminApi.suspendUser(userId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       queryClient.invalidateQueries({ queryKey: ['admin-metrics'] })
@@ -83,7 +88,7 @@ export const useImpersonateUser = () => {
     onSuccess: (data) => {
       toast.success('Token de impersonificação gerado')
       // Aqui você pode redirecionar para o app principal com o token
-      console.log('Impersonate token:', data.token)
+      console.log('Impersonate token:', data.access_token)
     },
     onError: () => {
       toast.error('Erro ao gerar token de impersonificação')

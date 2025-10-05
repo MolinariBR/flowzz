@@ -8,14 +8,18 @@ import apiClient, { type ApiResponse, type PaginatedResponse } from './client';
 // ============================================
 
 export interface AdminMetrics {
+  totalUsers: number;
+  activeUsers: number;
+  activeUsers30d: number;
   mrr: number;
   arr: number;
-  churn_rate: number;
+  churnRate: number;
   ltv: number;
   cac: number;
-  active_users: number;
-  total_users: number;
-  trial_users: number;
+  newUsersThisMonth: number;
+  cancellationsMonth: number;
+  ticketsOpen: number;
+  revenueGrowth: number;
 }
 
 export interface UserGrowth {
