@@ -4,6 +4,7 @@
 import { Router } from 'express';
 import { DashboardController } from '../controllers/DashboardController';
 import { authenticate } from '../shared/middlewares/authenticate';
+import { dashboardRateLimiter } from '../shared/middlewares/rateLimiter';
 
 export const dashboardRoutes = Router();
 const dashboardController = new DashboardController();
@@ -181,7 +182,7 @@ const dashboardController = new DashboardController();
  *       500:
  *         description: Erro interno do servidor
  */
-dashboardRoutes.get('/metrics', authenticate, dashboardController.getMetrics);
+dashboardRoutes.get('/metrics', authenticate, dashboardRateLimiter, dashboardController.getMetrics);
 
 /**
  * @swagger

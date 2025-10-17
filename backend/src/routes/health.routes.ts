@@ -14,6 +14,8 @@ import { allQueues } from '../queues/queues';
 import { checkQueueHealth } from '../queues/index';
 import { logger } from '../shared/utils/logger';
 import { StorageService } from '../services/StorageService';
+import { redisService } from '../shared/services/RedisService';
+import { prisma } from '../shared/config/database';
 
 const router = Router();
 const storageService = new StorageService();
@@ -178,6 +180,87 @@ router.get('/storage', async (_req: Request, res: Response) => {
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
       error: 'Storage health check failed',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * GET /health/complete
+ * Health check completo incluindo database, Redis e métricas de performance
+ */
+router.get('/complete', async (_req: Request, res: Response) => {
+  try {
+    const startTime = Date.now();
+
+    // Verificar Redis
+    const redisConnected = redisService.isReady();
+
+    // Verificar Database
+    let dbConnected = false;
+    let dbResponseTime = 0;
+    try {
+      const dbStart = Date.now();
+      await prisma.$queryRaw`SELECT 1`;
+      dbResponseTime = Date.now() - dbStart;
+      dbConnected = true;
+    } catch (error) {
+      logger.warn('Database health check failed', { error: error instanceof Error ? error.message : 'Unknown' });
+    }
+
+    // Verificar Storage
+    let storageHealthy = false;
+    try {
+      storageHealthy = storageService.isReady();
+    } catch (error) {
+      logger.warn('Storage health check failed', { error: error instanceof Error ? error.message : 'Unknown' });
+    }
+
+    const totalResponseTime = Date.now() - startTime;
+
+    // Determinar status geral
+    const allHealthy = redisConnected && dbConnected && storageHealthy && totalResponseTime < 2000;
+    const status = allHealthy ? 'healthy' : totalResponseTime < 5000 ? 'degraded' : 'unhealthy';
+
+    const response = {
+      status,
+      timestamp: new Date().toISOString(),
+      responseTime: totalResponseTime,
+      services: {
+        redis: {
+          connected: redisConnected,
+          status: redisConnected ? 'healthy' : 'unhealthy',
+        },
+        database: {
+          connected: dbConnected,
+          responseTime: dbResponseTime,
+          status: dbConnected ? 'healthy' : 'unhealthy',
+        },
+        storage: {
+          configured: storageHealthy,
+          status: storageHealthy ? 'healthy' : 'unhealthy',
+        },
+      },
+      performance: {
+        totalResponseTime,
+        acceptable: totalResponseTime < 2000,
+        warning: totalResponseTime >= 2000 && totalResponseTime < 5000,
+        critical: totalResponseTime >= 5000,
+      },
+    };
+
+    const httpStatus = status === 'healthy' ? 200 : status === 'degraded' ? 206 : 503;
+    res.status(httpStatus).json(response);
+
+  } catch (error) {
+    logger.error('Complete health check failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: 'Complete health check failed',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
   }

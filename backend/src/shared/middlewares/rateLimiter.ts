@@ -1,7 +1,7 @@
 // src/shared/middlewares/rateLimiter.ts
 // Referência: tasks.md Task 12.2, design.md - Security - Rate Limiting
 
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import type { Request, Response } from 'express';
 
 /**
@@ -11,6 +11,9 @@ import type { Request, Response } from 'express';
 export const globalRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per window
+  keyGenerator: (req: Request) => {
+    return ipKeyGenerator(req.ip || req.connection?.remoteAddress || '127.0.0.1');
+  },
   message: {
     error: 'Too Many Requests',
     message: 'You have exceeded the 100 requests in 1 minute limit!',
@@ -124,6 +127,111 @@ export const adminActionsRateLimiter = rateLimit({
   message: {
     error: 'Too Many Requests',
     message: 'Too many admin actions, please slow down.',
+    retryAfter: '1 hour',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * WhatsApp API rate limiter - 100 messages per hour per user
+ * WhatsApp Business API has its own rate limits, this is for user-level throttling
+ * Referência: WhatsApp Business API rate limits (250 messages/day, but we limit to 100/hour for safety)
+ */
+export const whatsAppRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100, // 100 WhatsApp messages per hour per user
+  keyGenerator: (req: Request) => {
+    return req.user?.userId || 'anonymous';
+  },
+  message: {
+    error: 'Too Many WhatsApp Messages',
+    message: 'You have exceeded the 100 WhatsApp messages per hour limit. Please try again later.',
+    retryAfter: '1 hour',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * WhatsApp webhook rate limiter - 1000 webhooks per hour per business account
+ * To prevent webhook spam attacks, but allow legitimate high-volume businesses
+ */
+export const whatsAppWebhookRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 1000, // 1000 webhooks per hour
+  keyGenerator: (req: Request) => {
+    // Use business_account_id from webhook payload if available
+    const body = req.body as any;
+    const businessId = body?.entry?.[0]?.id;
+    if (businessId) return businessId;
+    // Fallback to IP with proper IPv6 handling
+    return ipKeyGenerator(req.ip || req.connection?.remoteAddress || '127.0.0.1');
+  },
+  message: {
+    error: 'Too Many Webhooks',
+    message: 'Too many webhook requests detected.',
+    retryAfter: '1 hour',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip rate limiting for successful requests (200) to allow legitimate traffic
+  skipSuccessfulRequests: false,
+  // Skip rate limiting for failed requests (4xx) to allow error handling
+  skipFailedRequests: false,
+});
+
+/**
+ * Reports rate limiter - 50 report generations per hour per user
+ * Reports are expensive operations, limit to prevent abuse
+ */
+export const reportsRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 50, // 50 report generations per hour
+  keyGenerator: (req: Request) => {
+    return req.user?.userId || 'anonymous';
+  },
+  message: {
+    error: 'Too Many Reports',
+    message: 'You have exceeded the 50 report generations per hour limit!',
+    retryAfter: '1 hour',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * Client listings rate limiter - 200 requests per hour per user
+ * Client data is cached, but still limit to prevent excessive API calls
+ */
+export const clientListingsRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 200, // 200 client listing requests per hour
+  keyGenerator: (req: Request) => {
+    return req.user?.userId || 'anonymous';
+  },
+  message: {
+    error: 'Too Many Client Requests',
+    message: 'You have exceeded the 200 client listing requests per hour limit!',
+    retryAfter: '1 hour',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * Dashboard rate limiter - 300 requests per hour per user
+ * Dashboard data is cached, but limit to prevent excessive load
+ */
+export const dashboardRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 300, // 300 dashboard requests per hour
+  keyGenerator: (req: Request) => {
+    return req.user?.userId || 'anonymous';
+  },
+  message: {
+    error: 'Too Many Dashboard Requests',
+    message: 'You have exceeded the 300 dashboard requests per hour limit!',
     retryAfter: '1 hour',
   },
   standardHeaders: true,

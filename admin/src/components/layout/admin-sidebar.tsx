@@ -41,6 +41,7 @@ const navigationItems: NavigationItem[] = [
     icon: Zap,
     children: [
       { key: 'status', label: 'Status Geral', href: '/integrations', icon: Zap },
+      { key: 'whatsapp', label: 'WhatsApp Business', href: '/whatsapp', icon: Zap },
       { key: 'coinzz', label: 'Coinzz API', href: '/integrations/coinzz', icon: Zap }
     ]
   },

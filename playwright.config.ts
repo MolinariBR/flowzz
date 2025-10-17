@@ -53,7 +53,7 @@ export default defineConfig({
       name: 'flow',
       use: { 
         ...devices['Desktop Chrome'],
-        baseURL: 'http://localhost:3001',
+        baseURL: 'http://localhost:3000',
         storageState: 'e2e/.auth/demo-user.json',
       },
       dependencies: ['setup'],
@@ -77,7 +77,7 @@ export default defineConfig({
       name: 'flow-mobile',
       use: {
         ...devices['iPhone 13'],
-        baseURL: 'http://localhost:3001',
+        baseURL: 'http://localhost:3000',
         storageState: 'e2e/.auth/demo-user.json',
       },
       dependencies: ['setup'],
@@ -86,32 +86,32 @@ export default defineConfig({
   ],
 
   // Web Servers - inicia backend + frontends
-  webServer: [
-    // Backend API
-    {
-      command: 'cd backend && pnpm run dev',
-      url: 'http://localhost:4000/health',
-      timeout: 120 * 1000,
-      reuseExistingServer: !process.env.CI,
-      env: {
-        NODE_ENV: 'test',
-        DATABASE_URL: process.env.DATABASE_URL_TEST || process.env.DATABASE_URL,
-        REDIS_URL: process.env.REDIS_URL_TEST || process.env.REDIS_URL,
-      },
-    },
-    // Flow Frontend
-    {
-      command: 'cd flow && pnpm run dev',
-      url: 'http://localhost:3000',
-      timeout: 120 * 1000,
-      reuseExistingServer: !process.env.CI,
-    },
-    // Admin Frontend
-    {
-      command: 'cd admin && pnpm run dev',
-      url: 'http://localhost:5173',
-      timeout: 120 * 1000,
-      reuseExistingServer: !process.env.CI,
-    },
-  ],
+  // webServer: [
+  //   // Backend API
+  //   {
+  //     command: 'cd backend && npm run dev',
+  //     url: 'http://localhost:4000/health',
+  //     timeout: 120 * 1000,
+  //     reuseExistingServer: !process.env.CI,
+  //     env: {
+  //       NODE_ENV: 'test',
+  //       DATABASE_URL: process.env.DATABASE_URL_TEST ?? process.env.DATABASE_URL ?? '',
+  //       REDIS_URL: process.env.REDIS_URL_TEST ?? process.env.REDIS_URL ?? '',
+  //     },
+  //   },
+  //   // Flow Frontend
+  //   {
+  //     command: 'cd flow && npm run dev',
+  //     url: 'http://localhost:3000',
+  //     timeout: 120 * 1000,
+  //     reuseExistingServer: !process.env.CI,
+  //   },
+  //   // Admin Frontend
+  //   {
+  //     command: 'cd admin && npm run dev',
+  //     url: 'http://localhost:5173',
+  //     timeout: 120 * 1000,
+  //     reuseExistingServer: !process.env.CI,
+  //   },
+  // ],
 });

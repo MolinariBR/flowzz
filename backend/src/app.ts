@@ -8,6 +8,7 @@ import compression from 'compression';
 import { env } from './shared/config/env';
 import { globalRateLimiter } from './shared/middlewares/rateLimiter';
 import { sanitizeInput, preventNoSqlInjection } from './shared/middlewares/sanitize';
+import { performanceLogger } from './shared/middlewares/performanceLogger';
 import { authRoutes } from './routes/auth';
 import clientRoutes from './routes/client.routes';
 import { saleRoutes } from './routes/sale.routes';
@@ -22,6 +23,8 @@ import { projectionRoutes } from './routes/projection.routes';
 import { goalRoutes } from './routes/goal.routes';
 import { reportRoutes } from './routes/report.routes';
 import adminRoutes from './routes/admin.routes';
+import whatsappRoutes from './routes/whatsapp.routes';
+import { pagBankRoutes } from './routes/pagbank.routes';
 
 const app = express();
 
@@ -62,6 +65,9 @@ app.use(sanitizeInput);
 // Apply global rate limiter
 app.use(globalRateLimiter);
 
+// Performance logging middleware
+app.use(performanceLogger);
+
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/clients', clientRoutes);
@@ -74,6 +80,8 @@ app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/integrations/coinzz', coinzzRoutes);
 app.use('/api/v1/integrations/facebook', facebookRoutes);
+app.use('/api/v1/integrations/whatsapp', whatsappRoutes);
+app.use('/api/v1/pagbank', pagBankRoutes);
 app.use('/health', healthRoutes);
 
 // Bull Board (Job Queue Dashboard)

@@ -23,6 +23,7 @@ import { reportQueue } from '../queues/queues';
 import { PDFGenerator } from './reports/PDFGenerator';
 import { ExcelGenerator } from './reports/ExcelGenerator';
 import { StorageService } from './StorageService';
+import { redisService } from '../shared/services/RedisService';
 
 /**
  * ReportService - Serviço de geração e gerenciamento de relatórios
@@ -259,6 +260,17 @@ export class ReportService implements IReportService {
    * Referência: user-stories.md Story 6.1 - Dados do relatório
    */
   async collectSalesData(userId: string, filters: ReportFilters): Promise<SalesReportData> {
+    // Criar chave de cache baseada nos filtros
+    const cacheKey = `report:sales:${userId}:${JSON.stringify(filters)}`;
+
+    // Verificar cache primeiro
+    const cached = await redisService.get<SalesReportData>(cacheKey);
+    if (cached) {
+      logger.info('Cache hit for sales data', { userId, cacheKey });
+      return cached;
+    }
+
+    logger.info('Cache miss for sales data, fetching from database', { userId, cacheKey });
     const where: {
       user_id: string;
       created_at: { gte: Date; lte: Date };
@@ -330,7 +342,7 @@ export class ReportService implements IReportService {
     // Taxa de conversão (simplificada)
     const conversionRate = totalSales > 0 ? (sales.filter((s) => s.status === 'PAID' || s.status === 'DELIVERED').length / totalSales) * 100 : 0;
 
-    return {
+    const result = {
       totalSales,
       totalRevenue,
       averageTicket,
@@ -349,12 +361,28 @@ export class ReportService implements IReportService {
         paidAt: null, // Campo não existe no schema
       })),
     };
+
+    // Armazenar no cache (TTL 10 minutos para dados de relatório)
+    await redisService.set(cacheKey, result, 600);
+
+    return result;
   }
 
   /**
    * Coleta dados para relatório financeiro
    */
   async collectFinancialData(userId: string, filters: ReportFilters): Promise<FinancialReportData> {
+    // Criar chave de cache baseada nos filtros
+    const cacheKey = `report:financial:${userId}:${JSON.stringify(filters)}`;
+
+    // Verificar cache primeiro
+    const cached = await redisService.get<FinancialReportData>(cacheKey);
+    if (cached) {
+      logger.info('Cache hit for financial data', { userId, cacheKey });
+      return cached;
+    }
+
+    logger.info('Cache miss for financial data, fetching from database', { userId, cacheKey });
     // Buscar receitas (vendas pagas)
     const sales = await this.prisma.sale.findMany({
       where: {
@@ -410,7 +438,7 @@ export class ReportService implements IReportService {
       },
     };
 
-    return {
+    const result = {
       totalRevenue,
       totalExpenses,
       netProfit,
@@ -420,6 +448,11 @@ export class ReportService implements IReportService {
       expensesByCategory,
       projections,
     };
+
+    // Armazenar no cache (TTL 10 minutos para dados de relatório)
+    await redisService.set(cacheKey, result, 600);
+
+    return result;
   }
 
   /**

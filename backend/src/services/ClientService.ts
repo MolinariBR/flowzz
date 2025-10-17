@@ -11,6 +11,7 @@ import type {
   UpdateClientDTO,
 } from '../interfaces/ClientRepository.interface';
 import type { CreateClientInput, UpdateClientInput } from '../validators/client.validator';
+import { redisService } from '../shared/services/RedisService';
 
 export class ClientService {
   private clientRepository: ClientRepository;
@@ -25,8 +26,21 @@ export class ClientService {
     limit: number = 20,
     filters?: ClientFilters,
   ): Promise<PaginatedClients> {
-    const pagination: PaginationOptions = { page, limit };
-    return await this.clientRepository.findByUserId(userId, filters, pagination);
+    // Criar chave de cache baseada nos parâmetros
+    const cacheKey = `clients:${userId}:${page}:${limit}:${JSON.stringify(filters || {})}`;
+
+    // Verificar cache primeiro
+    const cached = await redisService.get<PaginatedClients>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const result = await this.clientRepository.findByUserId(userId, filters, { page, limit });
+
+    // Armazenar no cache (TTL 5 minutos para listagens)
+    await redisService.set(cacheKey, result, 300);
+
+    return result;
   }
 
   async getClientById(id: string, userId: string): Promise<Client> {

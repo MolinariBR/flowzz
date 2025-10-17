@@ -2,6 +2,7 @@
 // Referência: tasks.md Task 11.1, design.md Admin Panel
 
 import { prisma } from '../shared/config/database'
+import { getEncryptionService } from '../shared/utils/encryption'
 
 export interface SaaSMetrics {
   mrr: number // Monthly Recurring Revenue
@@ -286,5 +287,110 @@ export class AdminService {
   private async calculateUserRetention(): Promise<number> {
     // Simplificado: 85% para exemplo
     return 85
+  }
+
+  /**
+   * Obtém configuração WhatsApp do usuário
+   */
+  async getWhatsAppConfig(userId: string): Promise<any> {
+    const integration = await prisma.integration.findFirst({
+      where: {
+        user_id: userId,
+        provider: 'WHATSAPP'
+      }
+    })
+
+    if (!integration) {
+      return null
+    }
+
+    // Descriptografar tokens sensíveis antes de retornar
+    const config = integration.config as any
+    const encryption = getEncryptionService()
+
+    try {
+      if (config.accessToken) {
+        config.accessToken = encryption.decryptToken(config.accessToken)
+      }
+      if (config.appSecret) {
+        config.appSecret = encryption.decryptToken(config.appSecret)
+      }
+      if (config.webhookVerifyToken) {
+        config.webhookVerifyToken = encryption.decryptToken(config.webhookVerifyToken)
+      }
+    } catch (error) {
+      console.error('Erro ao descriptografar tokens WhatsApp:', error)
+      // Se não conseguir descriptografar, retorna null para forçar reconfiguração
+      return null
+    }
+
+    return config
+  }
+
+  /**
+   * Salva configuração WhatsApp do usuário
+   */
+  async saveWhatsAppConfig(userId: string, config: any): Promise<void> {
+    const encryption = getEncryptionService()
+
+    // Criptografar tokens sensíveis antes de salvar
+    const encryptedConfig = { ...config }
+
+    if (config.accessToken) {
+      encryptedConfig.accessToken = encryption.encryptToken(config.accessToken)
+    }
+    if (config.appSecret) {
+      encryptedConfig.appSecret = encryption.encryptToken(config.appSecret)
+    }
+    if (config.webhookVerifyToken) {
+      encryptedConfig.webhookVerifyToken = encryption.encryptToken(config.webhookVerifyToken)
+    }
+
+    await prisma.integration.upsert({
+      where: {
+        user_id_provider: {
+          user_id: userId,
+          provider: 'WHATSAPP'
+        }
+      },
+      update: {
+        config: encryptedConfig,
+        status: 'CONNECTED',
+        updated_at: new Date()
+      },
+      create: {
+        user_id: userId,
+        provider: 'WHATSAPP',
+        config: encryptedConfig,
+        status: 'CONNECTED'
+      }
+    })
+  }
+
+  /**
+   * Testa conexão com WhatsApp API
+   */
+  async testWhatsAppConnection(userId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const config = await this.getWhatsAppConfig(userId) // Já descriptografado
+
+      if (!config) {
+        return { success: false, message: 'Configuração WhatsApp não encontrada' }
+      }
+
+      // Validar campos obrigatórios
+      const requiredFields = ['businessAccountId', 'phoneNumberId', 'accessToken', 'appSecret', 'webhookVerifyToken']
+      const missingFields = requiredFields.filter(field => !config[field])
+
+      if (missingFields.length > 0) {
+        return { success: false, message: `Campos obrigatórios faltando: ${missingFields.join(', ')}` }
+      }
+
+      // Aqui poderia fazer uma chamada real para a API do WhatsApp
+      // Por enquanto, apenas validamos se a configuração está completa
+      return { success: true, message: 'Configuração válida e criptografada' }
+    } catch (error) {
+      return { success: false, message: 'Erro ao testar conexão' }
+    }
   }
 }

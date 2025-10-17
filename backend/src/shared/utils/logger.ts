@@ -10,6 +10,7 @@ const levels = {
   warn: 1,
   info: 2,
   debug: 3,
+  performance: 4,
 };
 
 // Custom colors for each level
@@ -18,6 +19,7 @@ const colors = {
   warn: 'yellow',
   info: 'green',
   debug: 'blue',
+  performance: 'cyan',
 };
 
 winston.addColors(colors);

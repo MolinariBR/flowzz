@@ -318,3 +318,94 @@ export const getUserStats = async (_req: Request, res: Response): Promise<void> 
     })
   }
 }
+
+/**
+ * GET /admin/whatsapp/config
+ * Retorna configuração WhatsApp do usuário atual
+ */
+export const getWhatsAppConfig = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Usuário não autenticado'
+      })
+      return
+    }
+
+    const config = await adminService.getWhatsAppConfig(userId)
+
+    res.json({
+      success: true,
+      data: config
+    })
+  } catch (error) {
+    console.error('Error fetching WhatsApp config:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch WhatsApp config'
+    })
+  }
+}
+
+/**
+ * POST /admin/whatsapp/config
+ * Salva configuração WhatsApp do usuário
+ */
+export const saveWhatsAppConfig = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Usuário não autenticado'
+      })
+      return
+    }
+
+    const config = req.body
+    await adminService.saveWhatsAppConfig(userId, config)
+
+    res.json({
+      success: true,
+      message: 'Configuração WhatsApp salva com sucesso'
+    })
+  } catch (error) {
+    console.error('Error saving WhatsApp config:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save WhatsApp config'
+    })
+  }
+}
+
+/**
+ * POST /admin/whatsapp/test-connection
+ * Testa conexão com WhatsApp API
+ */
+export const testWhatsAppConnection = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Usuário não autenticado'
+      })
+      return
+    }
+
+    const result = await adminService.testWhatsAppConnection(userId)
+
+    res.json({
+      success: true,
+      data: result
+    })
+  } catch (error) {
+    console.error('Error testing WhatsApp connection:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test WhatsApp connection'
+    })
+  }
+}

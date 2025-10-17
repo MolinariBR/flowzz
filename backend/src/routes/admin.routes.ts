@@ -12,7 +12,10 @@ import {
   reactivateUser,
   impersonateUser,
   getAuditLogs,
-  getUserStats
+  getUserStats,
+  getWhatsAppConfig,
+  saveWhatsAppConfig,
+  testWhatsAppConnection
 } from '../controllers/AdminController'
 import { requireAdmin, requireSuperAdmin, authenticate } from '../shared/middlewares/authenticate'
 import { adminActionsRateLimiter } from '../shared/middlewares/rateLimiter'
@@ -60,5 +63,15 @@ router.post('/users/:id/impersonate', requireSuperAdmin, impersonateUser)
 // ==================== AUDIT LOGS ====================
 // GET /admin/audit-logs - View audit logs
 router.get('/audit-logs', requireAdmin, getAuditLogs)
+
+// ==================== WHATSAPP CONFIG ====================
+// GET /admin/whatsapp/config - Get WhatsApp configuration
+router.get('/whatsapp/config', requireAdmin, getWhatsAppConfig)
+
+// POST /admin/whatsapp/config - Save WhatsApp configuration
+router.post('/whatsapp/config', requireAdmin, saveWhatsAppConfig)
+
+// POST /admin/whatsapp/test-connection - Test WhatsApp connection
+router.post('/whatsapp/test-connection', requireAdmin, testWhatsAppConnection)
 
 export default router

@@ -6,6 +6,7 @@ import { Router } from 'express';
 import { ClientController } from '../controllers/ClientController';
 import { TagController } from '../controllers/TagController';
 import { authenticate } from '../shared/middlewares/authenticate';
+import { clientListingsRateLimiter } from '../shared/middlewares/rateLimiter';
 
 const router = Router();
 const clientController = new ClientController();
@@ -24,7 +25,7 @@ router.use(authenticate);
  * @param {string} [status] - Filter by status (ACTIVE, INACTIVE, BLOCKED)
  * @param {string[]} [tags] - Filter by tag IDs
  */
-router.get('/', clientController.getClients);
+router.get('/', clientListingsRateLimiter, clientController.getClients);
 
 /**
  * @route GET /clients/:id

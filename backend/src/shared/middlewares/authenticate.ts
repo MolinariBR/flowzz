@@ -47,6 +47,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     // Inject user info into request
     req.user = {
       userId: payload.userId,
+      email: payload.email,
       role: payload.role,
     };
 

@@ -41,7 +41,7 @@ setup('authenticate demo user', async ({ request }) => {
     cookies: [],
     origins: [
       {
-        origin: 'http://localhost:3001', // Flow app port
+        origin: 'http://localhost:3000', // Flow app port (CORREÇÃO: era 3001)
         localStorage: [
           {
             name: 'accessToken',

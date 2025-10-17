@@ -8,6 +8,7 @@ export interface AuthTokens {
 
 export interface AuthPayload {
   userId: string;
+  email: string;
   role: string;
   iat?: number;
   exp?: number;

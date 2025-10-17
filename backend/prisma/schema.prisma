@@ -31,7 +31,13 @@ model User {
   // Trial and subscription info
   subscription_status SubscriptionStatus @default(TRIAL)
   plan_id            String?
-  
+
+  // PagBank integration fields
+  pagbank_customer_id String? @unique // ID do cliente no PagBank
+  telefone            String? // Telefone para cobrança
+  documento          String? // CPF/CNPJ
+  endereco           Json?   // Endereço completo (rua, numero, bairro, cidade, estado, cep)
+
   // Relations
   clients      Client[]
   tags         Tag[]
@@ -42,6 +48,7 @@ model User {
   goals        Goal[]
   activities   Activity[]
   subscriptions Subscription[]
+  payment_methods PaymentMethod[]
   refresh_tokens RefreshToken[]
   admin_actions AuditLog[] @relation("AdminActions")
   user_actions  AuditLog[] @relation("UserActions")
@@ -329,6 +336,13 @@ model Subscription {
   created_at        DateTime           @default(now())
   updated_at        DateTime           @updatedAt
 
+  // PagBank integration fields
+  pagbank_subscription_id String? @unique // ID da assinatura no PagBank
+  pagbank_status         String? // Status no PagBank (ACTIVE, SUSPENDED, CANCELED, etc.)
+  last_payment_date      DateTime? // Data do último pagamento bem-sucedido
+  next_payment_date      DateTime? // Data do próximo pagamento
+  payment_method         Json? // Dados do método de pagamento (tipo, últimos dígitos, etc.)
+
   // Relations
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
   plan Plan @relation(fields: [plan_id], references: [id])
@@ -337,7 +351,32 @@ model Subscription {
   @@index([user_id])
   @@index([status])
   @@index([current_period_end])
+  @@index([pagbank_subscription_id])
   @@map("subscriptions")
+}
+
+// PaymentMethod model - Secure payment method storage
+model PaymentMethod {
+  id                String   @id @default(uuid())
+  user_id           String
+  type              String   // 'credit_card', 'pix', 'boleto'
+  pagbank_token     String?  @unique // Token criptografado do PagBank
+  last_four_digits  String?  // Últimos 4 dígitos do cartão
+  brand             String?  // Visa, Mastercard, etc.
+  expiry_month      Int?     // Mês de expiração
+  expiry_year       Int?     // Ano de expiração
+  is_default        Boolean  @default(false)
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([user_id])
+  @@index([pagbank_token])
+  @@map("payment_methods")
 }
 
 // ================================

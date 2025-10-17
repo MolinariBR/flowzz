@@ -4,15 +4,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import { AdminLayout } from './components/layout/admin-layout'
 import { Dashboard } from './pages/Dashboard'
-import { Users } from './pages/Users'
-import { Login } from './pages/Login'
+import { WhatsAppSettings } from './pages/WhatsAppSettings'
 import { useAuthStore } from './lib/stores/auth-store'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutos
-      cacheTime: 10 * 60 * 1000, // 10 minutos
+      gcTime: 10 * 60 * 1000, // 10 minutos
     },
   },
 })
@@ -89,8 +88,9 @@ function App() {
             >
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="users" element={<Users />} />
+              <Route path="whatsapp" element={<WhatsAppSettings />} />
               <Route path="metrics" element={<Dashboard />} />
-              <Route path="integrations" element={<Dashboard />} />
+              <Route path="integrations" element={<WhatsAppSettings />} />
             </Route>
           </Routes>
           <Toaster

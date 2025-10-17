@@ -12,6 +12,7 @@
 import type { Job } from 'bull';
 import { whatsappQueue, type WhatsAppJobData } from '../queues/queues';
 import { logger } from '../shared/utils/logger';
+import { whatsAppService } from '../services/WhatsAppService';
 
 /**
  * Processa job de envio de mensagem WhatsApp
@@ -20,35 +21,49 @@ import { logger } from '../shared/utils/logger';
  * @returns Promise com resultado do envio
  */
 export async function processWhatsAppJob(job: Job<WhatsAppJobData>): Promise<void> {
-  const { empresaId, to, templateName } = job.data;
+  const { empresaId, to, templateName, templateParams, message } = job.data;
 
   logger.info('Starting WhatsApp message job', {
     jobId: job.id,
     empresaId,
     to,
     templateName,
+    templateParams,
+    message,
     attempt: job.attemptsMade + 1,
     maxAttempts: job.opts.attempts,
   });
 
   try {
-    // TODO: Implementar chamada ao WhatsAppService.sendMessage
-    // const result = await WhatsAppService.sendMessage({
-    //   empresaId,
-    //   to,
-    //   message,
-    //   templateName,
-    //   templateParams,
-    // });
+    let result;
 
-    // Mock temporário para não quebrar o build
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    const result = { messageId: `msg_${Date.now()}`, status: 'sent' };
+    if (templateName) {
+      // Enviar template message
+      const variables = templateParams ? Object.values(templateParams) : [];
+      result = await whatsAppService.sendTemplate(
+        empresaId, // userId
+        templateName,
+        to,
+        variables
+      );
+    } else {
+      // Enviar text message
+      result = await whatsAppService.sendText(
+        empresaId, // userId
+        to,
+        message
+      );
+    }
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send WhatsApp message');
+    }
 
     logger.info('WhatsApp message job completed successfully', {
       jobId: job.id,
       empresaId,
       to,
+      messageId: result.messageId,
       result,
     });
   } catch (error) {

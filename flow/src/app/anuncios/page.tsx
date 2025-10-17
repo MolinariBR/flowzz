@@ -17,8 +17,10 @@ import {
 	Target,
 	TrendingDown,
 	TrendingUp,
+	Link,
+	AlertCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
 	Area,
 	AreaChart,
@@ -28,6 +30,8 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { useFacebookAds } from "@/lib/hooks/useFacebookAds";
+import type { FacebookInsightsResponse } from "@/lib/types/facebook";
 
 interface MetricCardProps {
 	title: string;
@@ -70,43 +74,74 @@ const MetricCard = ({
 export default function Anuncios() {
 	const [dateRange, setDateRange] = useState("7d");
 	const [expandedCampaigns, setExpandedCampaigns] = useState<number[]>([1]);
+	const [insightsData, setInsightsData] = useState<FacebookInsightsResponse | null>(null);
 	const selectedCampaigns: number[] = [];
 
-	const performanceData = [
-		{ date: "07/10", gasto: 120, vendas: 890, impressoes: 12500, cliques: 340 },
-		{ date: "08/10", gasto: 95, vendas: 1200, impressoes: 15800, cliques: 420 },
-		{ date: "09/10", gasto: 110, vendas: 980, impressoes: 11200, cliques: 380 },
-		{
-			date: "10/10",
-			gasto: 130,
-			vendas: 1450,
-			impressoes: 18900,
-			cliques: 520,
-		},
-		{
-			date: "11/10",
-			gasto: 105,
-			vendas: 1100,
-			impressoes: 14300,
-			cliques: 450,
-		},
-		{
-			date: "12/10",
-			gasto: 140,
-			vendas: 1680,
-			impressoes: 21200,
-			cliques: 580,
-		},
-		{
-			date: "13/10",
-			gasto: 125,
-			vendas: 1350,
-			impressoes: 16700,
-			cliques: 490,
-		},
-	];
+	const {
+		isLoading,
+		integrationStatus,
+		connect,
+		getInsights,
+		syncData,
+	} = useFacebookAds();
 
-	const campaigns = [
+	// Carregar dados quando a integração estiver conectada
+	const loadInsights = useCallback(async () => {
+		if (!integrationStatus?.adAccounts?.[0]?.account_id) return;
+
+		try {
+			const data = await getInsights({
+				adAccountId: integrationStatus.adAccounts[0].account_id,
+				datePreset: dateRange === '1d' ? 'today' : dateRange === '7d' ? 'last_7d' : dateRange === '30d' ? 'last_30d' : 'last_90d',
+				level: 'campaign',
+			});
+			if (data) {
+				setInsightsData(data);
+			}
+		} catch (error) {
+			console.error('Erro ao carregar insights:', error);
+		}
+	}, [getInsights, dateRange, integrationStatus?.adAccounts]);
+
+	useEffect(() => {
+		if (integrationStatus?.connected) {
+			loadInsights();
+		}
+	}, [integrationStatus?.connected, loadInsights]);
+
+	// Recarregar dados quando o dateRange mudar
+	useEffect(() => {
+		if (integrationStatus?.connected) {
+			loadInsights();
+		}
+	}, [dateRange, integrationStatus?.connected, loadInsights]);
+
+	// Usar campanhas reais quando conectadas, senão usar mock
+	const campaigns = insightsData?.campaigns ? insightsData.campaigns.map((campaign, index) => {
+		// Encontrar insights correspondentes para esta campanha
+		const campaignInsights = insightsData.insights.filter(insight => insight.campaign_id === campaign.id);
+		const totalSpend = campaignInsights.reduce((sum, insight) => sum + insight.spend, 0);
+		const totalImpressions = campaignInsights.reduce((sum, insight) => sum + insight.impressions, 0);
+		const totalClicks = campaignInsights.reduce((sum, insight) => sum + insight.clicks, 0);
+		const avgCTR = campaignInsights.length > 0 ? campaignInsights.reduce((sum, insight) => sum + insight.ctr, 0) / campaignInsights.length : 0;
+		const avgROAS = campaignInsights.length > 0 ? campaignInsights.reduce((sum, insight) => sum + (insight.roas || 0), 0) / campaignInsights.length : 0;
+
+		return {
+			id: parseInt(campaign.id),
+			name: campaign.name,
+			status: campaign.status === 'ACTIVE' ? 'ativo' : campaign.status === 'PAUSED' ? 'pausado' : 'rascunho',
+			budget: campaign.daily_budget || campaign.lifetime_budget || 0,
+			spent: totalSpend,
+			impressions: totalImpressions,
+			clicks: totalClicks,
+			cpm: totalImpressions > 0 ? (totalSpend / totalImpressions) * 1000 : 0,
+			cpc: totalClicks > 0 ? totalSpend / totalClicks : 0,
+			ctr: avgCTR,
+			roas: avgROAS,
+			sales: Math.round(avgROAS * totalSpend), // Estimativa baseada no ROAS
+			adSets: [], // Por enquanto vazio, pode ser expandido depois
+		};
+	}) : [
 		{
 			id: 1,
 			name: "Campanha Produto A - Conversão",
@@ -200,6 +235,40 @@ export default function Anuncios() {
 		},
 	];
 
+	const performanceData = [
+		{ date: "07/10", gasto: 120, vendas: 890, impressoes: 12500, cliques: 340 },
+		{ date: "08/10", gasto: 95, vendas: 1200, impressoes: 15800, cliques: 420 },
+		{ date: "09/10", gasto: 110, vendas: 980, impressoes: 11200, cliques: 380 },
+		{
+			date: "10/10",
+			gasto: 130,
+			vendas: 1450,
+			impressoes: 18900,
+			cliques: 520,
+		},
+		{
+			date: "11/10",
+			gasto: 105,
+			vendas: 1100,
+			impressoes: 14300,
+			cliques: 450,
+		},
+		{
+			date: "12/10",
+			gasto: 140,
+			vendas: 1680,
+			impressoes: 21200,
+			cliques: 580,
+		},
+		{
+			date: "13/10",
+			gasto: 125,
+			vendas: 1350,
+			impressoes: 16700,
+			cliques: 490,
+		},
+	];
+
 	const toggleCampaign = (campaignId: number) => {
 		setExpandedCampaigns((prev) =>
 			prev.includes(campaignId)
@@ -240,146 +309,313 @@ export default function Anuncios() {
 					</p>
 				</div>
 				<div className="flex items-center space-x-3 mt-4 lg:mt-0">
-					<select
-						value={dateRange}
-						onChange={(e) => setDateRange(e.target.value)}
-						className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					>
-						<option value="1d">Hoje</option>
-						<option value="7d">Últimos 7 dias</option>
-						<option value="30d">Últimos 30 dias</option>
-						<option value="90d">Últimos 90 dias</option>
-					</select>
-					<button
-						type="button"
-						className="flex items-center space-x-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50"
-					>
-						<RefreshCw className="h-4 w-4" />
-						<span>Atualizar</span>
-					</button>
-					<button
-						type="button"
-						className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-					>
-						<Settings className="h-4 w-4" />
-						<span>Criar Campanha</span>
-					</button>
+					{!integrationStatus?.connected ? (
+						<button
+							type="button"
+							onClick={connect}
+							disabled={isLoading}
+							className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							<Link className="h-4 w-4" />
+							<span>{isLoading ? 'Conectando...' : 'Conectar Facebook Ads'}</span>
+						</button>
+					) : (
+						<>
+							<select
+								value={dateRange}
+								onChange={(e) => setDateRange(e.target.value)}
+								className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+							>
+								<option value="1d">Hoje</option>
+								<option value="7d">Últimos 7 dias</option>
+								<option value="30d">Últimos 30 dias</option>
+								<option value="90d">Últimos 90 dias</option>
+							</select>
+							<button
+								type="button"
+								onClick={loadInsights}
+								disabled={isLoading}
+								className="flex items-center space-x-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+							>
+								<RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+								<span>Atualizar</span>
+							</button>
+							<button
+								type="button"
+								onClick={syncData}
+								disabled={isLoading}
+								className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+							>
+								<Download className="h-4 w-4" />
+								<span>{isLoading ? 'Sincronizando...' : 'Sincronizar'}</span>
+							</button>
+							<button
+								type="button"
+								className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+							>
+								<Settings className="h-4 w-4" />
+								<span>Criar Campanha</span>
+							</button>
+						</>
+					)}
 				</div>
 			</div>
+
+			{/* Status da Integração */}
+			{integrationStatus && (
+				<div className={`flex items-center space-x-2 p-4 rounded-lg ${integrationStatus.connected ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+					{integrationStatus.connected ? (
+						<>
+							<div className="w-2 h-2 bg-green-500 rounded-full"></div>
+							<span className="text-sm text-green-800">
+								Conectado ao Facebook Ads • {integrationStatus.adAccounts?.length || 0} conta(s) de anúncio
+								{integrationStatus.lastSync && ` • Última sincronização: ${new Date(integrationStatus.lastSync).toLocaleString('pt-BR')}`}
+							</span>
+						</>
+					) : (
+						<>
+							<AlertCircle className="h-4 w-4 text-yellow-600" />
+							<span className="text-sm text-yellow-800">
+								Não conectado ao Facebook Ads. Clique em &quot;Conectar Facebook Ads&quot; para começar.
+							</span>
+						</>
+					)}
+				</div>
+			)}
 
 			{/* Metrics Bar - Facebook Style */}
-			<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-				<MetricCard
-					title="Gasto"
-					value="R$ 825,60"
-					change="+12,5%"
-					trend="up"
-					icon={DollarSign}
-				/>
-				<MetricCard
-					title="Impressões"
-					value="117.300"
-					change="+8,2%"
-					trend="up"
-					icon={Eye}
-				/>
-				<MetricCard
-					title="Cliques"
-					value="3.355"
-					change="+15,7%"
-					trend="up"
-					icon={MousePointer}
-				/>
-				<MetricCard
-					title="CPM"
-					value="R$ 7,04"
-					change="-5,3%"
-					trend="down"
-					icon={Target}
-				/>
-				<MetricCard
-					title="CPC"
-					value="R$ 0,25"
-					change="-8,1%"
-					trend="down"
-					icon={Target}
-				/>
-				<MetricCard
-					title="CTR"
-					value="2,86%"
-					change="+3,2%"
-					trend="up"
-					icon={TrendingUp}
-				/>
-				<MetricCard
-					title="ROAS"
-					value="9,7x"
-					change="+18,5%"
-					trend="up"
-					icon={TrendingUp}
-				/>
-			</div>
+			{integrationStatus?.connected && insightsData ? (
+				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+					<MetricCard
+						title="Gasto"
+						value={`R$ ${insightsData.summary.totalSpend.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+						change="+12,5%"
+						trend="up"
+						icon={DollarSign}
+					/>
+					<MetricCard
+						title="Impressões"
+						value={insightsData.summary.totalImpressions.toLocaleString('pt-BR')}
+						change="+8,2%"
+						trend="up"
+						icon={Eye}
+					/>
+					<MetricCard
+						title="Cliques"
+						value={insightsData.summary.totalClicks.toLocaleString('pt-BR')}
+						change="+15,7%"
+						trend="up"
+						icon={MousePointer}
+					/>
+					<MetricCard
+						title="CPM"
+						value={`R$ ${(insightsData.summary.totalSpend / insightsData.summary.totalImpressions * 1000).toFixed(2)}`}
+						change="-5,3%"
+						trend="down"
+						icon={Target}
+					/>
+					<MetricCard
+						title="CPC"
+						value={`R$ ${insightsData.summary.averageCPC.toFixed(2)}`}
+						change="-8,1%"
+						trend="down"
+						icon={Target}
+					/>
+					<MetricCard
+						title="CTR"
+						value={`${(insightsData.summary.averageCTR * 100).toFixed(2)}%`}
+						change="+3,2%"
+						trend="up"
+						icon={TrendingUp}
+					/>
+					<MetricCard
+						title="ROAS"
+						value={`${insightsData.summary.averageROAS.toFixed(1)}x`}
+						change="+18,5%"
+						trend="up"
+						icon={TrendingUp}
+					/>
+				</div>
+			) : (
+				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+					<MetricCard
+						title="Gasto"
+						value="R$ 825,60"
+						change="+12,5%"
+						trend="up"
+						icon={DollarSign}
+					/>
+					<MetricCard
+						title="Impressões"
+						value="117.300"
+						change="+8,2%"
+						trend="up"
+						icon={Eye}
+					/>
+					<MetricCard
+						title="Cliques"
+						value="3.355"
+						change="+15,7%"
+						trend="up"
+						icon={MousePointer}
+					/>
+					<MetricCard
+						title="CPM"
+						value="R$ 7,04"
+						change="-5,3%"
+						trend="down"
+						icon={Target}
+					/>
+					<MetricCard
+						title="CPC"
+						value="R$ 0,25"
+						change="-8,1%"
+						trend="down"
+						icon={Target}
+					/>
+					<MetricCard
+						title="CTR"
+						value="2,86%"
+						change="+3,2%"
+						trend="up"
+						icon={TrendingUp}
+					/>
+					<MetricCard
+						title="ROAS"
+						value="9,7x"
+						change="+18,5%"
+						trend="up"
+						icon={TrendingUp}
+					/>
+				</div>
+			)}
 
 			{/* Performance Chart */}
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				className="bg-white border border-slate-200 rounded-lg p-6"
-			>
-				<div className="flex items-center justify-between mb-6">
-					<div>
-						<h3 className="text-lg font-semibold text-slate-900">
-							Performance das Campanhas
-						</h3>
-						<p className="text-sm text-slate-600">
-							Gasto vs Vendas - Últimos 7 dias
-						</p>
-					</div>
-					<div className="flex items-center space-x-4">
-						<div className="flex items-center space-x-2">
-							<div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-							<span className="text-sm text-slate-600">Gasto</span>
+			{integrationStatus?.connected && insightsData ? (
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					className="bg-white border border-slate-200 rounded-lg p-6"
+				>
+					<div className="flex items-center justify-between mb-6">
+						<div>
+							<h3 className="text-lg font-semibold text-slate-900">
+								Performance das Campanhas
+							</h3>
+							<p className="text-sm text-slate-600">
+								Dados do Facebook Ads - {insightsData.adAccount.name}
+							</p>
 						</div>
-						<div className="flex items-center space-x-2">
-							<div className="w-3 h-3 bg-green-500 rounded-full"></div>
-							<span className="text-sm text-slate-600">Vendas</span>
+						<div className="flex items-center space-x-4">
+							<div className="flex items-center space-x-2">
+								<div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+								<span className="text-sm text-slate-600">Gasto</span>
+							</div>
+							<div className="flex items-center space-x-2">
+								<div className="w-3 h-3 bg-green-500 rounded-full"></div>
+								<span className="text-sm text-slate-600">Cliques</span>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div className="h-80">
-					<ResponsiveContainer width="100%" height="100%">
-						<AreaChart data={performanceData}>
-							<CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-							<XAxis dataKey="date" stroke="#64748b" fontSize={12} />
-							<YAxis stroke="#64748b" fontSize={12} />
-							<Tooltip
-								contentStyle={{
-									backgroundColor: "#fff",
-									border: "1px solid #e2e8f0",
-									borderRadius: "8px",
-									boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-								}}
-							/>
-							<Area
-								type="monotone"
-								dataKey="gasto"
-								stackId="1"
-								stroke="#3b82f6"
-								fill="#3b82f6"
-								fillOpacity={0.6}
-							/>
-							<Area
-								type="monotone"
-								dataKey="vendas"
-								stackId="2"
-								stroke="#10b981"
-								fill="#10b981"
-								fillOpacity={0.6}
-							/>
-						</AreaChart>
-					</ResponsiveContainer>
-				</div>
-			</motion.div>
+					<div className="h-80">
+						<ResponsiveContainer width="100%" height="100%">
+							<AreaChart data={insightsData.insights}>
+								<CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+								<XAxis dataKey="date_start" stroke="#64748b" fontSize={12} />
+								<YAxis stroke="#64748b" fontSize={12} />
+								<Tooltip
+									contentStyle={{
+										backgroundColor: "#fff",
+										border: "1px solid #e2e8f0",
+										borderRadius: "8px",
+										boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+									}}
+									formatter={(value: any, name: string) => [
+										name === 'spend' ? `R$ ${value.toFixed(2)}` : value.toLocaleString('pt-BR'),
+										name === 'spend' ? 'Gasto' : 'Cliques'
+									]}
+								/>
+								<Area
+									type="monotone"
+									dataKey="spend"
+									stackId="1"
+									stroke="#3b82f6"
+									fill="#3b82f6"
+									fillOpacity={0.6}
+								/>
+								<Area
+									type="monotone"
+									dataKey="clicks"
+									stackId="2"
+									stroke="#10b981"
+									fill="#10b981"
+									fillOpacity={0.6}
+								/>
+							</AreaChart>
+						</ResponsiveContainer>
+					</div>
+				</motion.div>
+			) : (
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					className="bg-white border border-slate-200 rounded-lg p-6"
+				>
+					<div className="flex items-center justify-between mb-6">
+						<div>
+							<h3 className="text-lg font-semibold text-slate-900">
+								Performance das Campanhas
+							</h3>
+							<p className="text-sm text-slate-600">
+								Gasto vs Cliques - Últimos 7 dias
+							</p>
+						</div>
+						<div className="flex items-center space-x-4">
+							<div className="flex items-center space-x-2">
+								<div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+								<span className="text-sm text-slate-600">Gasto</span>
+							</div>
+							<div className="flex items-center space-x-2">
+								<div className="w-3 h-3 bg-green-500 rounded-full"></div>
+								<span className="text-sm text-slate-600">Cliques</span>
+							</div>
+						</div>
+					</div>
+					<div className="h-80">
+						<ResponsiveContainer width="100%" height="100%">
+							<AreaChart data={performanceData}>
+								<CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+								<XAxis dataKey="date" stroke="#64748b" fontSize={12} />
+								<YAxis stroke="#64748b" fontSize={12} />
+								<Tooltip
+									contentStyle={{
+										backgroundColor: "#fff",
+										border: "1px solid #e2e8f0",
+										borderRadius: "8px",
+										boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+									}}
+								/>
+								<Area
+									type="monotone"
+									dataKey="gasto"
+									stackId="1"
+									stroke="#3b82f6"
+									fill="#3b82f6"
+									fillOpacity={0.6}
+								/>
+								<Area
+									type="monotone"
+									dataKey="cliques"
+									stackId="2"
+									stroke="#10b981"
+									fill="#10b981"
+									fillOpacity={0.6}
+								/>
+							</AreaChart>
+						</ResponsiveContainer>
+					</div>
+				</motion.div>
+			)}
 
 			{/* Campaigns Table */}
 			<motion.div
