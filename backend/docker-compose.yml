@@ -1,7 +1,7 @@
 # Docker Compose for Flowzz API Development Environment
 # Referência: design.md §Database, tasks.md Task 1.4
 
-name: flowzz-backend
+version: '3.8'
 
 services:
   # PostgreSQL Database
