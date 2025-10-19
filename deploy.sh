@@ -127,6 +127,11 @@ NODE_ENV=production
 CORS_ORIGIN="http://$DOMAIN,http://admin.$DOMAIN"
 EOF
 
+# Load environment variables
+set -a
+source .env.production
+set +a
+
 npx prisma generate
 npx prisma db push
 npm run build
