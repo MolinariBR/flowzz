@@ -74,7 +74,7 @@ export function startStorageCleanup(): void {
  * Para o job de cleanup
  */
 export function stopStorageCleanup(): void {
-  if (storageCleanupJob.running) {
+  if (storageCleanupJob && typeof (storageCleanupJob as any).running !== 'undefined' && (storageCleanupJob as any).running) {
     storageCleanupJob.stop();
     logger.info('Storage cleanup job stopped');
   }

@@ -2,7 +2,7 @@
 // Atende tasks.md Task 10.1 - ReportService com geração assíncrona
 
 import { PrismaClient } from '@prisma/client';
-import type { ReportType } from '@prisma/client';
+import type { ReportType, SaleStatus } from '@prisma/client';
 import type {
   AdsReportData,
   ClientsReportData,
@@ -289,12 +289,12 @@ export class ReportService implements IReportService {
     }
 
     if (filters.status && filters.status.length > 0) {
-      where.status = { in: filters.status };
+      where.status = { in: filters.status as any };
     }
 
     // Buscar vendas
     const sales = await this.prisma.sale.findMany({
-      where,
+      where: where as any,
       include: {
         client: {
           select: {
@@ -827,7 +827,7 @@ export class ReportService implements IReportService {
     const days: Record<string, { count: number; revenue: number }> = {};
 
     sales.forEach((sale) => {
-      const date = sale.created_at.toISOString().split('T')[0];
+      const date = sale.created_at.toISOString().split('T')[0]!;
       if (!days[date]) {
         days[date] = { count: 0, revenue: 0 };
       }
@@ -876,7 +876,7 @@ export class ReportService implements IReportService {
       .map((cs) => {
         const client = clients.find((c) => c.id === cs.client_id);
         return {
-          id: cs.client_id,
+          id: cs.client_id!,
           name: client?.name || 'N/A',
           totalSpent: Number(cs._sum.total_price || 0),
           orderCount: cs._count.id,

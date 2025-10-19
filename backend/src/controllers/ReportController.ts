@@ -23,6 +23,7 @@ import { logger } from '../shared/utils/logger';
 interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
+    email: string;
     role: string;
   };
 }

@@ -24,7 +24,7 @@ export interface UpdateUserData {
   nome?: string
   email?: string
   role?: Role
-  plan_id?: string
+  plan_id?: string | undefined
   is_active?: boolean
   subscription_status?: string
 }
@@ -162,9 +162,14 @@ export class UserManagementService {
     adminId: string,
     auditData?: Pick<AuditLogData, 'ip_address' | 'user_agent'>
   ): Promise<User> {
+    // Filtrar campos undefined para compatibilidade com Prisma
+    const updateData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+
     const user = await prisma.user.update({
       where: { id: userId },
-      data,
+      data: updateData,
       include: { plan: true }
     })
 

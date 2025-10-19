@@ -107,7 +107,8 @@ export class PDFGenerator {
         size: pdfBuffer.length,
       });
 
-      return pdfBuffer;
+      // Converter Uint8Array para Buffer se necessário
+      return Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer);
     } catch (error) {
       logger.error('Error generating PDF', {
         error: error instanceof Error ? error.message : String(error),
