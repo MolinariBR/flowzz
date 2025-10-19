@@ -8,7 +8,29 @@ Este guia fornece instruções completas para fazer o deploy do Flowzz em uma VP
 - Acesso SSH à VPS
 - Domínio configurado (recomendado)
 
-## ⚡ Deploy Automático (Recomendado)
+## ⚠️ Execução como Root
+
+O script de deploy pode ser executado como root, mas para **maior segurança**, recomendamos:
+
+### Opção 1: Criar usuário dedicado (Recomendado)
+```bash
+# Como root
+sudo ./setup_user.sh
+
+# Depois faça login como o novo usuário
+su - flowzz
+cd ~
+git clone https://github.com/MolinariBR/flowzz.git
+cd flowzz
+./deploy.sh flowzzoficial.com admin@flowzzoficial.com
+```
+
+### Opção 2: Executar diretamente como root
+```bash
+# Como root
+./deploy.sh flowzzoficial.com admin@flowzzoficial.com
+# O script irá perguntar se deseja continuar
+```
 
 ### Passo 1: Conectar à VPS
 ```bash

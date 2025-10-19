@@ -1,6 +1,13 @@
 # 🚀 Flowzz - Deploy na Hostinger VPS
 
-## ⚡ Deploy Rápido
+## ⚠️ Importante: Usuário Root
+
+O script detecta quando está sendo executado como root e oferece opções:
+
+- **Recomendado**: Criar usuário dedicado com `./setup_user.sh`
+- **Alternativo**: Continuar como root (o script permite)
+
+Para máxima segurança, use um usuário não-root para o deploy.
 
 ```bash
 # 1. Conectar à VPS

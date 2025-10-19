@@ -35,8 +35,18 @@ print_error() {
 
 # Check if running as root
 if [[ $EUID -eq 0 ]]; then
-   print_error "Este script não deve ser executado como root"
-   exit 1
+   echo -e "${YELLOW}⚠️  AVISO: Você está executando como root.${NC}"
+   echo -e "${YELLOW}   Para maior segurança, considere criar um usuário não-root.${NC}"
+   echo -e "${YELLOW}   No entanto, o script pode continuar normalmente.${NC}"
+   echo ""
+   read -p "Deseja continuar como root? (y/N): " -n 1 -r
+   echo
+   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+       echo -e "${BLUE}Execução cancelada. Considere executar como usuário não-root.${NC}"
+       exit 1
+   fi
+   echo -e "${GREEN}Continuando como root...${NC}"
+   echo ""
 fi
 
 # Update system
