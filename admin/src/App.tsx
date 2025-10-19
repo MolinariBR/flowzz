@@ -1,4 +1,6 @@
-import React from 'react'
+import React from 'react';
+import { Login } from './pages/Login';
+import { Users } from './pages/Users';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'

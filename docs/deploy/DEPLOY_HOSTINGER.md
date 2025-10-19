@@ -1,5 +1,7 @@
 # Tutorial: Deploy do Flowzz na VPS Hostinger
 
+> 💡 **Dica**: Para deploy automático e mais rápido, use o script `./deploy.sh` localizado na raiz do projeto. Este tutorial cobre o processo manual passo-a-passo.
+
 ## 📋 Pré-requisitos
 
 - VPS Ubuntu 22.04+ na Hostinger

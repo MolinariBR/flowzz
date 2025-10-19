@@ -1,7 +1,7 @@
 // app.ts - Exporta apenas a aplicação Express sem iniciar o servidor
 // Para uso em testes de integração
 
-import express from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -26,7 +26,7 @@ import adminRoutes from './routes/admin.routes';
 import whatsappRoutes from './routes/whatsapp.routes';
 import { pagBankRoutes } from './routes/pagbank.routes';
 
-const app = express();
+const app: Application = express();
 
 // Security middlewares
 app.use(helmet());

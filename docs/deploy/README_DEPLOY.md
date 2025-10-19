@@ -15,7 +15,7 @@ O script de deploy pode ser executado como root, mas para **maior segurança**, 
 ### Opção 1: Criar usuário dedicado (Recomendado)
 ```bash
 # Como root
-sudo ./setup_user.sh
+./scripts/setup_user.sh
 
 # Depois faça login como o novo usuário
 su - flowzz
@@ -60,15 +60,55 @@ Se preferir fazer o deploy manual, siga o tutorial completo em [`DEPLOY_HOSTINGE
 ## 📁 Estrutura Após Deploy
 
 ```
-/home/usuario/
-├── flowzz/
-│   ├── backend/          # API Node.js
-│   ├── flow/            # Frontend Next.js
-│   ├── admin/           # Painel Admin Vite
-│   ├── deploy.sh        # Script de deploy
-│   ├── update_flowzz.sh # Script de atualização
-│   └── DEPLOY_HOSTINGER.md
+/home/usuario/flowzz/
+├── 📁 docs/                    # Documentação organizada
+│   └── 📁 deploy/              # Documentação de deploy
+├── 📁 scripts/                 # Scripts de automação
+│   ├── 📁 deploy/              # Scripts de deploy modularizados
+│   │   ├── 📁 config/          # Configurações de deploy
+│   │   ├── 📁 modules/         # Módulos de deploy
+│   │   └── deploy.sh.backup    # Backup do script antigo
+│   ├── setup_user.sh           # Script de criação de usuário
+│   └── setup-integration.sh    # Script de integração
+├── 📁 backend/                 # API Node.js
+├── 📁 flow/                    # Frontend Next.js
+├── 📁 admin/                   # Painel Admin Vite
+├── 📁 landing/                 # Landing Page Vite
+├── 📁 e2e/                     # Testes end-to-end
+├── deploy.sh                   # Script principal de deploy
+├── update_flowzz.sh            # Script de atualização (criado após deploy)
+└── README.md                   # Documentação principal
 ```
+
+## 🏗️ Arquitetura dos Scripts de Deploy
+
+O sistema de deploy foi refatorado para uma arquitetura modular:
+
+### Script Principal
+- **`deploy.sh`** (na raiz): Orquestrador principal que executa todos os módulos em ordem
+
+### Módulos de Deploy
+Localizados em `scripts/deploy/modules/`:
+
+- **`setup.sh`** - Configuração básica do sistema (atualizações, dependências, firewall)
+- **`project.sh`** - Configuração do projeto (clone/update do repositório)
+- **`database.sh`** - Configuração do banco PostgreSQL e Redis
+- **`backend.sh`** - Configuração da API Node.js
+- **`flow.sh`** - Configuração do frontend Flow (Next.js)
+- **`admin.sh`** - Configuração do painel administrativo
+- **`landing.sh`** - Configuração da landing page
+- **`nginx.sh`** - Configuração do servidor web Nginx
+- **`ssl.sh`** - Configuração de certificados SSL
+- **`final.sh`** - Configurações finais (PM2, logrotate, scripts de update)
+
+### Configurações Centralizadas
+- **`scripts/deploy/config/deploy.config`** - Arquivo central de configurações
+
+### Benefícios da Arquitetura Modular
+- ✅ **Manutenibilidade**: Cada módulo tem responsabilidade única
+- ✅ **Reutilização**: Módulos podem ser executados individualmente
+- ✅ **Debugging**: Fácil identificar e corrigir problemas específicos
+- ✅ **Flexibilidade**: Possível customizar ou pular módulos específicos
 
 ## 🌐 URLs de Acesso
 

@@ -29,7 +29,7 @@ import { prisma } from '../../shared/config/database';
 describe('PagBank Integration E2E Tests', () => {
   let accessToken: string;
   let userId: string;
-  let subscriptionId: string;
+  let subscriptionId: string | undefined;
 
   const testUser = {
     email: `test-pagbank-${Date.now()}@flowzz.com`,
