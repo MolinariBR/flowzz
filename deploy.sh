@@ -49,6 +49,7 @@ fi
 # Função para executar módulo
 run_module() {
     local module=$1
+    shift # Remove o nome do módulo dos parâmetros
     local module_path="$DEPLOY_MODULES_DIR/$module.sh"
 
     if [ ! -f "$module_path" ]; then
