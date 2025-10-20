@@ -7,22 +7,22 @@
  * - docker-compose.yml: Redis rodando na porta 6380
  */
 
-import Redis from 'ioredis';
-import { env } from './env';
-import { logger } from '../utils/logger';
+import Redis from 'ioredis'
+import { logger } from '../utils/logger'
+import { env } from './env'
 
 /**
  * Parse Redis URL to extract host and port
  */
 function parseRedisUrl(url: string): { host: string; port: number } {
   try {
-    const parsedUrl = new URL(url);
+    const parsedUrl = new URL(url)
     return {
       host: parsedUrl.hostname,
       port: Number.parseInt(parsedUrl.port, 10) || 6379,
-    };
+    }
   } catch {
-    return { host: 'localhost', port: 6380 };
+    return { host: 'localhost', port: 6380 }
   }
 }
 
@@ -36,41 +36,41 @@ export const redisConfig = {
   maxRetriesPerRequest: null, // Required for Bull
   enableReadyCheck: false, // Required for Bull
   retryStrategy: (times: number) => {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
+    const delay = Math.min(times * 50, 2000)
+    return delay
   },
-};
+}
 
 /**
  * Create Redis client for Bull queues
  * Usa configuração otimizada para Bull
  */
 export function createRedisClient(): Redis {
-  const client = new Redis(redisConfig);
+  const client = new Redis(redisConfig)
 
   client.on('connect', () => {
     logger.info('Redis client connected for Bull queues', {
       host: redisConfig.host,
       port: redisConfig.port,
-    });
-  });
+    })
+  })
 
   client.on('error', (error) => {
     logger.error('Redis client error', {
       error: error.message,
       stack: error.stack,
-    });
-  });
+    })
+  })
 
   client.on('ready', () => {
-    logger.info('Redis client ready');
-  });
+    logger.info('Redis client ready')
+  })
 
   client.on('reconnecting', () => {
-    logger.warn('Redis client reconnecting...');
-  });
+    logger.warn('Redis client reconnecting...')
+  })
 
-  return client;
+  return client
 }
 
 /**
@@ -79,15 +79,15 @@ export function createRedisClient(): Redis {
  */
 export async function checkRedisHealth(): Promise<boolean> {
   try {
-    const client = createRedisClient();
-    await client.ping();
-    await client.quit();
-    return true;
+    const client = createRedisClient()
+    await client.ping()
+    await client.quit()
+    return true
   } catch (error) {
     logger.error('Redis health check failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return false;
+    })
+    return false
   }
 }
 
@@ -97,11 +97,11 @@ export async function checkRedisHealth(): Promise<boolean> {
  */
 export async function disconnectRedis(client: Redis): Promise<void> {
   try {
-    await client.quit();
-    logger.info('Redis client disconnected');
+    await client.quit()
+    logger.info('Redis client disconnected')
   } catch (error) {
     logger.error('Error disconnecting Redis client', {
       error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    })
   }
 }

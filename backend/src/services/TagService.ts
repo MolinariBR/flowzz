@@ -13,9 +13,14 @@
  * - Multi-tenancy: tags isoladas por userId
  */
 
-import { type Tag as PrismaTag } from '@prisma/client';
-import type { CreateTagDTO, ITag, ITagService, UpdateTagDTO } from '../interfaces/TagService.interface';
-import { prisma } from '../shared/config/database';
+import type { Tag as PrismaTag } from '@prisma/client'
+import type {
+  CreateTagDTO,
+  ITag,
+  ITagService,
+  UpdateTagDTO,
+} from '../interfaces/TagService.interface'
+import { prisma } from '../shared/config/database'
 
 /**
  * Helper para converter Tag do Prisma (snake_case) para ITag (camelCase)
@@ -28,7 +33,7 @@ function mapPrismaTagToITag(prismaTag: PrismaTag): ITag {
     userId: prismaTag.user_id,
     createdAt: prismaTag.created_at,
     updatedAt: prismaTag.updated_at,
-  };
+  }
 }
 
 export class TagService implements ITagService {
@@ -39,15 +44,15 @@ export class TagService implements ITagService {
    */
   async create(userId: string, data: CreateTagDTO): Promise<ITag> {
     // Validar limite de 20 tags por usuário (tasks.md Task 3.2.3)
-    const hasReachedLimit = await this.validateTagLimit(userId);
+    const hasReachedLimit = await this.validateTagLimit(userId)
     if (hasReachedLimit) {
-      throw new Error('Limite máximo de 20 tags atingido');
+      throw new Error('Limite máximo de 20 tags atingido')
     }
 
     // Validar nome único
-    const isUnique = await this.isTagNameUnique(userId, data.nome);
+    const isUnique = await this.isTagNameUnique(userId, data.nome)
     if (!isUnique) {
-      throw new Error('Já existe uma tag com este nome');
+      throw new Error('Já existe uma tag com este nome')
     }
 
     // Criar tag
@@ -57,9 +62,9 @@ export class TagService implements ITagService {
         color: data.cor,
         user_id: userId,
       },
-    });
+    })
 
-    return mapPrismaTagToITag(tag);
+    return mapPrismaTagToITag(tag)
   }
 
   /**
@@ -75,9 +80,9 @@ export class TagService implements ITagService {
       orderBy: {
         name: 'asc',
       },
-    });
+    })
 
-    return tags.map(mapPrismaTagToITag);
+    return tags.map(mapPrismaTagToITag)
   }
 
   /**
@@ -91,13 +96,13 @@ export class TagService implements ITagService {
         id: tagId,
         user_id: userId, // Multi-tenancy isolation
       },
-    });
+    })
 
     if (!tag) {
-      throw new Error('Tag não encontrada');
+      throw new Error('Tag não encontrada')
     }
 
-    return mapPrismaTagToITag(tag);
+    return mapPrismaTagToITag(tag)
   }
 
   /**
@@ -107,23 +112,23 @@ export class TagService implements ITagService {
    */
   async update(userId: string, tagId: string, data: UpdateTagDTO): Promise<ITag> {
     // Verificar se tag existe e pertence ao usuário
-    await this.getById(userId, tagId);
+    await this.getById(userId, tagId)
 
     // Validar nome único (se nome foi alterado)
     if (data.nome) {
-      const isUnique = await this.isTagNameUnique(userId, data.nome, tagId);
+      const isUnique = await this.isTagNameUnique(userId, data.nome, tagId)
       if (!isUnique) {
-        throw new Error('Já existe uma tag com este nome');
+        throw new Error('Já existe uma tag com este nome')
       }
     }
 
     // Preparar dados para update (converter camelCase para snake_case)
-    const updateData: { name?: string; color?: string } = {};
+    const updateData: { name?: string; color?: string } = {}
     if (data.nome !== undefined) {
-      updateData.name = data.nome;
+      updateData.name = data.nome
     }
     if (data.cor !== undefined) {
-      updateData.color = data.cor;
+      updateData.color = data.cor
     }
 
     // Atualizar tag
@@ -132,9 +137,9 @@ export class TagService implements ITagService {
         id: tagId,
       },
       data: updateData,
-    });
+    })
 
-    return mapPrismaTagToITag(updatedTag);
+    return mapPrismaTagToITag(updatedTag)
   }
 
   /**
@@ -144,12 +149,12 @@ export class TagService implements ITagService {
    */
   async delete(userId: string, tagId: string): Promise<void> {
     // Verificar se tag existe e pertence ao usuário
-    await this.getById(userId, tagId);
+    await this.getById(userId, tagId)
 
     // Validar se tag tem clientes associados
-    const hasClients = await this.checkTagHasClients(userId, tagId);
+    const hasClients = await this.checkTagHasClients(userId, tagId)
     if (hasClients) {
-      throw new Error('Não é possível excluir tag com clientes associados');
+      throw new Error('Não é possível excluir tag com clientes associados')
     }
 
     // Excluir tag
@@ -157,7 +162,7 @@ export class TagService implements ITagService {
       where: {
         id: tagId,
       },
-    });
+    })
   }
 
   /**
@@ -167,7 +172,7 @@ export class TagService implements ITagService {
    */
   async addTagToClient(userId: string, clientId: string, tagId: string): Promise<void> {
     // Validar que tag pertence ao usuário
-    await this.getById(userId, tagId);
+    await this.getById(userId, tagId)
 
     // Validar que cliente pertence ao usuário
     const client = await prisma.client.findFirst({
@@ -175,10 +180,10 @@ export class TagService implements ITagService {
         id: clientId,
         user_id: userId,
       },
-    });
+    })
 
     if (!client) {
-      throw new Error('Cliente não encontrado');
+      throw new Error('Cliente não encontrado')
     }
 
     // Verificar se associação já existe
@@ -189,10 +194,10 @@ export class TagService implements ITagService {
           tag_id: tagId,
         },
       },
-    });
+    })
 
     if (existingAssociation) {
-      throw new Error('Cliente já possui esta tag');
+      throw new Error('Cliente já possui esta tag')
     }
 
     // Criar associação
@@ -201,7 +206,7 @@ export class TagService implements ITagService {
         client_id: clientId,
         tag_id: tagId,
       },
-    });
+    })
   }
 
   /**
@@ -211,7 +216,7 @@ export class TagService implements ITagService {
    */
   async removeTagFromClient(userId: string, clientId: string, tagId: string): Promise<void> {
     // Validar que tag pertence ao usuário
-    await this.getById(userId, tagId);
+    await this.getById(userId, tagId)
 
     // Validar que cliente pertence ao usuário
     const client = await prisma.client.findFirst({
@@ -219,10 +224,10 @@ export class TagService implements ITagService {
         id: clientId,
         user_id: userId,
       },
-    });
+    })
 
     if (!client) {
-      throw new Error('Cliente não encontrado');
+      throw new Error('Cliente não encontrado')
     }
 
     // Verificar se associação existe
@@ -233,10 +238,10 @@ export class TagService implements ITagService {
           tag_id: tagId,
         },
       },
-    });
+    })
 
     if (!association) {
-      throw new Error('Cliente não possui esta tag');
+      throw new Error('Cliente não possui esta tag')
     }
 
     // Remover associação
@@ -247,7 +252,7 @@ export class TagService implements ITagService {
           tag_id: tagId,
         },
       },
-    });
+    })
   }
 
   /**
@@ -256,7 +261,7 @@ export class TagService implements ITagService {
    */
   async getClientsByTag(userId: string, tagId: string): Promise<unknown[]> {
     // Validar que tag pertence ao usuário
-    await this.getById(userId, tagId);
+    await this.getById(userId, tagId)
 
     // Buscar clientes através da tabela de junção ClientTag
     const clientTags = await prisma.clientTag.findMany({
@@ -269,9 +274,9 @@ export class TagService implements ITagService {
       include: {
         client: true,
       },
-    });
+    })
 
-    return clientTags.map((ct) => ct.client);
+    return clientTags.map((ct) => ct.client)
   }
 
   /**
@@ -284,9 +289,9 @@ export class TagService implements ITagService {
       where: {
         user_id: userId,
       },
-    });
+    })
 
-    return count >= 20;
+    return count >= 20
   }
 
   /**
@@ -301,9 +306,9 @@ export class TagService implements ITagService {
           user_id: userId, // Multi-tenancy isolation
         },
       },
-    });
+    })
 
-    return count > 0;
+    return count > 0
   }
 
   /**
@@ -324,8 +329,8 @@ export class TagService implements ITagService {
           },
         }),
       },
-    });
+    })
 
-    return !existingTag;
+    return !existingTag
   }
 }

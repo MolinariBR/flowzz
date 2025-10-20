@@ -1,11 +1,11 @@
 // src/shared/config/env.ts
 // Referência: design.md §Environment Variables, tasks.md Task 1.1
 
-import { z } from 'zod';
-import * as dotenv from 'dotenv';
+import * as dotenv from 'dotenv'
+import { z } from 'zod'
 
 // Load environment variables
-dotenv.config();
+dotenv.config()
 
 // Environment validation schema
 const envSchema = z.object({
@@ -80,23 +80,23 @@ const envSchema = z.object({
   // Pagination
   DEFAULT_PAGE_SIZE: z.string().transform(Number).default('20'),
   MAX_PAGE_SIZE: z.string().transform(Number).default('100'),
-});
+})
 
 // Validate environment variables
-const parseResult = envSchema.safeParse(process.env);
+const parseResult = envSchema.safeParse(process.env)
 
 if (!parseResult.success) {
-  console.error('❌ Invalid environment variables:');
-  console.error(parseResult.error.format());
-  process.exit(1);
+  console.error('❌ Invalid environment variables:')
+  console.error(parseResult.error.format())
+  process.exit(1)
 }
 
-export const env = parseResult.data;
+export const env = parseResult.data
 
 // Type for environment variables
-export type Env = z.infer<typeof envSchema>;
+export type Env = z.infer<typeof envSchema>
 
 // Environment helpers
-export const isDevelopment = (): boolean => env.NODE_ENV === 'development';
-export const isProduction = (): boolean => env.NODE_ENV === 'production';
-export const isTest = (): boolean => env.NODE_ENV === 'test';
+export const isDevelopment = (): boolean => env.NODE_ENV === 'development'
+export const isProduction = (): boolean => env.NODE_ENV === 'production'
+export const isTest = (): boolean => env.NODE_ENV === 'test'

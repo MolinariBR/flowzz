@@ -51,14 +51,14 @@ interface AuthResponse {
  */
 export async function login(credentials: LoginRequest): Promise<AuthResponse> {
   const response = await apiClient.post<AuthResponse>('/auth/login', credentials)
-  
+
   // Salvar tokens e usuário no localStorage
   if (typeof window !== 'undefined') {
     localStorage.setItem('accessToken', response.data.tokens.accessToken)
     localStorage.setItem('refreshToken', response.data.tokens.refreshToken)
     localStorage.setItem('user', JSON.stringify(response.data.user))
   }
-  
+
   return response
 }
 
@@ -68,14 +68,14 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
  */
 export async function register(data: RegisterRequest): Promise<AuthResponse> {
   const response = await apiClient.post<AuthResponse>('/auth/register', data)
-  
+
   // Salvar tokens e usuário no localStorage
   if (typeof window !== 'undefined') {
     localStorage.setItem('accessToken', response.data.tokens.accessToken)
     localStorage.setItem('refreshToken', response.data.tokens.refreshToken)
     localStorage.setItem('user', JSON.stringify(response.data.user))
   }
-  
+
   return response
 }
 
@@ -101,10 +101,10 @@ export async function logout(): Promise<void> {
  */
 export function getCurrentUser(): User | null {
   if (typeof window === 'undefined') return null
-  
+
   const userJson = localStorage.getItem('user')
   if (!userJson) return null
-  
+
   try {
     return JSON.parse(userJson)
   } catch {

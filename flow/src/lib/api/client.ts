@@ -12,7 +12,7 @@ interface ApiError {
 export const apiClient = {
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
-    
+
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers: {

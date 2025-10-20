@@ -1,14 +1,17 @@
 // Referência: dev-stories.md Dev Story 4.2 - Geração PDF com Puppeteer
 // Atende tasks.md Task 10.1.1 - Templates HTML para relatórios
 
-import type { SalesReportData } from '../../interfaces/ReportService.interface';
+import type { SalesReportData } from '../../interfaces/ReportService.interface'
 
 /**
  * Gera template HTML para relatório de vendas
  * Usa Tailwind CSS inline para formatação
  */
-export function generateSalesReportTemplate(data: SalesReportData, options: { title: string; includeLogo?: boolean }): string {
-  const { title, includeLogo } = options;
+export function generateSalesReportTemplate(
+  data: SalesReportData,
+  options: { title: string; includeLogo?: boolean }
+): string {
+  const { title, includeLogo } = options
 
   const logoSection = includeLogo
     ? `
@@ -17,7 +20,7 @@ export function generateSalesReportTemplate(data: SalesReportData, options: { ti
         <p class="text-gray-500">Gestão Financeira para Afiliados</p>
       </div>
     `
-    : '';
+    : ''
 
   return `
 <!DOCTYPE html>
@@ -80,13 +83,17 @@ export function generateSalesReportTemplate(data: SalesReportData, options: { ti
         </tr>
       </thead>
       <tbody>
-        ${data.salesByStatus.map(item => `
+        ${data.salesByStatus
+          .map(
+            (item) => `
           <tr>
             <td class="border border-gray-300 px-4 py-2">${item.status}</td>
             <td class="border border-gray-300 px-4 py-2 text-right">${item.count}</td>
             <td class="border border-gray-300 px-4 py-2 text-right">R$ ${item.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
           </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
     </table>
   </div>
@@ -103,13 +110,17 @@ export function generateSalesReportTemplate(data: SalesReportData, options: { ti
         </tr>
       </thead>
       <tbody>
-        ${data.topClients.map(client => `
+        ${data.topClients
+          .map(
+            (client) => `
           <tr>
             <td class="border border-gray-300 px-4 py-2">${client.name}</td>
             <td class="border border-gray-300 px-4 py-2 text-right">${client.orderCount}</td>
             <td class="border border-gray-300 px-4 py-2 text-right">R$ ${client.totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
           </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
     </table>
   </div>
@@ -127,14 +138,19 @@ export function generateSalesReportTemplate(data: SalesReportData, options: { ti
         </tr>
       </thead>
       <tbody>
-        ${data.sales.slice(0, 50).map(sale => `
+        ${data.sales
+          .slice(0, 50)
+          .map(
+            (sale) => `
           <tr>
             <td class="border border-gray-300 px-2 py-1">${new Date(sale.createdAt).toLocaleDateString('pt-BR')}</td>
             <td class="border border-gray-300 px-2 py-1">${sale.clientName}</td>
             <td class="border border-gray-300 px-2 py-1">${sale.status}</td>
             <td class="border border-gray-300 px-2 py-1 text-right">R$ ${sale.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
           </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
     </table>
     ${data.sales.length > 50 ? `<p class="mt-2 text-sm text-gray-500">* Mostrando primeiras 50 vendas de ${data.sales.length} total</p>` : ''}
@@ -147,5 +163,5 @@ export function generateSalesReportTemplate(data: SalesReportData, options: { ti
   </div>
 </body>
 </html>
-  `;
+  `
 }

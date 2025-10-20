@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import '../types/auth' // Import para extender Request com user
 
 /**
@@ -18,7 +18,7 @@ export const authorize = (allowedRoles: string[]) => {
       if (!req.user) {
         res.status(401).json({
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication required',
         })
         return
       }
@@ -29,7 +29,7 @@ export const authorize = (allowedRoles: string[]) => {
           success: false,
           error: 'Insufficient permissions',
           required: allowedRoles,
-          current: req.user.role
+          current: req.user.role,
         })
         return
       }
@@ -40,7 +40,7 @@ export const authorize = (allowedRoles: string[]) => {
       console.error('Authorization middleware error:', error)
       res.status(500).json({
         success: false,
-        error: 'Authorization check failed'
+        error: 'Authorization check failed',
       })
     }
   }
@@ -64,7 +64,7 @@ export const requireActiveUser = (req: Request, res: Response, next: NextFunctio
     if (!req.user) {
       res.status(401).json({
         success: false,
-        error: 'Authentication required'
+        error: 'Authentication required',
       })
       return
     }
@@ -73,7 +73,7 @@ export const requireActiveUser = (req: Request, res: Response, next: NextFunctio
     if (req.user.role === 'SUSPENDED') {
       res.status(403).json({
         success: false,
-        error: 'Account suspended'
+        error: 'Account suspended',
       })
       return
     }
@@ -83,7 +83,7 @@ export const requireActiveUser = (req: Request, res: Response, next: NextFunctio
     console.error('Active user check error:', error)
     res.status(500).json({
       success: false,
-      error: 'User status check failed'
+      error: 'User status check failed',
     })
   }
 }

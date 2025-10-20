@@ -9,45 +9,45 @@
  * Acesso: Público (para monitoramento externo)
  */
 
-import { Router, type Request, type Response } from 'express';
-import { allQueues } from '../queues/queues';
-import { checkQueueHealth } from '../queues/index';
-import { logger } from '../shared/utils/logger';
-import { StorageService } from '../services/StorageService';
-import { redisService } from '../shared/services/RedisService';
-import { prisma } from '../shared/config/database';
+import { type Request, type Response, Router } from 'express'
+import { checkQueueHealth } from '../queues/index'
+import { allQueues } from '../queues/queues'
+import { StorageService } from '../services/StorageService'
+import { prisma } from '../shared/config/database'
+import { redisService } from '../shared/services/RedisService'
+import { logger } from '../shared/utils/logger'
 
-const router = Router();
-const storageService = new StorageService();
+const router = Router()
+const storageService = new StorageService()
 
 /**
  * Interface para resposta do health check
  */
 interface QueueHealthStatus {
-  name: string;
-  healthy: boolean;
+  name: string
+  healthy: boolean
   stats: {
-    waiting: number;
-    active: number;
-    completed: number;
-    failed: number;
-    delayed: number;
-    paused: boolean;
-  };
+    waiting: number
+    active: number
+    completed: number
+    failed: number
+    delayed: number
+    paused: boolean
+  }
 }
 
 interface HealthCheckResponse {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  timestamp: string;
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  timestamp: string
   redis: {
-    connected: boolean;
-  };
-  queues: QueueHealthStatus[];
+    connected: boolean
+  }
+  queues: QueueHealthStatus[]
   summary: {
-    total: number;
-    healthy: number;
-    unhealthy: number;
-  };
+    total: number
+    healthy: number
+    unhealthy: number
+  }
 }
 
 /**
@@ -60,7 +60,7 @@ router.get('/queues', async (_req: Request, res: Response) => {
   try {
     const queueHealthChecks = await Promise.all(
       allQueues.map(async (queue) => {
-        const isHealthy = await checkQueueHealth(queue);
+        const isHealthy = await checkQueueHealth(queue)
 
         // Get queue stats
         const [waiting, active, completed, failed, delayed, isPaused] = await Promise.all([
@@ -70,7 +70,7 @@ router.get('/queues', async (_req: Request, res: Response) => {
           queue.getFailedCount(),
           queue.getDelayedCount(),
           queue.isPaused(),
-        ]);
+        ])
 
         return {
           name: queue.name,
@@ -83,21 +83,21 @@ router.get('/queues', async (_req: Request, res: Response) => {
             delayed,
             paused: isPaused,
           },
-        };
-      }),
-    );
+        }
+      })
+    )
 
-    const healthyCount = queueHealthChecks.filter((q) => q.healthy).length;
-    const unhealthyCount = queueHealthChecks.length - healthyCount;
+    const healthyCount = queueHealthChecks.filter((q) => q.healthy).length
+    const unhealthyCount = queueHealthChecks.length - healthyCount
 
     // Determine overall status
-    let status: 'healthy' | 'degraded' | 'unhealthy';
+    let status: 'healthy' | 'degraded' | 'unhealthy'
     if (unhealthyCount === 0) {
-      status = 'healthy';
+      status = 'healthy'
     } else if (healthyCount > 0) {
-      status = 'degraded';
+      status = 'degraded'
     } else {
-      status = 'unhealthy';
+      status = 'unhealthy'
     }
 
     const response: HealthCheckResponse = {
@@ -112,32 +112,32 @@ router.get('/queues', async (_req: Request, res: Response) => {
         healthy: healthyCount,
         unhealthy: unhealthyCount,
       },
-    };
+    }
 
     // Log health check
     logger.info('Queue health check completed', {
       status,
       healthyCount,
       unhealthyCount,
-    });
+    })
 
     // Return appropriate status code
-    const httpStatus = status === 'healthy' ? 200 : status === 'degraded' ? 207 : 503;
-    res.status(httpStatus).json(response);
+    const httpStatus = status === 'healthy' ? 200 : status === 'degraded' ? 207 : 503
+    res.status(httpStatus).json(response)
   } catch (error) {
     logger.error('Queue health check failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-    });
+    })
 
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
       error: 'Failed to perform health check',
       message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    })
   }
-});
+})
 
 /**
  * GET /health/storage
@@ -147,8 +147,8 @@ router.get('/queues', async (_req: Request, res: Response) => {
  */
 router.get('/storage', async (_req: Request, res: Response) => {
   try {
-    const isHealthy = await storageService.healthCheck();
-    const bucket = storageService.getBucket();
+    const isHealthy = await storageService.healthCheck()
+    const bucket = storageService.getBucket()
 
     if (isHealthy) {
       res.status(200).json({
@@ -159,7 +159,7 @@ router.get('/storage', async (_req: Request, res: Response) => {
           bucket,
           provider: bucket?.includes('.r2.') ? 'Cloudflare R2' : 'AWS S3',
         },
-      });
+      })
     } else {
       res.status(503).json({
         status: 'unhealthy',
@@ -169,21 +169,21 @@ router.get('/storage', async (_req: Request, res: Response) => {
           bucket,
           error: 'Storage health check failed',
         },
-      });
+      })
     }
   } catch (error) {
     logger.error('Storage health check failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    })
 
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
       error: 'Storage health check failed',
       message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    })
   }
-});
+})
 
 /**
  * GET /health/complete
@@ -191,36 +191,40 @@ router.get('/storage', async (_req: Request, res: Response) => {
  */
 router.get('/complete', async (_req: Request, res: Response) => {
   try {
-    const startTime = Date.now();
+    const startTime = Date.now()
 
     // Verificar Redis
-    const redisConnected = redisService.isReady();
+    const redisConnected = redisService.isReady()
 
     // Verificar Database
-    let dbConnected = false;
-    let dbResponseTime = 0;
+    let dbConnected = false
+    let dbResponseTime = 0
     try {
-      const dbStart = Date.now();
-      await prisma.$queryRaw`SELECT 1`;
-      dbResponseTime = Date.now() - dbStart;
-      dbConnected = true;
+      const dbStart = Date.now()
+      await prisma.$queryRaw`SELECT 1`
+      dbResponseTime = Date.now() - dbStart
+      dbConnected = true
     } catch (error) {
-      logger.warn('Database health check failed', { error: error instanceof Error ? error.message : 'Unknown' });
+      logger.warn('Database health check failed', {
+        error: error instanceof Error ? error.message : 'Unknown',
+      })
     }
 
     // Verificar Storage
-    let storageHealthy = false;
+    let storageHealthy = false
     try {
-      storageHealthy = storageService.isReady();
+      storageHealthy = storageService.isReady()
     } catch (error) {
-      logger.warn('Storage health check failed', { error: error instanceof Error ? error.message : 'Unknown' });
+      logger.warn('Storage health check failed', {
+        error: error instanceof Error ? error.message : 'Unknown',
+      })
     }
 
-    const totalResponseTime = Date.now() - startTime;
+    const totalResponseTime = Date.now() - startTime
 
     // Determinar status geral
-    const allHealthy = redisConnected && dbConnected && storageHealthy && totalResponseTime < 2000;
-    const status = allHealthy ? 'healthy' : totalResponseTime < 5000 ? 'degraded' : 'unhealthy';
+    const allHealthy = redisConnected && dbConnected && storageHealthy && totalResponseTime < 2000
+    const status = allHealthy ? 'healthy' : totalResponseTime < 5000 ? 'degraded' : 'unhealthy'
 
     const response = {
       status,
@@ -247,23 +251,22 @@ router.get('/complete', async (_req: Request, res: Response) => {
         warning: totalResponseTime >= 2000 && totalResponseTime < 5000,
         critical: totalResponseTime >= 5000,
       },
-    };
+    }
 
-    const httpStatus = status === 'healthy' ? 200 : status === 'degraded' ? 206 : 503;
-    res.status(httpStatus).json(response);
-
+    const httpStatus = status === 'healthy' ? 200 : status === 'degraded' ? 206 : 503
+    res.status(httpStatus).json(response)
   } catch (error) {
     logger.error('Complete health check failed', {
       error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    })
 
     res.status(503).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
       error: 'Complete health check failed',
       message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    })
   }
-});
+})
 
-export default router;
+export default router

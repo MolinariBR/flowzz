@@ -7,7 +7,7 @@
  * - tasks.md: Task 3.2 - Tags API
  */
 
-import { z } from 'zod';
+import { z } from 'zod'
 
 /**
  * Schema de validação para criação de tag
@@ -31,7 +31,7 @@ export const createTagSchema = z.object({
       .regex(/^#[0-9A-Fa-f]{6}$/, 'Cor deve estar no formato hexadecimal (#RRGGBB)')
       .toUpperCase(),
   }),
-});
+})
 
 /**
  * Schema de validação para atualização de tag
@@ -45,25 +45,24 @@ export const updateTagSchema = z.object({
       })
       .uuid('ID deve ser um UUID válido'),
   }),
-  body: z.object({
-    nome: z
-      .string()
-      .min(1, 'Nome não pode estar vazio')
-      .max(50, 'Nome deve ter no máximo 50 caracteres')
-      .trim()
-      .optional(),
-    cor: z
-      .string()
-      .regex(/^#[0-9A-Fa-f]{6}$/, 'Cor deve estar no formato hexadecimal (#RRGGBB)')
-      .toUpperCase()
-      .optional(),
-  }).refine(
-    (data) => data.nome !== undefined || data.cor !== undefined,
-    {
+  body: z
+    .object({
+      nome: z
+        .string()
+        .min(1, 'Nome não pode estar vazio')
+        .max(50, 'Nome deve ter no máximo 50 caracteres')
+        .trim()
+        .optional(),
+      cor: z
+        .string()
+        .regex(/^#[0-9A-Fa-f]{6}$/, 'Cor deve estar no formato hexadecimal (#RRGGBB)')
+        .toUpperCase()
+        .optional(),
+    })
+    .refine((data) => data.nome !== undefined || data.cor !== undefined, {
       message: 'Forneça pelo menos um campo para atualizar (nome ou cor)',
-    },
-  ),
-});
+    }),
+})
 
 /**
  * Schema de validação para obter tag por ID
@@ -77,7 +76,7 @@ export const getTagByIdSchema = z.object({
       })
       .uuid('ID deve ser um UUID válido'),
   }),
-});
+})
 
 /**
  * Schema de validação para excluir tag
@@ -91,7 +90,7 @@ export const deleteTagSchema = z.object({
       })
       .uuid('ID deve ser um UUID válido'),
   }),
-});
+})
 
 /**
  * Schema de validação para adicionar tag a cliente
@@ -112,7 +111,7 @@ export const addTagToClientSchema = z.object({
       })
       .uuid('ID da tag deve ser um UUID válido'),
   }),
-});
+})
 
 /**
  * Schema de validação para remover tag de cliente
@@ -131,14 +130,14 @@ export const removeTagFromClientSchema = z.object({
       })
       .uuid('ID da tag deve ser um UUID válido'),
   }),
-});
+})
 
 /**
  * Tipos TypeScript inferidos dos schemas Zod
  */
-export type CreateTagInput = z.infer<typeof createTagSchema>;
-export type UpdateTagInput = z.infer<typeof updateTagSchema>;
-export type GetTagByIdInput = z.infer<typeof getTagByIdSchema>;
-export type DeleteTagInput = z.infer<typeof deleteTagSchema>;
-export type AddTagToClientInput = z.infer<typeof addTagToClientSchema>;
-export type RemoveTagFromClientInput = z.infer<typeof removeTagFromClientSchema>;
+export type CreateTagInput = z.infer<typeof createTagSchema>
+export type UpdateTagInput = z.infer<typeof updateTagSchema>
+export type GetTagByIdInput = z.infer<typeof getTagByIdSchema>
+export type DeleteTagInput = z.infer<typeof deleteTagSchema>
+export type AddTagToClientInput = z.infer<typeof addTagToClientSchema>
+export type RemoveTagFromClientInput = z.infer<typeof removeTagFromClientSchema>

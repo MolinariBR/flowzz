@@ -10,12 +10,12 @@
  * - tasks.md: Task 9.1.4 - Validação de endpoints
  */
 
-import { z } from 'zod';
+import { z } from 'zod'
 
 /**
  * Períodos válidos para projeções
  */
-export const validProjectionPeriods = [7, 30, 90, 180, 365] as const;
+export const validProjectionPeriods = [7, 30, 90, 180, 365] as const
 
 /**
  * Schema para query de projeções de vendas
@@ -26,18 +26,19 @@ export const salesProjectionQuerySchema = z.object({
     .string()
     .transform((val) => Number.parseInt(val, 10))
     .pipe(
-      z.number({
-        required_error: 'Período é obrigatório',
-        invalid_type_error: 'Período deve ser um número',
-      })
+      z
+        .number({
+          required_error: 'Período é obrigatório',
+          invalid_type_error: 'Período deve ser um número',
+        })
         .refine(
-          (val) => validProjectionPeriods.includes(val as typeof validProjectionPeriods[number]),
+          (val) => validProjectionPeriods.includes(val as (typeof validProjectionPeriods)[number]),
           {
             message: `Período deve ser um dos seguintes: ${validProjectionPeriods.join(', ')} dias`,
-          },
-        ),
+          }
+        )
     ),
-});
+})
 
 /**
  * Schema para query de projeção de fluxo de caixa
@@ -48,24 +49,25 @@ export const cashflowProjectionQuerySchema = z.object({
     .string()
     .transform((val) => Number.parseInt(val, 10))
     .pipe(
-      z.number({
-        required_error: 'Período é obrigatório',
-        invalid_type_error: 'Período deve ser um número',
-      })
+      z
+        .number({
+          required_error: 'Período é obrigatório',
+          invalid_type_error: 'Período deve ser um número',
+        })
         .refine(
-          (val) => validProjectionPeriods.includes(val as typeof validProjectionPeriods[number]),
+          (val) => validProjectionPeriods.includes(val as (typeof validProjectionPeriods)[number]),
           {
             message: `Período deve ser um dos seguintes: ${validProjectionPeriods.join(', ')} dias`,
-          },
-        ),
+          }
+        )
     ),
-});
+})
 
 /**
  * Schema para query de health score
  * GET /projections/health-score (sem query params)
  */
-export const healthScoreQuerySchema = z.object({}).strict();
+export const healthScoreQuerySchema = z.object({}).strict()
 
 /**
  * Schema para resposta de projeção de vendas
@@ -84,7 +86,7 @@ export const projectionResultSchema = z.object({
   avg_90_days: z.number().min(0),
   seasonality_adjusted: z.boolean(),
   cache_expires_at: z.date().optional(),
-});
+})
 
 /**
  * Schema para resposta de cashflow
@@ -107,7 +109,7 @@ export const cashflowProjectionSchema = z.object({
     realistic: z.number(),
     optimistic: z.number(),
   }),
-});
+})
 
 /**
  * Schema para resposta de health score
@@ -120,13 +122,13 @@ export const healthScoreSchema = z.object({
   interpretation: z.string(),
   alerts: z.array(z.string()),
   recommendations: z.array(z.string()),
-});
+})
 
 /**
  * Tipos inferidos dos schemas
  */
-export type SalesProjectionQuery = z.infer<typeof salesProjectionQuerySchema>;
-export type CashflowProjectionQuery = z.infer<typeof cashflowProjectionQuerySchema>;
-export type ProjectionResult = z.infer<typeof projectionResultSchema>;
-export type CashflowProjection = z.infer<typeof cashflowProjectionSchema>;
-export type HealthScore = z.infer<typeof healthScoreSchema>;
+export type SalesProjectionQuery = z.infer<typeof salesProjectionQuerySchema>
+export type CashflowProjectionQuery = z.infer<typeof cashflowProjectionQuerySchema>
+export type ProjectionResult = z.infer<typeof projectionResultSchema>
+export type CashflowProjection = z.infer<typeof cashflowProjectionSchema>
+export type HealthScore = z.infer<typeof healthScoreSchema>

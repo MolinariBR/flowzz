@@ -1,24 +1,24 @@
 // src/shared/services/SubscriptionService.ts
 // Referência: tasks.md Task 2.2, plan.md Jornada 1, user-stories.md Story 1.1
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client'
 
 export interface TrialStatus {
-  status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELED';
-  trial_ends_at: Date | null;
-  days_remaining: number | null;
-  is_active: boolean;
-  needs_upgrade: boolean;
-  warning_message: string | undefined;
+  status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELED'
+  trial_ends_at: Date | null
+  days_remaining: number | null
+  is_active: boolean
+  needs_upgrade: boolean
+  warning_message: string | undefined
 }
 
 export interface SubscriptionInfo {
-  user_id: string;
-  subscription_status: string;
-  trial_ends_at: Date | null;
-  plan_id: string | null;
-  is_active: boolean;
-  created_at: Date;
+  user_id: string
+  subscription_status: string
+  trial_ends_at: Date | null
+  plan_id: string | null
+  is_active: boolean
+  created_at: Date
 }
 
 export class SubscriptionService {
@@ -36,52 +36,52 @@ export class SubscriptionService {
         trial_ends_at: true,
         is_active: true,
       },
-    });
+    })
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
-    const now = new Date();
+    const now = new Date()
     const daysRemaining = user.trial_ends_at
       ? Math.ceil((user.trial_ends_at.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-      : null;
+      : null
 
     // Determine status and messages
-    let status: TrialStatus['status'];
-    let needsUpgrade = false;
-    let warningMessage: string | undefined;
+    let status: TrialStatus['status']
+    let needsUpgrade = false
+    let warningMessage: string | undefined
 
     switch (user.subscription_status) {
-    case 'TRIAL':
-      if (user.trial_ends_at && user.trial_ends_at < now) {
-        status = 'EXPIRED';
-        needsUpgrade = true;
-        warningMessage = 'Your 7-day trial has expired. Upgrade to continue using Flowzz.';
-      } else {
-        status = 'TRIAL';
-        if (daysRemaining !== null && daysRemaining <= 2) {
-          warningMessage = `Your trial expires in ${daysRemaining} day${daysRemaining === 1 ? '' : 's'}. Upgrade now to continue.`;
+      case 'TRIAL':
+        if (user.trial_ends_at && user.trial_ends_at < now) {
+          status = 'EXPIRED'
+          needsUpgrade = true
+          warningMessage = 'Your 7-day trial has expired. Upgrade to continue using Flowzz.'
+        } else {
+          status = 'TRIAL'
+          if (daysRemaining !== null && daysRemaining <= 2) {
+            warningMessage = `Your trial expires in ${daysRemaining} day${daysRemaining === 1 ? '' : 's'}. Upgrade now to continue.`
+          }
         }
-      }
-      break;
+        break
 
-    case 'ACTIVE':
-      status = 'ACTIVE';
-      break;
+      case 'ACTIVE':
+        status = 'ACTIVE'
+        break
 
-    case 'CANCELED':
-    case 'PAST_DUE':
-    case 'UNPAID':
-      status = 'CANCELED';
-      needsUpgrade = true;
-      warningMessage = 'Your subscription is inactive. Please update your payment to continue.';
-      break;
+      case 'CANCELED':
+      case 'PAST_DUE':
+      case 'UNPAID':
+        status = 'CANCELED'
+        needsUpgrade = true
+        warningMessage = 'Your subscription is inactive. Please update your payment to continue.'
+        break
 
-    default:
-      status = 'EXPIRED';
-      needsUpgrade = true;
-      warningMessage = 'Please activate a subscription to access Flowzz features.';
+      default:
+        status = 'EXPIRED'
+        needsUpgrade = true
+        warningMessage = 'Please activate a subscription to access Flowzz features.'
     }
 
     return {
@@ -91,7 +91,7 @@ export class SubscriptionService {
       is_active: user.is_active,
       needs_upgrade: needsUpgrade,
       warning_message: warningMessage,
-    };
+    }
   }
 
   /**
@@ -109,10 +109,10 @@ export class SubscriptionService {
         is_active: true,
         created_at: true,
       },
-    });
+    })
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
     return {
@@ -122,7 +122,7 @@ export class SubscriptionService {
       plan_id: user.plan_id,
       is_active: user.is_active,
       created_at: user.created_at,
-    };
+    }
   }
 
   /**
@@ -143,20 +143,20 @@ export class SubscriptionService {
           },
         },
       },
-    });
+    })
 
     if (!user || !user.is_active) {
-      return false;
+      return false
     }
 
     // During trial, all features are available
     if (user.subscription_status === 'TRIAL') {
-      const now = new Date();
-      return user.trial_ends_at ? user.trial_ends_at > now : false;
+      const now = new Date()
+      return user.trial_ends_at ? user.trial_ends_at > now : false
     }
 
     // For paid subscriptions, check plan features
-    return user.subscription_status === 'ACTIVE';
+    return user.subscription_status === 'ACTIVE'
   }
 
   /**
@@ -167,14 +167,14 @@ export class SubscriptionService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { trial_ends_at: true },
-    });
+    })
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
-    const currentTrialEnd = user.trial_ends_at || new Date();
-    const newTrialEnd = new Date(currentTrialEnd.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
+    const currentTrialEnd = user.trial_ends_at || new Date()
+    const newTrialEnd = new Date(currentTrialEnd.getTime() + additionalDays * 24 * 60 * 60 * 1000)
 
     await this.prisma.user.update({
       where: { id: userId },
@@ -182,7 +182,7 @@ export class SubscriptionService {
         trial_ends_at: newTrialEnd,
         subscription_status: 'TRIAL',
       },
-    });
+    })
   }
 
   /**
@@ -197,11 +197,11 @@ export class SubscriptionService {
         plan_id: planId,
         trial_ends_at: null, // Clear trial when activating paid subscription
       },
-    });
+    })
 
     // Create subscription record for history
-    const currentPeriodStart = new Date();
-    const currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+    const currentPeriodStart = new Date()
+    const currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
 
     await this.prisma.subscription.create({
       data: {
@@ -211,6 +211,6 @@ export class SubscriptionService {
         current_period_start: currentPeriodStart,
         current_period_end: currentPeriodEnd,
       },
-    });
+    })
   }
 }

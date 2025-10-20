@@ -1,18 +1,18 @@
-import { test as setup, expect } from '@playwright/test';
-import path from 'path';
+import { expect, test as setup } from '@playwright/test'
+import path from 'path'
 
 /**
  * Setup global de autenticação
  * Cria session files para demo@flowzz.com.br e admin@flowzz.com.br
- * 
+ *
  * Executado ANTES de todos os testes E2E
  * Sessões são reutilizadas em todos os projetos
  */
 
-const DEMO_USER_FILE = path.join(__dirname, '.auth/demo-user.json');
-const ADMIN_USER_FILE = path.join(__dirname, '.auth/admin-user.json');
+const DEMO_USER_FILE = path.join(__dirname, '.auth/demo-user.json')
+const ADMIN_USER_FILE = path.join(__dirname, '.auth/admin-user.json')
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000'
 
 /**
  * Setup para usuário demo (flow frontend)
@@ -24,17 +24,17 @@ setup('authenticate demo user', async ({ request }) => {
       email: 'demo@flowzz.com.br',
       password: 'Demo@123',
     },
-  });
+  })
 
-  expect(response.ok()).toBeTruthy();
-  
-  const responseData = await response.json();
+  expect(response.ok()).toBeTruthy()
+
+  const responseData = await response.json()
   // ✅ Formato correto: { data: { user, tokens }, message }
-  expect(responseData).toHaveProperty('data');
-  expect(responseData.data).toHaveProperty('tokens');
-  expect(responseData.data).toHaveProperty('user');
+  expect(responseData).toHaveProperty('data')
+  expect(responseData.data).toHaveProperty('tokens')
+  expect(responseData.data).toHaveProperty('user')
 
-  const { tokens, user } = responseData.data;
+  const { tokens, user } = responseData.data
 
   // Salvar tokens em storage state
   const storageState = {
@@ -58,15 +58,15 @@ setup('authenticate demo user', async ({ request }) => {
         ],
       },
     ],
-  };
+  }
 
   // Escrever arquivo de sessão
-  const fs = await import('fs/promises');
-  await fs.mkdir(path.dirname(DEMO_USER_FILE), { recursive: true });
-  await fs.writeFile(DEMO_USER_FILE, JSON.stringify(storageState, null, 2));
+  const fs = await import('fs/promises')
+  await fs.mkdir(path.dirname(DEMO_USER_FILE), { recursive: true })
+  await fs.writeFile(DEMO_USER_FILE, JSON.stringify(storageState, null, 2))
 
-  console.log('✅ Demo user authenticated and session saved');
-});
+  console.log('✅ Demo user authenticated and session saved')
+})
 
 /**
  * Setup para usuário admin (admin panel)
@@ -78,17 +78,17 @@ setup('authenticate admin user', async ({ request }) => {
       email: 'admin@flowzz.com.br',
       password: 'Admin@123',
     },
-  });
+  })
 
-  expect(response.ok()).toBeTruthy();
-  
-  const responseData = await response.json();
+  expect(response.ok()).toBeTruthy()
+
+  const responseData = await response.json()
   // ✅ Formato correto: { data: { user, tokens }, message }
-  expect(responseData).toHaveProperty('data');
-  expect(responseData.data).toHaveProperty('tokens');
-  expect(responseData.data).toHaveProperty('user');
+  expect(responseData).toHaveProperty('data')
+  expect(responseData.data).toHaveProperty('tokens')
+  expect(responseData.data).toHaveProperty('user')
 
-  const { tokens, user } = responseData.data;
+  const { tokens, user } = responseData.data
 
   // Salvar tokens em storage state
   const storageState = {
@@ -118,24 +118,24 @@ setup('authenticate admin user', async ({ request }) => {
                   name: user.nome,
                   email: user.email,
                   role: user.role,
-                  avatar: user.avatar_url || undefined
+                  avatar: user.avatar_url || undefined,
                 },
                 token: tokens.accessToken,
                 role: user.role,
-                isAuthenticated: true
+                isAuthenticated: true,
               },
-              version: 0
+              version: 0,
             }),
           },
         ],
       },
     ],
-  };
+  }
 
   // Escrever arquivo de sessão
-  const fs = await import('fs/promises');
-  await fs.mkdir(path.dirname(ADMIN_USER_FILE), { recursive: true });
-  await fs.writeFile(ADMIN_USER_FILE, JSON.stringify(storageState, null, 2));
+  const fs = await import('fs/promises')
+  await fs.mkdir(path.dirname(ADMIN_USER_FILE), { recursive: true })
+  await fs.writeFile(ADMIN_USER_FILE, JSON.stringify(storageState, null, 2))
 
-  console.log('✅ Admin user authenticated and session saved');
-});
+  console.log('✅ Admin user authenticated and session saved')
+})

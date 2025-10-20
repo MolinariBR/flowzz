@@ -5,29 +5,29 @@
 
 export {
   createClient,
-  createManyClients,
-  createVIPClient,
   createInactiveClient,
+  createManyClients,
   createNewClient,
-} from './client.factory';
+  createVIPClient,
+} from './client.factory'
 
 export {
-  createSale,
+  createHighValueSale,
   createManySales,
   createPaidSale,
   createPendingSale,
-  createHighValueSale,
   createRecentSale,
-} from './sale.factory';
+  createSale,
+} from './sale.factory'
 
 export {
-  createUser,
-  createManyUsers,
-  createTrialUser,
   createActiveUser,
   createAdminUser,
-  createSuspendedUser,
   createCancelledUser,
-  createTestUser,
+  createManyUsers,
+  createSuspendedUser,
   createTestAdmin,
-} from './user.factory';
+  createTestUser,
+  createTrialUser,
+  createUser,
+} from './user.factory'

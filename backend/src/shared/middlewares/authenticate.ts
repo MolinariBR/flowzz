@@ -1,9 +1,9 @@
 // src/shared/middlewares/authenticate.ts
 // Referência: tasks.md Task 2.1.2, dev-stories.md Dev Story 1.3, design.md Authentication Flow
 
-import type { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../services/AuthService';
-import { prisma } from '../config/database';
+import type { NextFunction, Request, Response } from 'express'
+import { prisma } from '../config/database'
+import { AuthService } from '../services/AuthService'
 
 /**
  * Authentication middleware
@@ -12,46 +12,46 @@ import { prisma } from '../config/database';
 export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
   try {
     // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization
 
     if (!authHeader) {
       res.status(401).json({
         error: 'Unauthorized',
         message: 'Authorization header is required',
-      });
-      return;
+      })
+      return
     }
 
     if (!authHeader.startsWith('Bearer ')) {
       res.status(401).json({
         error: 'Unauthorized',
         message: 'Authorization header must start with Bearer',
-      });
-      return;
+      })
+      return
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(' ')[1]
 
     if (!token) {
       res.status(401).json({
         error: 'Unauthorized',
         message: 'Token is required',
-      });
-      return;
+      })
+      return
     }
 
     // Verify token using AuthService
-    const authService = new AuthService(prisma);
-    const payload = authService.verifyAccessToken(token);
+    const authService = new AuthService(prisma)
+    const payload = authService.verifyAccessToken(token)
 
     // Inject user info into request
     req.user = {
       userId: payload.userId,
       email: payload.email,
       role: payload.role,
-    };
+    }
 
-    next();
+    next()
   } catch (error) {
     // Handle JWT specific errors
     if (error instanceof Error) {
@@ -59,16 +59,16 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
         res.status(401).json({
           error: 'Unauthorized',
           message: 'Token has expired',
-        });
-        return;
+        })
+        return
       }
 
       if (error.name === 'JsonWebTokenError') {
         res.status(401).json({
           error: 'Unauthorized',
           message: 'Invalid token',
-        });
-        return;
+        })
+        return
       }
     }
 
@@ -76,9 +76,9 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     res.status(401).json({
       error: 'Unauthorized',
       message: 'Invalid token',
-    });
+    })
   }
-};
+}
 
 /**
  * Authorization middleware factory for role-based access control
@@ -90,33 +90,33 @@ export const authorize = (allowedRoles: string[]) => {
       res.status(401).json({
         error: 'Unauthorized',
         message: 'Authentication required',
-      });
-      return;
+      })
+      return
     }
 
     if (!allowedRoles.includes(req.user.role)) {
       res.status(403).json({
         error: 'Forbidden',
         message: 'Insufficient permissions',
-      });
-      return;
+      })
+      return
     }
 
-    next();
-  };
-};
+    next()
+  }
+}
 
 /**
  * Admin-only authorization middleware (ADMIN or SUPER_ADMIN)
  */
-export const requireAdmin = authorize(['ADMIN', 'SUPER_ADMIN']);
+export const requireAdmin = authorize(['ADMIN', 'SUPER_ADMIN'])
 
 /**
  * Super Admin-only authorization middleware
  */
-export const requireSuperAdmin = authorize(['SUPER_ADMIN']);
+export const requireSuperAdmin = authorize(['SUPER_ADMIN'])
 
 /**
  * User or Admin authorization middleware
  */
-export const requireAuth = authorize(['USER', 'ADMIN', 'SUPER_ADMIN']);
+export const requireAuth = authorize(['USER', 'ADMIN', 'SUPER_ADMIN'])

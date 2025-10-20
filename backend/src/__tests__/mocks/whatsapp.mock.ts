@@ -1,5 +1,5 @@
-import { http, HttpResponse } from 'msw';
-import { setupServer } from 'msw/node';
+import { HttpResponse, http } from 'msw'
+import { setupServer } from 'msw/node'
 
 /**
  * Mock handlers para WhatsApp Business Cloud API
@@ -7,40 +7,43 @@ import { setupServer } from 'msw/node';
  */
 export const whatsappHandlers = [
   // POST /:phone_number_id/messages - Enviar template
-  http.post('https://graph.facebook.com/v18.0/:phoneNumberId/messages', async ({ request, params }) => {
-    const body = await request.json() as any;
-    const { phoneNumberId } = params;
+  http.post(
+    'https://graph.facebook.com/v18.0/:phoneNumberId/messages',
+    async ({ request, params }) => {
+      const body = (await request.json()) as any
+      const { phoneNumberId } = params
 
-    // Validar estrutura da mensagem
-    if (!body.messaging_product || body.messaging_product !== 'whatsapp') {
-      return HttpResponse.json(
-        {
-          error: {
-            message: 'Invalid messaging_product',
-            type: 'WhatsAppBusinessException',
-            code: 100,
+      // Validar estrutura da mensagem
+      if (!body.messaging_product || body.messaging_product !== 'whatsapp') {
+        return HttpResponse.json(
+          {
+            error: {
+              message: 'Invalid messaging_product',
+              type: 'WhatsAppBusinessException',
+              code: 100,
+            },
           },
-        },
-        { status: 400 }
-      );
-    }
+          { status: 400 }
+        )
+      }
 
-    return HttpResponse.json({
-      messaging_product: 'whatsapp',
-      contacts: [
-        {
-          input: body.to,
-          wa_id: body.to.replace('+', ''),
-        },
-      ],
-      messages: [
-        {
-          id: `wamid.${Date.now()}_mock_message_id`,
-          message_status: 'accepted',
-        },
-      ],
-    });
-  }),
+      return HttpResponse.json({
+        messaging_product: 'whatsapp',
+        contacts: [
+          {
+            input: body.to,
+            wa_id: body.to.replace('+', ''),
+          },
+        ],
+        messages: [
+          {
+            id: `wamid.${Date.now()}_mock_message_id`,
+            message_status: 'accepted',
+          },
+        ],
+      })
+    }
+  ),
 
   // GET /:phone_number_id - Buscar informações do número
   http.get('https://graph.facebook.com/v18.0/:phoneNumberId', () => {
@@ -50,26 +53,26 @@ export const whatsappHandlers = [
       display_phone_number: '+55 11 99999-9999',
       quality_rating: 'GREEN',
       id: '123456789',
-    });
+    })
   }),
 
   // POST - Webhook de status de mensagem
   http.post('/webhook/whatsapp', async ({ request }) => {
-    const body = await request.json() as any;
+    const _body = (await request.json()) as any
 
     // Simular confirmação de webhook
     return HttpResponse.json({
       success: true,
       message: 'Webhook received',
-    });
+    })
   }),
 
   // GET - Verificação de webhook
   http.get('/webhook/whatsapp', ({ request }) => {
-    const url = new URL(request.url);
-    const mode = url.searchParams.get('hub.mode');
-    const token = url.searchParams.get('hub.verify_token');
-    const challenge = url.searchParams.get('hub.challenge');
+    const url = new URL(request.url)
+    const mode = url.searchParams.get('hub.mode')
+    const token = url.searchParams.get('hub.verify_token')
+    const challenge = url.searchParams.get('hub.challenge')
 
     if (mode === 'subscribe' && token === 'flowzz_whatsapp_webhook_token') {
       return new HttpResponse(challenge, {
@@ -77,10 +80,10 @@ export const whatsappHandlers = [
         headers: {
           'Content-Type': 'text/plain',
         },
-      });
+      })
     }
 
-    return new HttpResponse(null, { status: 403 });
+    return new HttpResponse(null, { status: 403 })
   }),
 
   // GET /message_templates - Listar templates aprovados
@@ -133,9 +136,9 @@ export const whatsappHandlers = [
           after: 'after',
         },
       },
-    });
+    })
   }),
-];
+]
 
 /**
  * Handlers para simular erros da WhatsApp API
@@ -155,7 +158,7 @@ export const whatsappErrorHandlers = [
         },
       },
       { status: 400 }
-    );
+    )
   }),
 
   // Simular template não aprovado
@@ -169,7 +172,7 @@ export const whatsappErrorHandlers = [
         },
       },
       { status: 400 }
-    );
+    )
   }),
 
   // Simular rate limit (429)
@@ -183,14 +186,14 @@ export const whatsappErrorHandlers = [
         },
       },
       { status: 429 }
-    );
+    )
   }),
-];
+]
 
 /**
  * Servidor MSW para testes
  */
-export const whatsappServer = setupServer(...whatsappHandlers);
+export const whatsappServer = setupServer(...whatsappHandlers)
 
 /**
  * Mock de payload de webhook - Mensagem Enviada
@@ -222,7 +225,7 @@ export const mockWhatsAppWebhookSent = {
       ],
     },
   ],
-};
+}
 
 /**
  * Mock de payload de webhook - Mensagem Entregue
@@ -254,7 +257,7 @@ export const mockWhatsAppWebhookDelivered = {
       ],
     },
   ],
-};
+}
 
 /**
  * Mock de payload de webhook - Mensagem Lida
@@ -286,4 +289,4 @@ export const mockWhatsAppWebhookRead = {
       ],
     },
   ],
-};
+}

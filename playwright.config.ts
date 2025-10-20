@@ -1,14 +1,14 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Playwright E2E Configuration - Flowzz
  * Testa integração completa: Backend (4000) + Flow (3000) + Admin (5173)
- * 
+ *
  * Referência: TESTING_INTEGRATION_SUMMARY.md
  */
 export default defineConfig({
   testDir: './e2e',
-  
+
   // Timeout configurations
   timeout: 30 * 1000, // 30s por teste
   expect: {
@@ -34,7 +34,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    
+
     // Locale brasileiro
     locale: 'pt-BR',
     timezoneId: 'America/Sao_Paulo',
@@ -51,7 +51,7 @@ export default defineConfig({
     // Flow Frontend (usuário final)
     {
       name: 'flow',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         baseURL: 'http://localhost:3000',
         storageState: 'e2e/.auth/demo-user.json',
@@ -63,7 +63,7 @@ export default defineConfig({
     // Admin Panel Frontend
     {
       name: 'admin',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         baseURL: 'http://localhost:5173',
         storageState: 'e2e/.auth/admin-user.json',
@@ -114,4 +114,4 @@ export default defineConfig({
   //     reuseExistingServer: !process.env.CI,
   //   },
   // ],
-});
+})

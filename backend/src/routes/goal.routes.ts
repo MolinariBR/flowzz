@@ -9,48 +9,48 @@
  * - openapi.yaml: /goals/* endpoints
  */
 
-import { Router } from 'express';
-import { goalController } from '../controllers/GoalController';
-import { authenticate } from '../shared/middlewares/authenticate';
+import { Router } from 'express'
+import { goalController } from '../controllers/GoalController'
+import { authenticate } from '../shared/middlewares/authenticate'
 
-export const goalRoutes = Router();
+export const goalRoutes = Router()
 
 // Aplicar autenticação em todas as rotas
-goalRoutes.use(authenticate);
+goalRoutes.use(authenticate)
 
 /**
  * GET /goals/statistics
  * Estatísticas gerais de metas do usuário
  * (Deve vir antes de /goals/:id para evitar conflito de rotas)
  */
-goalRoutes.get('/statistics', goalController.getStatistics);
+goalRoutes.get('/statistics', goalController.getStatistics)
 
 /**
  * GET /goals?is_active=true&period_type=MONTHLY
  * Lista metas do usuário com filtros opcionais
  */
-goalRoutes.get('/', goalController.getGoals);
+goalRoutes.get('/', goalController.getGoals)
 
 /**
  * POST /goals
  * Cria nova meta
  */
-goalRoutes.post('/', goalController.createGoal);
+goalRoutes.post('/', goalController.createGoal)
 
 /**
  * GET /goals/:id
  * Busca meta por ID
  */
-goalRoutes.get('/:id', goalController.getGoalById);
+goalRoutes.get('/:id', goalController.getGoalById)
 
 /**
  * PUT /goals/:id
  * Atualiza meta existente
  */
-goalRoutes.put('/:id', goalController.updateGoal);
+goalRoutes.put('/:id', goalController.updateGoal)
 
 /**
  * DELETE /goals/:id
  * Remove meta (soft delete)
  */
-goalRoutes.delete('/:id', goalController.deleteGoal);
+goalRoutes.delete('/:id', goalController.deleteGoal)

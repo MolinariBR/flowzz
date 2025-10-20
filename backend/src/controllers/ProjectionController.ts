@@ -10,22 +10,22 @@
  * - tasks.md: Task 9.1.4 - Criar endpoints de projeções
  */
 
-import type { Request, Response } from 'express';
-import { projectionService } from '../services/ProjectionService';
-import type { ProjectionPeriod } from '../interfaces/ProjectionService.interface';
+import type { Request, Response } from 'express'
+import type { ProjectionPeriod } from '../interfaces/ProjectionService.interface'
+import { projectionService } from '../services/ProjectionService'
+import { logger } from '../shared/utils/logger'
 import {
-  salesProjectionQuerySchema,
   cashflowProjectionQuerySchema,
   healthScoreQuerySchema,
-} from '../validators/projection.validator';
-import { logger } from '../shared/utils/logger';
+  salesProjectionQuerySchema,
+} from '../validators/projection.validator'
 
 interface AuthenticatedRequest extends Request {
   user?: {
-    userId: string;
-    email: string;
-    role: string;
-  };
+    userId: string
+    email: string
+    role: string
+  }
 }
 
 export class ProjectionController {
@@ -41,26 +41,26 @@ export class ProjectionController {
    */
   getSalesProjection = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Validar query parameters
-      const validatedQuery = salesProjectionQuerySchema.parse(req.query);
-      const period = validatedQuery.period as ProjectionPeriod;
+      const validatedQuery = salesProjectionQuerySchema.parse(req.query)
+      const period = validatedQuery.period as ProjectionPeriod
 
       // Calcular projeção
-      const projection = await projectionService.calculateSalesProjection(userId, period);
+      const projection = await projectionService.calculateSalesProjection(userId, period)
 
       res.status(200).json({
         success: true,
         data: projection,
-      });
+      })
     } catch (error) {
       // Erro de validação Zod
       if (error instanceof Error && error.name === 'ZodError') {
@@ -68,8 +68,8 @@ export class ProjectionController {
           success: false,
           error: 'Parâmetros de query inválidos',
           details: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Erro de dados insuficientes
@@ -78,21 +78,21 @@ export class ProjectionController {
           success: false,
           error: error.message,
           code: 'INSUFFICIENT_DATA',
-        });
-        return;
+        })
+        return
       }
 
       logger.error('Erro ao obter projeção de vendas', {
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 
   /**
    * GET /projections/cashflow?period=90
@@ -106,26 +106,26 @@ export class ProjectionController {
    */
   getCashflowProjection = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Validar query parameters
-      const validatedQuery = cashflowProjectionQuerySchema.parse(req.query);
-      const period = validatedQuery.period as ProjectionPeriod;
+      const validatedQuery = cashflowProjectionQuerySchema.parse(req.query)
+      const period = validatedQuery.period as ProjectionPeriod
 
       // Calcular projeção de cashflow
-      const projection = await projectionService.calculateCashflowProjection(userId, period);
+      const projection = await projectionService.calculateCashflowProjection(userId, period)
 
       res.status(200).json({
         success: true,
         data: projection,
-      });
+      })
     } catch (error) {
       // Erro de validação Zod
       if (error instanceof Error && error.name === 'ZodError') {
@@ -133,8 +133,8 @@ export class ProjectionController {
           success: false,
           error: 'Parâmetros de query inválidos',
           details: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Erro de dados insuficientes
@@ -143,21 +143,21 @@ export class ProjectionController {
           success: false,
           error: error.message,
           code: 'INSUFFICIENT_DATA',
-        });
-        return;
+        })
+        return
       }
 
       logger.error('Erro ao obter projeção de cashflow', {
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 
   /**
    * GET /projections/health-score
@@ -177,25 +177,25 @@ export class ProjectionController {
    */
   getHealthScore = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Validar query (sem parâmetros esperados, mas valida estrutura)
-      healthScoreQuerySchema.parse(req.query);
+      healthScoreQuerySchema.parse(req.query)
 
       // Calcular health score
-      const healthScore = await projectionService.calculateHealthScore(userId);
+      const healthScore = await projectionService.calculateHealthScore(userId)
 
       res.status(200).json({
         success: true,
         data: healthScore,
-      });
+      })
     } catch (error) {
       // Erro de validação Zod
       if (error instanceof Error && error.name === 'ZodError') {
@@ -203,8 +203,8 @@ export class ProjectionController {
           success: false,
           error: 'Query inválida. Endpoint não aceita parâmetros.',
           details: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Erro de dados insuficientes
@@ -213,22 +213,22 @@ export class ProjectionController {
           success: false,
           error: error.message,
           code: 'INSUFFICIENT_DATA',
-        });
-        return;
+        })
+        return
       }
 
       logger.error('Erro ao obter health score', {
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 }
 
 // Export singleton instance
-export const projectionController = new ProjectionController();
+export const projectionController = new ProjectionController()

@@ -18,13 +18,13 @@ export const getAdminMetrics = async (_req: Request, res: Response): Promise<voi
 
     res.json({
       success: true,
-      data: metrics
+      data: metrics,
     })
   } catch (error) {
     console.error('Error fetching admin metrics:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch admin metrics'
+      error: 'Failed to fetch admin metrics',
     })
   }
 }
@@ -39,13 +39,13 @@ export const getUserGrowthMetrics = async (_req: Request, res: Response): Promis
 
     res.json({
       success: true,
-      data: metrics
+      data: metrics,
     })
   } catch (error) {
     console.error('Error fetching user growth metrics:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch user growth metrics'
+      error: 'Failed to fetch user growth metrics',
     })
   }
 }
@@ -57,27 +57,27 @@ export const getUserGrowthMetrics = async (_req: Request, res: Response): Promis
  */
 export const listUsers = async (req: Request, res: Response): Promise<void> => {
   try {
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const page = parseInt(req.query.page as string, 10) || 1
+    const limit = parseInt(req.query.limit as string, 10) || 20
     const filters = {
       search: req.query.search as string,
       plan: req.query.plan as string,
       status: req.query.status as 'active' | 'inactive' | 'suspended',
       role: req.query.role as any,
-      subscription_status: req.query.subscription_status as string
+      subscription_status: req.query.subscription_status as string,
     }
 
     const result = await userManagementService.listUsers(filters, page, limit)
 
     res.json({
       success: true,
-      data: result
+      data: result,
     })
   } catch (error) {
     console.error('Error listing users:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to list users'
+      error: 'Failed to list users',
     })
   }
 }
@@ -99,20 +99,20 @@ export const getUserDetails = async (req: Request, res: Response): Promise<void>
     if (!user) {
       res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: 'User not found',
       })
       return
     }
 
     res.json({
       success: true,
-      data: user
+      data: user,
     })
   } catch (error) {
     console.error('Error fetching user details:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch user details'
+      error: 'Failed to fetch user details',
     })
   }
 }
@@ -132,25 +132,20 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     const adminId = req.user?.userId || ''
     const updateData = req.body
 
-    const user = await userManagementService.updateUser(
-      userId,
-      updateData,
-      adminId,
-      {
-        ip_address: req.ip,
-        user_agent: req.get('user-agent')
-      }
-    )
+    const user = await userManagementService.updateUser(userId, updateData, adminId, {
+      ip_address: req.ip,
+      user_agent: req.get('user-agent'),
+    })
 
     res.json({
       success: true,
-      data: user
+      data: user,
     })
   } catch (error) {
     console.error('Error updating user:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to update user'
+      error: 'Failed to update user',
     })
   }
 }
@@ -176,20 +171,20 @@ export const suspendUser = async (req: Request, res: Response): Promise<void> =>
       adminId,
       {
         ip_address: req.ip,
-        user_agent: req.get('user-agent')
+        user_agent: req.get('user-agent'),
       }
     )
 
     res.json({
       success: true,
       message: 'User suspended successfully',
-      data: user
+      data: user,
     })
   } catch (error) {
     console.error('Error suspending user:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to suspend user'
+      error: 'Failed to suspend user',
     })
   }
 }
@@ -208,25 +203,21 @@ export const reactivateUser = async (req: Request, res: Response): Promise<void>
     }
     const adminId = req.user?.userId || ''
 
-    const user = await userManagementService.reactivateUser(
-      userId,
-      adminId,
-      {
-        ip_address: req.ip,
-        user_agent: req.get('user-agent')
-      }
-    )
+    const user = await userManagementService.reactivateUser(userId, adminId, {
+      ip_address: req.ip,
+      user_agent: req.get('user-agent'),
+    })
 
     res.json({
       success: true,
       message: 'User reactivated successfully',
-      data: user
+      data: user,
     })
   } catch (error) {
     console.error('Error reactivating user:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to reactivate user'
+      error: 'Failed to reactivate user',
     })
   }
 }
@@ -245,25 +236,21 @@ export const impersonateUser = async (req: Request, res: Response): Promise<void
     }
     const adminId = req.user?.userId || ''
 
-    const impersonation = await userManagementService.impersonateUser(
-      userId,
-      adminId,
-      {
-        ip_address: req.ip,
-        user_agent: req.get('user-agent')
-      }
-    )
+    const impersonation = await userManagementService.impersonateUser(userId, adminId, {
+      ip_address: req.ip,
+      user_agent: req.get('user-agent'),
+    })
 
     res.json({
       success: true,
       message: 'Impersonation token generated',
-      data: impersonation
+      data: impersonation,
     })
   } catch (error: any) {
     console.error('Error impersonating user:', error)
     res.status(400).json({
       success: false,
-      error: error.message || 'Failed to impersonate user'
+      error: error.message || 'Failed to impersonate user',
     })
   }
 }
@@ -279,21 +266,21 @@ export const getAuditLogs = async (req: Request, res: Response): Promise<void> =
       admin_id: req.query.admin_id as string,
       target_user_id: req.query.target_user_id as string,
       action: req.query.action as string,
-      page: parseInt(req.query.page as string) || 1,
-      limit: parseInt(req.query.limit as string) || 50
+      page: parseInt(req.query.page as string, 10) || 1,
+      limit: parseInt(req.query.limit as string, 10) || 50,
     }
 
     const result = await userManagementService.getAuditLogs(filters)
 
     res.json({
       success: true,
-      data: result
+      data: result,
     })
   } catch (error) {
     console.error('Error fetching audit logs:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch audit logs'
+      error: 'Failed to fetch audit logs',
     })
   }
 }
@@ -308,13 +295,13 @@ export const getUserStats = async (_req: Request, res: Response): Promise<void> 
 
     res.json({
       success: true,
-      data: stats
+      data: stats,
     })
   } catch (error) {
     console.error('Error fetching user stats:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch user stats'
+      error: 'Failed to fetch user stats',
     })
   }
 }
@@ -329,7 +316,7 @@ export const getWhatsAppConfig = async (req: Request, res: Response): Promise<vo
     if (!userId) {
       res.status(401).json({
         success: false,
-        error: 'Usuário não autenticado'
+        error: 'Usuário não autenticado',
       })
       return
     }
@@ -338,13 +325,13 @@ export const getWhatsAppConfig = async (req: Request, res: Response): Promise<vo
 
     res.json({
       success: true,
-      data: config
+      data: config,
     })
   } catch (error) {
     console.error('Error fetching WhatsApp config:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch WhatsApp config'
+      error: 'Failed to fetch WhatsApp config',
     })
   }
 }
@@ -359,7 +346,7 @@ export const saveWhatsAppConfig = async (req: Request, res: Response): Promise<v
     if (!userId) {
       res.status(401).json({
         success: false,
-        error: 'Usuário não autenticado'
+        error: 'Usuário não autenticado',
       })
       return
     }
@@ -369,13 +356,13 @@ export const saveWhatsAppConfig = async (req: Request, res: Response): Promise<v
 
     res.json({
       success: true,
-      message: 'Configuração WhatsApp salva com sucesso'
+      message: 'Configuração WhatsApp salva com sucesso',
     })
   } catch (error) {
     console.error('Error saving WhatsApp config:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to save WhatsApp config'
+      error: 'Failed to save WhatsApp config',
     })
   }
 }
@@ -390,7 +377,7 @@ export const testWhatsAppConnection = async (req: Request, res: Response): Promi
     if (!userId) {
       res.status(401).json({
         success: false,
-        error: 'Usuário não autenticado'
+        error: 'Usuário não autenticado',
       })
       return
     }
@@ -399,13 +386,13 @@ export const testWhatsAppConnection = async (req: Request, res: Response): Promi
 
     res.json({
       success: true,
-      data: result
+      data: result,
     })
   } catch (error) {
     console.error('Error testing WhatsApp connection:', error)
     res.status(500).json({
       success: false,
-      error: 'Failed to test WhatsApp connection'
+      error: 'Failed to test WhatsApp connection',
     })
   }
 }

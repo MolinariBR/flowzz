@@ -13,17 +13,17 @@
  * - tasks.md: Task 9.2 - GoalService
  */
 
-import type { Goal, GoalTargetType, PeriodType } from '@prisma/client';
-import type { Decimal } from '@prisma/client/runtime/library';
+import type { Goal, GoalTargetType, PeriodType } from '@prisma/client'
+import type { Decimal } from '@prisma/client/runtime/library'
 
 /**
  * Status de progresso da meta
  */
 export enum GoalProgressStatus {
-  NOT_STARTED = 'not_started',       // 0-10%
-  IN_PROGRESS = 'in_progress',       // 10-79%
-  ALMOST_THERE = 'almost_there',     // 80-99%
-  COMPLETED = 'completed',           // 100%+
+  NOT_STARTED = 'not_started', // 0-10%
+  IN_PROGRESS = 'in_progress', // 10-79%
+  ALMOST_THERE = 'almost_there', // 80-99%
+  COMPLETED = 'completed', // 100%+
   EXPIRED_INCOMPLETE = 'expired_incomplete', // Vencida sem atingir
 }
 
@@ -31,65 +31,65 @@ export enum GoalProgressStatus {
  * DTO para criação de meta
  */
 export interface CreateGoalDTO {
-  title: string;                     // Ex: "Faturar R$ 15.000 em Outubro"
-  description?: string;              // Descrição opcional
-  target_type: GoalTargetType;       // REVENUE, PROFIT, SALES_COUNT, etc.
-  target_value: number | Decimal;    // Valor alvo
-  period_type: PeriodType;           // DAILY, WEEKLY, MONTHLY, CUSTOM
-  period_start: Date;                // Início do período
-  period_end: Date;                  // Fim do período
+  title: string // Ex: "Faturar R$ 15.000 em Outubro"
+  description?: string // Descrição opcional
+  target_type: GoalTargetType // REVENUE, PROFIT, SALES_COUNT, etc.
+  target_value: number | Decimal // Valor alvo
+  period_type: PeriodType // DAILY, WEEKLY, MONTHLY, CUSTOM
+  period_start: Date // Início do período
+  period_end: Date // Fim do período
 }
 
 /**
  * DTO para atualização de meta
  */
 export interface UpdateGoalDTO {
-  title?: string;
-  description?: string;
-  target_value?: number | Decimal;
-  period_end?: Date;
-  is_active?: boolean;
+  title?: string
+  description?: string
+  target_value?: number | Decimal
+  period_end?: Date
+  is_active?: boolean
 }
 
 /**
  * Meta enriquecida com dados de progresso
  */
 export interface GoalWithProgress extends Goal {
-  progress_percentage: number;       // Progresso 0-100%
-  progress_status: GoalProgressStatus; // Status do progresso
-  days_remaining: number;            // Dias restantes
-  days_elapsed: number;              // Dias decorridos
-  is_on_track: boolean;              // Se está no ritmo esperado
-  expected_progress: number;         // Progresso esperado baseado no tempo
-  daily_target: number;              // Meta diária necessária
-  current_daily_avg: number;         // Média diária atual
+  progress_percentage: number // Progresso 0-100%
+  progress_status: GoalProgressStatus // Status do progresso
+  days_remaining: number // Dias restantes
+  days_elapsed: number // Dias decorridos
+  is_on_track: boolean // Se está no ritmo esperado
+  expected_progress: number // Progresso esperado baseado no tempo
+  daily_target: number // Meta diária necessária
+  current_daily_avg: number // Média diária atual
 }
 
 /**
  * Notificação de progresso de meta
  */
 export interface GoalProgressNotification {
-  goal_id: string;
-  goal_title: string;
-  progress_percentage: number;
-  milestone: 80 | 100;               // Marco atingido (80% ou 100%)
-  target_value: number;
-  current_value: number;
-  user_email: string;
-  timestamp: Date;
+  goal_id: string
+  goal_title: string
+  progress_percentage: number
+  milestone: 80 | 100 // Marco atingido (80% ou 100%)
+  target_value: number
+  current_value: number
+  user_email: string
+  timestamp: Date
 }
 
 /**
  * Estatísticas gerais de metas do usuário
  */
 export interface GoalStatistics {
-  total_goals: number;               // Total de metas criadas
-  active_goals: number;              // Metas ativas
-  completed_goals: number;           // Metas completas
-  expired_goals: number;             // Metas expiradas sem completar
-  completion_rate: number;           // Taxa de conclusão (0-100%)
-  avg_completion_time: number;       // Tempo médio de conclusão (dias)
-  best_streak: number;               // Maior sequência de metas atingidas
+  total_goals: number // Total de metas criadas
+  active_goals: number // Metas ativas
+  completed_goals: number // Metas completas
+  expired_goals: number // Metas expiradas sem completar
+  completion_rate: number // Taxa de conclusão (0-100%)
+  avg_completion_time: number // Tempo médio de conclusão (dias)
+  best_streak: number // Maior sequência de metas atingidas
 }
 
 /**
@@ -109,7 +109,7 @@ export interface IGoalService {
    * @returns Meta criada com progresso calculado
    * @throws Error se já tiver 5 metas ativas
    */
-  createGoal(userId: string, data: CreateGoalDTO): Promise<GoalWithProgress>;
+  createGoal(userId: string, data: CreateGoalDTO): Promise<GoalWithProgress>
 
   /**
    * Lista metas do usuário com filtros
@@ -121,11 +121,11 @@ export interface IGoalService {
   getGoals(
     userId: string,
     filters?: {
-      is_active?: boolean;
-      period_type?: PeriodType;
-      target_type?: GoalTargetType;
+      is_active?: boolean
+      period_type?: PeriodType
+      target_type?: GoalTargetType
     }
-  ): Promise<GoalWithProgress[]>;
+  ): Promise<GoalWithProgress[]>
 
   /**
    * Busca meta por ID com cálculo de progresso
@@ -135,7 +135,7 @@ export interface IGoalService {
    * @returns Meta com progresso atualizado
    * @throws Error se meta não encontrada ou não pertence ao usuário
    */
-  getGoalById(goalId: string, userId: string): Promise<GoalWithProgress>;
+  getGoalById(goalId: string, userId: string): Promise<GoalWithProgress>
 
   /**
    * Atualiza meta existente
@@ -149,11 +149,7 @@ export interface IGoalService {
    * @param data - Dados a atualizar
    * @returns Meta atualizada
    */
-  updateGoal(
-    goalId: string,
-    userId: string,
-    data: UpdateGoalDTO
-  ): Promise<GoalWithProgress>;
+  updateGoal(goalId: string, userId: string, data: UpdateGoalDTO): Promise<GoalWithProgress>
 
   /**
    * Remove meta (soft delete - marca is_active = false)
@@ -161,7 +157,7 @@ export interface IGoalService {
    * @param goalId - ID da meta
    * @param userId - ID do usuário
    */
-  deleteGoal(goalId: string, userId: string): Promise<void>;
+  deleteGoal(goalId: string, userId: string): Promise<void>
 
   /**
    * Calcula progresso atual da meta
@@ -174,7 +170,7 @@ export interface IGoalService {
    * @param goal - Meta a calcular
    * @returns Meta enriquecida com dados de progresso
    */
-  calculateProgress(goal: Goal): Promise<GoalWithProgress>;
+  calculateProgress(goal: Goal): Promise<GoalWithProgress>
 
   /**
    * Atualiza progresso de todas as metas ativas do usuário
@@ -189,7 +185,7 @@ export interface IGoalService {
    * @param userId - ID do usuário
    * @returns Array de metas atualizadas
    */
-  updateAllGoalsProgress(userId: string): Promise<GoalWithProgress[]>;
+  updateAllGoalsProgress(userId: string): Promise<GoalWithProgress[]>
 
   /**
    * Verifica e envia notificações de progresso
@@ -201,7 +197,7 @@ export interface IGoalService {
    * @param goal - Meta a verificar
    * @returns Notificação enviada (ou null se não aplicável)
    */
-  checkAndNotifyProgress(goal: GoalWithProgress): Promise<GoalProgressNotification | null>;
+  checkAndNotifyProgress(goal: GoalWithProgress): Promise<GoalProgressNotification | null>
 
   /**
    * Verifica metas expiradas e marca como incomplete
@@ -210,7 +206,7 @@ export interface IGoalService {
    *
    * @returns Quantidade de metas expiradas
    */
-  expireOldGoals(): Promise<number>;
+  expireOldGoals(): Promise<number>
 
   /**
    * Obtém estatísticas de metas do usuário
@@ -218,7 +214,7 @@ export interface IGoalService {
    * @param userId - ID do usuário
    * @returns Estatísticas gerais
    */
-  getGoalStatistics(userId: string): Promise<GoalStatistics>;
+  getGoalStatistics(userId: string): Promise<GoalStatistics>
 
   /**
    * Valida se usuário pode criar mais metas
@@ -228,7 +224,7 @@ export interface IGoalService {
    * @param userId - ID do usuário
    * @returns true se pode criar, false se atingiu limite
    */
-  canCreateGoal(userId: string): Promise<boolean>;
+  canCreateGoal(userId: string): Promise<boolean>
 
   /**
    * Calcula valor diário necessário para atingir meta
@@ -236,5 +232,5 @@ export interface IGoalService {
    * @param goal - Meta a calcular
    * @returns Valor diário necessário
    */
-  calculateDailyTarget(goal: GoalWithProgress): number;
+  calculateDailyTarget(goal: GoalWithProgress): number
 }

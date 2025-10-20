@@ -1,8 +1,8 @@
 // src/shared/middlewares/performanceLogger.ts
 // Middleware para logging de performance de requests
 
-import type { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
+import type { NextFunction, Request, Response } from 'express'
+import { logger } from '../utils/logger'
 
 /**
  * Middleware que loga métricas de performance para cada request
@@ -12,15 +12,15 @@ import { logger } from '../utils/logger';
  * - Endpoint
  */
 export const performanceLogger = (req: Request, res: Response, next: NextFunction): void => {
-  const startTime = Date.now();
-  const { method, originalUrl, ip } = req;
+  const startTime = Date.now()
+  const { method, originalUrl, ip } = req
   // Extrair userId do req.user se existir
-  const userId = (req as any).user?.userId || 'anonymous';
+  const userId = (req as any).user?.userId || 'anonymous'
 
   // Log quando a resposta é finalizada
   res.on('finish', () => {
-    const duration = Date.now() - startTime;
-    const { statusCode } = res;
+    const duration = Date.now() - startTime
+    const { statusCode } = res
 
     // Log de performance com nível específico
     logger.log('performance', 'Request completed', {
@@ -35,7 +35,7 @@ export const performanceLogger = (req: Request, res: Response, next: NextFunctio
       slow: duration > 2000,
       // Flag para requests muito lentas (>5s)
       critical: duration > 5000,
-    });
+    })
 
     // Alert para requests críticos
     if (duration > 5000) {
@@ -45,7 +45,7 @@ export const performanceLogger = (req: Request, res: Response, next: NextFunctio
         duration,
         userId,
         statusCode,
-      });
+      })
     } else if (duration > 2000) {
       logger.warn('SLOW: Request took longer than 2 seconds', {
         method,
@@ -53,9 +53,9 @@ export const performanceLogger = (req: Request, res: Response, next: NextFunctio
         duration,
         userId,
         statusCode,
-      });
+      })
     }
-  });
+  })
 
-  next();
-};
+  next()
+}

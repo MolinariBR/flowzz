@@ -1,20 +1,29 @@
-import React, { useState } from 'react'
-import { ColumnDef } from '@tanstack/react-table'
-import {MoreHorizontal, UserX, UserCheck, Eye, History, Mail, Calendar} from 'lucide-react'
-import { DataTable } from '../components/ui/data-table'
-import { useUsers, useSuspendUser, useReactivateUser, useImpersonateUser } from '../lib/hooks/use-admin-data'
-import { User } from '../types/admin'
-import { motion } from 'framer-motion'
+import type { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { clsx } from 'clsx'
+import { motion } from 'framer-motion'
+import { Calendar, Eye, History, Mail, UserCheck, UserX } from 'lucide-react'
+import type React from 'react'
+import { useId, useState } from 'react'
+import { DataTable } from '../components/ui/data-table'
+import {
+  useImpersonateUser,
+  useReactivateUser,
+  useSuspendUser,
+  useUsers,
+} from '../lib/hooks/use-admin-data'
+import type { User } from '../types/admin'
 
 export const Users: React.FC = () => {
   const [filters, setFilters] = useState({
     search: '',
     plan: '',
-    status: ''
+    status: '',
   })
+
+  const searchId = useId()
+  const planId = useId()
+  const statusId = useId()
 
   const { data: usersData, isLoading } = useUsers(filters)
   const suspendUser = useSuspendUser()
@@ -22,8 +31,8 @@ export const Users: React.FC = () => {
   const impersonateUser = useImpersonateUser()
 
   const handleSuspend = (userId: string) => {
-    if (window.confirm('Tem certeza que deseja suspender este usuário?')) {
-      suspendUser.mutate(userId)
+    if (globalThis.confirm('Tem certeza que deseja suspender este usuário?')) {
+      suspendUser.mutate({ userId, reason: 'Suspenso pelo administrador' })
     }
   }
 
@@ -34,13 +43,13 @@ export const Users: React.FC = () => {
   }
 
   const handleImpersonate = (userId: string) => {
-    if (window.confirm('Deseja acessar como este usuário?')) {
+    if (globalThis.confirm('Deseja acessar como este usuário?')) {
       impersonateUser.mutate(userId)
     }
   }
 
   const getStatusBadge = (status: User['status']) => {
-    const baseClasses = "px-2 py-1 text-xs font-medium rounded-full"
+    const baseClasses = 'px-2 py-1 text-xs font-medium rounded-full'
     switch (status) {
       case 'active':
         return <span className={`${baseClasses} bg-green-100 text-green-800`}>Ativo</span>
@@ -54,7 +63,7 @@ export const Users: React.FC = () => {
   }
 
   const getPlanBadge = (plan: User['plan']) => {
-    const baseClasses = "px-2 py-1 text-xs font-medium rounded-full"
+    const baseClasses = 'px-2 py-1 text-xs font-medium rounded-full'
     switch (plan) {
       case 'trial':
         return <span className={`${baseClasses} bg-blue-100 text-blue-800`}>Trial</span>
@@ -85,26 +94,24 @@ export const Users: React.FC = () => {
             <div className="text-sm text-gray-500">{row.original.email}</div>
           </div>
         </div>
-      )
+      ),
     },
     {
       accessorKey: 'plan',
       header: 'Plano',
-      cell: ({ row }) => getPlanBadge(row.original.plan)
+      cell: ({ row }) => getPlanBadge(row.original.plan),
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => getStatusBadge(row.original.status)
+      cell: ({ row }) => getStatusBadge(row.original.status),
     },
     {
       accessorKey: 'mrr',
       header: 'MRR',
       cell: ({ row }) => (
-        <span className="font-medium">
-          R$ {row.original.mrr.toLocaleString('pt-BR')}
-        </span>
-      )
+        <span className="font-medium">R$ {row.original.mrr.toLocaleString('pt-BR')}</span>
+      ),
     },
     {
       accessorKey: 'lastLogin',
@@ -114,7 +121,7 @@ export const Users: React.FC = () => {
           <div>{format(row.original.lastLogin, 'dd/MM/yyyy', { locale: ptBR })}</div>
           <div className="text-gray-500">{format(row.original.lastLogin, 'HH:mm')}</div>
         </div>
-      )
+      ),
     },
     {
       accessorKey: 'signupDate',
@@ -123,7 +130,7 @@ export const Users: React.FC = () => {
         <span className="text-sm">
           {format(row.original.signupDate, 'dd/MM/yyyy', { locale: ptBR })}
         </span>
-      )
+      ),
     },
     {
       id: 'actions',
@@ -131,15 +138,17 @@ export const Users: React.FC = () => {
       cell: ({ row }) => (
         <div className="flex items-center space-x-2">
           <button
+            type="button"
             onClick={() => handleImpersonate(row.original.id)}
             className="p-1 hover:bg-gray-100 rounded transition-colors"
             title="Impersonificar usuário"
           >
             <Eye className="w-4 h-4 text-gray-600" />
           </button>
-          
+
           {row.original.status === 'active' ? (
             <button
+              type="button"
               onClick={() => handleSuspend(row.original.id)}
               className="p-1 hover:bg-red-100 rounded transition-colors"
               title="Suspender usuário"
@@ -148,6 +157,7 @@ export const Users: React.FC = () => {
             </button>
           ) : (
             <button
+              type="button"
               onClick={() => handleReactivate(row.original.id)}
               className="p-1 hover:bg-green-100 rounded transition-colors"
               title="Reativar usuário"
@@ -155,16 +165,17 @@ export const Users: React.FC = () => {
               <UserCheck className="w-4 h-4 text-green-600" />
             </button>
           )}
-          
+
           <button
+            type="button"
             className="p-1 hover:bg-gray-100 rounded transition-colors"
             title="Ver histórico"
           >
             <History className="w-4 h-4 text-gray-600" />
           </button>
         </div>
-      )
-    }
+      ),
+    },
   ]
 
   return (
@@ -177,13 +188,14 @@ export const Users: React.FC = () => {
       >
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestão de Usuários</h1>
-          <p className="text-gray-500 mt-1">
-            Gerencie todos os usuários da plataforma FlowZZ
-          </p>
+          <p className="text-gray-500 mt-1">Gerencie todos os usuários da plataforma FlowZZ</p>
         </div>
-        
+
         <div className="mt-4 sm:mt-0 flex space-x-3">
-          <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+          <button
+            type="button"
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
             Exportar Lista
           </button>
         </div>
@@ -198,25 +210,27 @@ export const Users: React.FC = () => {
       >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={searchId} className="block text-sm font-medium text-gray-700 mb-1">
               Buscar
             </label>
             <input
+              id={searchId}
               type="text"
               placeholder="Nome ou email..."
               value={filters.search}
-              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={planId} className="block text-sm font-medium text-gray-700 mb-1">
               Plano
             </label>
             <select
+              id={planId}
               value={filters.plan}
-              onChange={(e) => setFilters(prev => ({ ...prev, plan: e.target.value }))}
+              onChange={(e) => setFilters((prev) => ({ ...prev, plan: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">Todos os planos</option>
@@ -226,14 +240,15 @@ export const Users: React.FC = () => {
               <option value="premium">Premium</option>
             </select>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={statusId} className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
             <select
+              id={statusId}
               value={filters.status}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">Todos os status</option>
@@ -242,9 +257,10 @@ export const Users: React.FC = () => {
               <option value="cancelled">Cancelado</option>
             </select>
           </div>
-          
+
           <div className="flex items-end">
             <button
+              type="button"
               onClick={() => setFilters({ search: '', plan: '', status: '' })}
               className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
@@ -260,20 +276,20 @@ export const Users: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Total</p>
-              <p className="text-2xl font-bold">{usersData?.pagination.total || 0}</p>
+              <p className="text-2xl font-bold">{usersData?.total || 0}</p>
             </div>
             <div className="p-2 bg-blue-100 rounded-lg">
               <Mail className="w-5 h-5 text-blue-600" />
             </div>
           </div>
         </div>
-        
+
         <div className="bg-admin-surface p-4 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Ativos</p>
               <p className="text-2xl font-bold text-green-600">
-                {usersData?.data.filter(u => u.status === 'active').length || 0}
+                {usersData?.data.filter((u) => u.status === 'active').length || 0}
               </p>
             </div>
             <div className="p-2 bg-green-100 rounded-lg">
@@ -281,13 +297,13 @@ export const Users: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-admin-surface p-4 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Suspensos</p>
               <p className="text-2xl font-bold text-red-600">
-                {usersData?.data.filter(u => u.status === 'suspended').length || 0}
+                {usersData?.data.filter((u) => u.status === 'suspended').length || 0}
               </p>
             </div>
             <div className="p-2 bg-red-100 rounded-lg">
@@ -295,7 +311,7 @@ export const Users: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-admin-surface p-4 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between">
             <div>

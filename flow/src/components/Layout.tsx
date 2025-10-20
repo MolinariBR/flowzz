@@ -1,9 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import {
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Crown,
+  FileText,
+  HelpCircle,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Moon,
+  PieChart,
+  Search,
+  Settings,
+  TrendingUp,
+  User,
+  Users,
+  X,
+  Zap,
+} from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Bell, ChevronRight, CreditCard, Crown, FileText, HelpCircle, LayoutDashboard, LogOut, Menu, Moon, PieChart, Search, Settings, TrendingUp, User, Users, X, Zap } from 'lucide-react'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { logout } from '@/lib/api/auth'
 
@@ -15,11 +34,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const pathname = usePathname()
-  const router = useRouter()
+  const _router = useRouter()
 
   // Páginas de autenticação não devem ter sidebar/menu
   const isAuthPage = pathname === '/login' || pathname === '/register'
-  
+
   if (isAuthPage) {
     return <>{children}</>
   }
@@ -27,18 +46,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const handleLogout = async () => {
     // Limpar localStorage
     logout()
-    
+
     toast.success('Logout realizado com sucesso!')
-    
+
     // Redirecionar para login (forçar reload)
     window.location.href = '/login'
   }
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, description: 'Visão geral dos seus dados' },
+    {
+      name: 'Dashboard',
+      href: '/dashboard',
+      icon: LayoutDashboard,
+      description: 'Visão geral dos seus dados',
+    },
     { name: 'Clientes', href: '/clientes', icon: Users, description: 'Gestão de clientes' },
     { name: 'Anúncios', href: '/anuncios', icon: TrendingUp, description: 'Facebook Ads Manager' },
-    { name: 'Integrações', href: '/integracoes', icon: Zap, description: 'Conecte suas ferramentas' },
+    {
+      name: 'Integrações',
+      href: '/integracoes',
+      icon: Zap,
+      description: 'Conecte suas ferramentas',
+    },
     { name: 'Projeções', href: '/projecoes', icon: PieChart, description: 'Análise financeira' },
   ]
 
@@ -51,7 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     '/relatorios': 'Reports Center',
     '/ajuda': 'Help Center',
     '/planos': 'Plans & Pricing',
-    '/configuracoes': 'Settings'
+    '/configuracoes': 'Settings',
   }
 
   const currentPage = breadcrumbMap[pathname] || 'Dashboard'
@@ -64,16 +93,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           type="button"
           className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
-          onKeyDown={(e) => { if (e.key === 'Escape') setSidebarOpen(false) }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setSidebarOpen(false)
+          }}
         />
       )}
 
       {/* Sidebar - Desktop sempre visível, Mobile com toggle */}
-      <div className={`
+      <div
+        className={`
         fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl border-r border-slate-200 transform transition-transform duration-300 ease-in-out
         lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+      `}
+      >
         <div className="flex h-full flex-col">
           {/* Logo Header */}
           <div className="flex h-16 items-center justify-between px-6 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-purple-50">
@@ -137,7 +170,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     }`}
                   >
                     <div className="relative flex items-center w-full">
-                      <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}`} />
+                      <item.icon
+                        className={`mr-3 h-5 w-5 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}`}
+                      />
                       <div className="flex-1">
                         <p className={`font-medium ${isActive ? 'text-white' : 'text-slate-700'}`}>
                           {item.name}
@@ -146,9 +181,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           {item.description}
                         </p>
                       </div>
-                      {isActive && (
-                        <div className="h-2 w-2 rounded-full bg-white" />
-                      )}
+                      {isActive && <div className="h-2 w-2 rounded-full bg-white" />}
                     </div>
                   </Link>
                 )
@@ -161,7 +194,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 Ações Rápidas
               </p>
               <div className="space-y-2">
-                <Link 
+                <Link
                   href="/relatorios"
                   onClick={() => setSidebarOpen(false)}
                   className="w-full flex items-center px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -169,7 +202,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <FileText className="h-4 w-4 mr-3" />
                   Relatório
                 </Link>
-                <Link 
+                <Link
                   href="/ajuda"
                   onClick={() => setSidebarOpen(false)}
                   className="w-full flex items-center px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -177,7 +210,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <HelpCircle className="h-4 w-4 mr-3" />
                   Ajuda
                 </Link>
-                <Link 
+                <Link
                   href="/planos"
                   onClick={() => setSidebarOpen(false)}
                   className="w-full flex items-center px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -201,7 +234,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <p className="text-xs text-amber-600">Desbloqueie recursos avançados</p>
                 </div>
               </div>
-              <button type="button" className="w-full mt-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium py-2 px-4 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 shadow-md">
+              <button
+                type="button"
+                className="w-full mt-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium py-2 px-4 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 shadow-md"
+              >
                 Fazer Upgrade
               </button>
             </div>
@@ -222,34 +258,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <p className="text-sm font-semibold text-slate-900">João Silva</p>
                   <p className="text-xs text-slate-500">joao@flowzz.com</p>
                 </div>
-                <ChevronRight className={`h-4 w-4 text-slate-400 transform transition-transform ${profileOpen ? 'rotate-90' : ''}`} />
+                <ChevronRight
+                  className={`h-4 w-4 text-slate-400 transform transition-transform ${profileOpen ? 'rotate-90' : ''}`}
+                />
               </button>
 
               {profileOpen && (
                 <div className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
-                  <Link 
+                  <Link
                     href="/configuracoes"
-                    onClick={() => {setProfileOpen(false); setSidebarOpen(false)}}
+                    onClick={() => {
+                      setProfileOpen(false)
+                      setSidebarOpen(false)
+                    }}
                     className="flex w-full items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                   >
                     <User className="h-4 w-4" />
                     <span>Meu Perfil</span>
                   </Link>
-                  <button type="button" className="flex w-full items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                  <button
+                    type="button"
+                    className="flex w-full items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
                     <Moon className="h-4 w-4" />
                     <span>Modo Escuro</span>
                   </button>
-                  <Link 
+                  <Link
                     href="/configuracoes"
-                    onClick={() => {setProfileOpen(false); setSidebarOpen(false)}}
+                    onClick={() => {
+                      setProfileOpen(false)
+                      setSidebarOpen(false)
+                    }}
                     className="flex w-full items-center space-x-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                   >
                     <Settings className="h-4 w-4" />
                     <span>Configurações</span>
                   </Link>
                   <hr className="my-2 border-slate-200" />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={handleLogout}
                     aria-label="Sair da Conta"
                     data-testid="logout-button"
@@ -299,7 +346,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
 
               {/* Notifications */}
-              <button type="button" className="relative p-2.5 rounded-xl hover:bg-slate-100 transition-colors">
+              <button
+                type="button"
+                className="relative p-2.5 rounded-xl hover:bg-slate-100 transition-colors"
+              >
                 <Bell className="h-5 w-5 text-slate-600" />
                 <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full" />
               </button>
@@ -316,9 +366,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="p-4 lg:p-6">
-          {children}
-        </main>
+        <main className="p-4 lg:p-6">{children}</main>
       </div>
     </div>
   )

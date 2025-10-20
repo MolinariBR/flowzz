@@ -1,30 +1,31 @@
-
-import React from 'react'
 import { motion } from 'framer-motion'
-import {AlertTriangle, Calculator, Clock, TrendingDown} from 'lucide-react'
+import { AlertTriangle, Calculator, Clock, TrendingDown } from 'lucide-react'
 
 const PainPoint = () => {
   const painPoints = [
     {
       icon: Calculator,
-      title: "Planilhas Confusas",
-      description: "Cálculos manuais que nunca batem e geram incerteza sobre a real situação financeira."
+      title: 'Planilhas Confusas',
+      description:
+        'Cálculos manuais que nunca batem e geram incerteza sobre a real situação financeira.',
     },
     {
       icon: Clock,
-      title: "Timing de Cobrança",
-      description: "Perde o momento ideal de cobrar e deixa dinheiro na mesa por falta de controle."
+      title: 'Timing de Cobrança',
+      description:
+        'Perde o momento ideal de cobrar e deixa dinheiro na mesa por falta de controle.',
     },
     {
       icon: TrendingDown,
-      title: "Escalabilidade Limitada",
-      description: "Incerteza sobre quando reinvestir sem comprometer o fluxo de caixa."
+      title: 'Escalabilidade Limitada',
+      description: 'Incerteza sobre quando reinvestir sem comprometer o fluxo de caixa.',
     },
     {
       icon: AlertTriangle,
-      title: "Custos Ocultos",
-      description: "Visão distorcida do lucro real por não contabilizar todos os custos operacionais."
-    }
+      title: 'Custos Ocultos',
+      description:
+        'Visão distorcida do lucro real por não contabilizar todos os custos operacionais.',
+    },
   ]
 
   return (

@@ -1,7 +1,7 @@
 // Referência: design.md §Testing Strategy - Setup global para testes
 // Mock global do Prisma Client e configurações de ambiente de teste
 
-import { beforeAll, afterAll, afterEach, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 
 // Mock do Prisma Client
 vi.mock('../shared/config/database', () => ({
@@ -56,7 +56,7 @@ vi.mock('../shared/config/database', () => ({
     },
     $transaction: vi.fn(),
   },
-}));
+}))
 
 // Mock do RedisService
 vi.mock('../shared/services/RedisService', () => ({
@@ -68,22 +68,22 @@ vi.mock('../shared/services/RedisService', () => ({
     set: vi.fn(),
     del: vi.fn(),
   },
-}));
+}))
 
 // Configurar variáveis de ambiente para testes
 beforeAll(() => {
-  process.env.NODE_ENV = 'test';
-  process.env.JWT_SECRET = 'test-secret-key-for-unit-tests-only';
-  process.env.JWT_EXPIRES_IN = '15m';
-  process.env.JWT_REFRESH_EXPIRES_IN = '7d';
-});
+  process.env.NODE_ENV = 'test'
+  process.env.JWT_SECRET = 'test-secret-key-for-unit-tests-only'
+  process.env.JWT_EXPIRES_IN = '15m'
+  process.env.JWT_REFRESH_EXPIRES_IN = '7d'
+})
 
 // Limpar mocks após cada teste
 afterEach(() => {
-  vi.clearAllMocks();
-});
+  vi.clearAllMocks()
+})
 
 // Cleanup após todos os testes
 afterAll(() => {
-  vi.restoreAllMocks();
-});
+  vi.restoreAllMocks()
+})

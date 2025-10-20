@@ -10,22 +10,22 @@
  * - tasks.md: Task 9.2.3 - Criar endpoints de metas
  */
 
-import type { Request, Response } from 'express';
-import { goalService } from '../services/GoalService';
+import type { Request, Response } from 'express'
+import { goalService } from '../services/GoalService'
+import { logger } from '../shared/utils/logger'
 import {
   createGoalSchema,
-  updateGoalSchema,
-  listGoalsQuerySchema,
   goalIdParamSchema,
-} from '../validators/goal.validator';
-import { logger } from '../shared/utils/logger';
+  listGoalsQuerySchema,
+  updateGoalSchema,
+} from '../validators/goal.validator'
 
 interface AuthenticatedRequest extends Request {
   user?: {
-    userId: string;
-    email: string;
-    role: string;
-  };
+    userId: string
+    email: string
+    role: string
+  }
 }
 
 export class GoalController {
@@ -40,26 +40,29 @@ export class GoalController {
    */
   getGoals = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Validar query parameters
-      const validatedQuery = listGoalsQuerySchema.parse(req.query);
+      const validatedQuery = listGoalsQuerySchema.parse(req.query)
 
       // Buscar metas com filtros
-      const goals = await goalService.getGoals(userId, validatedQuery as Parameters<typeof goalService.getGoals>[1]);
+      const goals = await goalService.getGoals(
+        userId,
+        validatedQuery as Parameters<typeof goalService.getGoals>[1]
+      )
 
       res.status(200).json({
         success: true,
         data: goals,
         count: goals.length,
-      });
+      })
     } catch (error) {
       // Erro de validação Zod
       if (error instanceof Error && error.name === 'ZodError') {
@@ -67,21 +70,21 @@ export class GoalController {
           success: false,
           error: 'Parâmetros de query inválidos',
           details: error.message,
-        });
-        return;
+        })
+        return
       }
 
       logger.error('Erro ao listar metas', {
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 
   /**
    * GET /goals/:id
@@ -89,25 +92,25 @@ export class GoalController {
    */
   getGoalById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Validar ID do parâmetro
-      const validatedParams = goalIdParamSchema.parse(req.params);
+      const validatedParams = goalIdParamSchema.parse(req.params)
 
       // Buscar meta
-      const goal = await goalService.getGoalById(validatedParams.id, userId);
+      const goal = await goalService.getGoalById(validatedParams.id, userId)
 
       res.status(200).json({
         success: true,
         data: goal,
-      });
+      })
     } catch (error) {
       // Erro de validação Zod
       if (error instanceof Error && error.name === 'ZodError') {
@@ -115,8 +118,8 @@ export class GoalController {
           success: false,
           error: 'ID inválido. Deve ser um UUID válido.',
           details: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Meta não encontrada
@@ -124,8 +127,8 @@ export class GoalController {
         res.status(404).json({
           success: false,
           error: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Meta não pertence ao usuário
@@ -133,22 +136,22 @@ export class GoalController {
         res.status(403).json({
           success: false,
           error: error.message,
-        });
-        return;
+        })
+        return
       }
 
       logger.error('Erro ao buscar meta', {
         goalId: req.params.id,
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 
   /**
    * POST /goals
@@ -172,26 +175,29 @@ export class GoalController {
    */
   createGoal = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Validar body
-      const validatedData = createGoalSchema.parse(req.body);
+      const validatedData = createGoalSchema.parse(req.body)
 
       // Criar meta
-      const goal = await goalService.createGoal(userId, validatedData as Parameters<typeof goalService.createGoal>[1]);
+      const goal = await goalService.createGoal(
+        userId,
+        validatedData as Parameters<typeof goalService.createGoal>[1]
+      )
 
       res.status(201).json({
         success: true,
         data: goal,
         message: 'Meta criada com sucesso',
-      });
+      })
     } catch (error) {
       // Erro de validação Zod
       if (error instanceof Error && error.name === 'ZodError') {
@@ -199,8 +205,8 @@ export class GoalController {
           success: false,
           error: 'Dados inválidos',
           details: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Limite de metas atingido
@@ -209,8 +215,8 @@ export class GoalController {
           success: false,
           error: error.message,
           code: 'MAX_GOALS_REACHED',
-        });
-        return;
+        })
+        return
       }
 
       // Data inválida
@@ -218,21 +224,21 @@ export class GoalController {
         res.status(400).json({
           success: false,
           error: error.message,
-        });
-        return;
+        })
+        return
       }
 
       logger.error('Erro ao criar meta', {
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 
   /**
    * PUT /goals/:id
@@ -253,29 +259,33 @@ export class GoalController {
    */
   updateGoal = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Validar ID do parâmetro
-      const validatedParams = goalIdParamSchema.parse(req.params);
+      const validatedParams = goalIdParamSchema.parse(req.params)
 
       // Validar body
-      const validatedData = updateGoalSchema.parse(req.body);
+      const validatedData = updateGoalSchema.parse(req.body)
 
       // Atualizar meta
-      const goal = await goalService.updateGoal(validatedParams.id, userId, validatedData as Parameters<typeof goalService.updateGoal>[2]);
+      const goal = await goalService.updateGoal(
+        validatedParams.id,
+        userId,
+        validatedData as Parameters<typeof goalService.updateGoal>[2]
+      )
 
       res.status(200).json({
         success: true,
         data: goal,
         message: 'Meta atualizada com sucesso',
-      });
+      })
     } catch (error) {
       // Erro de validação Zod
       if (error instanceof Error && error.name === 'ZodError') {
@@ -283,8 +293,8 @@ export class GoalController {
           success: false,
           error: 'Dados inválidos',
           details: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Meta não encontrada
@@ -292,8 +302,8 @@ export class GoalController {
         res.status(404).json({
           success: false,
           error: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Meta não pertence ao usuário
@@ -301,8 +311,8 @@ export class GoalController {
         res.status(403).json({
           success: false,
           error: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Data inválida
@@ -310,22 +320,22 @@ export class GoalController {
         res.status(400).json({
           success: false,
           error: error.message,
-        });
-        return;
+        })
+        return
       }
 
       logger.error('Erro ao atualizar meta', {
         goalId: req.params.id,
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 
   /**
    * DELETE /goals/:id
@@ -333,22 +343,22 @@ export class GoalController {
    */
   deleteGoal = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Validar ID do parâmetro
-      const validatedParams = goalIdParamSchema.parse(req.params);
+      const validatedParams = goalIdParamSchema.parse(req.params)
 
       // Remover meta
-      await goalService.deleteGoal(validatedParams.id, userId);
+      await goalService.deleteGoal(validatedParams.id, userId)
 
-      res.status(204).send(); // No content
+      res.status(204).send() // No content
     } catch (error) {
       // Erro de validação Zod
       if (error instanceof Error && error.name === 'ZodError') {
@@ -356,8 +366,8 @@ export class GoalController {
           success: false,
           error: 'ID inválido. Deve ser um UUID válido.',
           details: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Meta não encontrada
@@ -365,8 +375,8 @@ export class GoalController {
         res.status(404).json({
           success: false,
           error: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Meta não pertence ao usuário
@@ -374,22 +384,22 @@ export class GoalController {
         res.status(403).json({
           success: false,
           error: error.message,
-        });
-        return;
+        })
+        return
       }
 
       logger.error('Erro ao remover meta', {
         goalId: req.params.id,
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 
   /**
    * GET /goals/statistics
@@ -406,35 +416,35 @@ export class GoalController {
    */
   getStatistics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Buscar estatísticas
-      const statistics = await goalService.getGoalStatistics(userId);
+      const statistics = await goalService.getGoalStatistics(userId)
 
       res.status(200).json({
         success: true,
         data: statistics,
-      });
+      })
     } catch (error) {
       logger.error('Erro ao obter estatísticas de metas', {
         userId: req.user?.userId,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
 
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-      });
+      })
     }
-  };
+  }
 }
 
 // Export singleton instance
-export const goalController = new GoalController();
+export const goalController = new GoalController()

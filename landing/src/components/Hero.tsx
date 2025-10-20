@@ -1,11 +1,12 @@
-
-import React from 'react'
 import { motion } from 'framer-motion'
-import {ArrowRight, BarChart3, TrendingUp, Shield} from 'lucide-react'
+import { ArrowRight, BarChart3, Shield, TrendingUp } from 'lucide-react'
+import { useId } from 'react'
 
 const Hero = () => {
+  const inicioId = useId()
+
   return (
-    <section id="inicio" className="pt-24 pb-20 px-6 lg:px-8 min-h-screen flex items-center">
+    <section id={inicioId} className="pt-24 pb-20 px-6 lg:px-8 min-h-screen flex items-center">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content Side */}
@@ -46,8 +47,8 @@ const Hero = () => {
               transition={{ delay: 0.4 }}
               className="text-xl text-gray-300 leading-relaxed font-light"
             >
-              Centralizamos toda a contabilidade e gerenciamos a inadimplência e o timing da cobrança. 
-              Garanta que o produto chegue e o pagamento também.
+              Centralizamos toda a contabilidade e gerenciamos a inadimplência e o timing da
+              cobrança. Garanta que o produto chegue e o pagamento também.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -106,7 +107,7 @@ const Hero = () => {
           >
             {/* Background Glow */}
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-3xl blur-3xl"></div>
-            
+
             {/* Main Card */}
             <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl">
               {/* Header */}
@@ -130,7 +131,7 @@ const Hero = () => {
                   <div className="flex items-end space-x-2 h-20">
                     {[40, 60, 45, 80, 65, 90, 75].map((height, i) => (
                       <motion.div
-                        key={i}
+                        key={`bar-${height}`}
                         initial={{ height: 0 }}
                         animate={{ height: `${height}%` }}
                         transition={{ delay: 0.8 + i * 0.1 }}

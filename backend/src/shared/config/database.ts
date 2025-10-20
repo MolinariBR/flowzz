@@ -5,13 +5,13 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { PrismaClient } from '@prisma/client';
-import { logger } from '../utils/logger';
+import { PrismaClient } from '@prisma/client'
+import { logger } from '../utils/logger'
 
 // Global variable to prevent multiple instances in development
 declare global {
   // eslint-disable-next-line no-var
-  var __prisma: PrismaClient | undefined;
+  var __prisma: PrismaClient | undefined
 }
 
 /**
@@ -21,24 +21,24 @@ const createPrismaClient = (): PrismaClient => {
   const prisma = new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['info', 'warn', 'error'] : ['error'],
     errorFormat: 'pretty',
-  });
+  })
 
-  return prisma;
-};
+  return prisma
+}
 
 /**
  * Singleton Prisma Client instance
  * Prevents multiple connections in development with hot reload
  */
-let prisma: PrismaClient;
+let prisma: PrismaClient
 
 if (process.env.NODE_ENV === 'production') {
-  prisma = createPrismaClient();
+  prisma = createPrismaClient()
 } else {
   if (!global.__prisma) {
-    global.__prisma = createPrismaClient();
+    global.__prisma = createPrismaClient()
   }
-  prisma = global.__prisma;
+  prisma = global.__prisma
 }
 
 /**
@@ -46,24 +46,24 @@ if (process.env.NODE_ENV === 'production') {
  */
 const disconnectPrisma = async (): Promise<void> => {
   try {
-    await prisma.$disconnect();
-    logger.info('Prisma Client disconnected successfully');
+    await prisma.$disconnect()
+    logger.info('Prisma Client disconnected successfully')
   } catch (error) {
-    logger.error('Error disconnecting Prisma Client', { error });
+    logger.error('Error disconnecting Prisma Client', { error })
   }
-};
+}
 
 /**
  * Check database connection health
  */
 const checkDatabaseHealth = async (): Promise<boolean> => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
-    return true;
+    await prisma.$queryRaw`SELECT 1`
+    return true
   } catch (error) {
-    logger.error('Database health check failed', { error });
-    return false;
+    logger.error('Database health check failed', { error })
+    return false
   }
-};
+}
 
-export { prisma, disconnectPrisma, checkDatabaseHealth };
+export { prisma, disconnectPrisma, checkDatabaseHealth }

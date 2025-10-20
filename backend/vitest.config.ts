@@ -1,8 +1,8 @@
 // vitest.config.ts
 // Referência: design.md Testing Strategy, tasks.md Task 2.1.4
 
-import { defineConfig } from 'vitest/config';
-import path from 'path';
+import path from 'node:path'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
@@ -19,21 +19,21 @@ export default defineConfig({
         '**/*.config.js',
         'src/__tests__/**',
         'src/prisma/seed.ts',
-        'src/server.ts'
+        'src/server.ts',
       ],
       thresholds: {
         global: {
           branches: 80,
           functions: 80,
           lines: 80,
-          statements: 80
-        }
-      }
-    }
+          statements: 80,
+        },
+      },
+    },
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  }
-});
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+})

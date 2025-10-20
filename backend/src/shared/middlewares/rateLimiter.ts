@@ -1,8 +1,8 @@
 // src/shared/middlewares/rateLimiter.ts
 // Referência: tasks.md Task 12.2, design.md - Security - Rate Limiting
 
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import type { Request, Response } from 'express';
+import type { Request } from 'express'
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 
 /**
  * Global rate limiter - 100 requests/minute per IP
@@ -12,7 +12,7 @@ export const globalRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per window
   keyGenerator: (req: Request) => {
-    return ipKeyGenerator(req.ip || req.connection?.remoteAddress || '127.0.0.1');
+    return ipKeyGenerator(req.ip || req.connection?.remoteAddress || '127.0.0.1')
   },
   message: {
     error: 'Too Many Requests',
@@ -21,7 +21,7 @@ export const globalRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * Authenticated user rate limiter - 1000 requests/hour
@@ -32,7 +32,7 @@ export const authenticatedRateLimiter = rateLimit({
   max: 1000, // 1000 requests per hour
   keyGenerator: (req: Request) => {
     // Only use userId, never fallback to IP to avoid IPv6 issues
-    return req.user?.userId || 'anonymous';
+    return req.user?.userId || 'anonymous'
   },
   message: {
     error: 'Too Many Requests',
@@ -41,7 +41,7 @@ export const authenticatedRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * Login rate limiter - 5 attempts per 15 minutes (prevent brute force)
@@ -58,7 +58,7 @@ export const loginRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * Register rate limiter - 3 registrations per hour per IP
@@ -74,7 +74,7 @@ export const registerRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * Integration sync rate limiter - 10 syncs per hour per user
@@ -84,7 +84,7 @@ export const integrationSyncRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // 10 sync requests per hour
   keyGenerator: (req: Request) => {
-    return req.user?.userId || 'anonymous';
+    return req.user?.userId || 'anonymous'
   },
   message: {
     error: 'Too Many Requests',
@@ -93,7 +93,7 @@ export const integrationSyncRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * Report generation rate limiter - 20 reports per hour per user
@@ -103,7 +103,7 @@ export const reportGenerationRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 20, // 20 report generations per hour
   keyGenerator: (req: Request) => {
-    return req.user?.userId || 'anonymous';
+    return req.user?.userId || 'anonymous'
   },
   message: {
     error: 'Too Many Requests',
@@ -112,7 +112,7 @@ export const reportGenerationRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * Admin actions rate limiter - 100 actions per hour per admin
@@ -122,7 +122,7 @@ export const adminActionsRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 100, // 100 admin actions per hour
   keyGenerator: (req: Request) => {
-    return req.user?.userId || 'anonymous';
+    return req.user?.userId || 'anonymous'
   },
   message: {
     error: 'Too Many Requests',
@@ -131,7 +131,7 @@ export const adminActionsRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * WhatsApp API rate limiter - 100 messages per hour per user
@@ -142,7 +142,7 @@ export const whatsAppRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 100, // 100 WhatsApp messages per hour per user
   keyGenerator: (req: Request) => {
-    return req.user?.userId || 'anonymous';
+    return req.user?.userId || 'anonymous'
   },
   message: {
     error: 'Too Many WhatsApp Messages',
@@ -151,7 +151,7 @@ export const whatsAppRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * WhatsApp webhook rate limiter - 1000 webhooks per hour per business account
@@ -162,11 +162,11 @@ export const whatsAppWebhookRateLimiter = rateLimit({
   max: 1000, // 1000 webhooks per hour
   keyGenerator: (req: Request) => {
     // Use business_account_id from webhook payload if available
-    const body = req.body as any;
-    const businessId = body?.entry?.[0]?.id;
-    if (businessId) return businessId;
+    const body = req.body as any
+    const businessId = body?.entry?.[0]?.id
+    if (businessId) return businessId
     // Fallback to IP with proper IPv6 handling
-    return ipKeyGenerator(req.ip || req.connection?.remoteAddress || '127.0.0.1');
+    return ipKeyGenerator(req.ip || req.connection?.remoteAddress || '127.0.0.1')
   },
   message: {
     error: 'Too Many Webhooks',
@@ -179,7 +179,7 @@ export const whatsAppWebhookRateLimiter = rateLimit({
   skipSuccessfulRequests: false,
   // Skip rate limiting for failed requests (4xx) to allow error handling
   skipFailedRequests: false,
-});
+})
 
 /**
  * Reports rate limiter - 50 report generations per hour per user
@@ -189,7 +189,7 @@ export const reportsRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 50, // 50 report generations per hour
   keyGenerator: (req: Request) => {
-    return req.user?.userId || 'anonymous';
+    return req.user?.userId || 'anonymous'
   },
   message: {
     error: 'Too Many Reports',
@@ -198,7 +198,7 @@ export const reportsRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * Client listings rate limiter - 200 requests per hour per user
@@ -208,7 +208,7 @@ export const clientListingsRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 200, // 200 client listing requests per hour
   keyGenerator: (req: Request) => {
-    return req.user?.userId || 'anonymous';
+    return req.user?.userId || 'anonymous'
   },
   message: {
     error: 'Too Many Client Requests',
@@ -217,7 +217,7 @@ export const clientListingsRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 /**
  * Dashboard rate limiter - 300 requests per hour per user
@@ -227,7 +227,7 @@ export const dashboardRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 300, // 300 dashboard requests per hour
   keyGenerator: (req: Request) => {
-    return req.user?.userId || 'anonymous';
+    return req.user?.userId || 'anonymous'
   },
   message: {
     error: 'Too Many Dashboard Requests',
@@ -236,4 +236,4 @@ export const dashboardRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})

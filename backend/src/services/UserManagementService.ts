@@ -1,8 +1,8 @@
 // src/services/UserManagementService.ts
 // Referência: tasks.md Task 11.2, design.md Admin Panel, user-stories.md Admin Management
 
+import type { Role, User } from '@prisma/client'
 import { prisma } from '../shared/config/database'
-import type { User, Role } from '@prisma/client'
 
 export interface UserListFilters {
   search?: string
@@ -66,7 +66,7 @@ export class UserManagementService {
     if (filters.search) {
       where.OR = [
         { nome: { contains: filters.search, mode: 'insensitive' } },
-        { email: { contains: filters.search, mode: 'insensitive' } }
+        { email: { contains: filters.search, mode: 'insensitive' } },
       ]
     }
 
@@ -100,12 +100,12 @@ export class UserManagementService {
           plan: true,
           subscriptions: {
             take: 1,
-            orderBy: { created_at: 'desc' }
-          }
+            orderBy: { created_at: 'desc' },
+          },
         },
-        orderBy: { created_at: 'desc' }
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.user.count({ where })
+      prisma.user.count({ where }),
     ])
 
     return {
@@ -113,7 +113,7 @@ export class UserManagementService {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     }
   }
 
@@ -127,12 +127,12 @@ export class UserManagementService {
         plan: true,
         subscriptions: {
           orderBy: { created_at: 'desc' },
-          take: 5
+          take: 5,
         },
         clients: { take: 5 },
         sales: { take: 5 },
-        integrations: true
-      }
+        integrations: true,
+      },
     })
   }
 
@@ -146,9 +146,9 @@ export class UserManagementService {
         plan: true,
         subscriptions: {
           orderBy: { created_at: 'desc' },
-          take: 1
-        }
-      }
+          take: 1,
+        },
+      },
     })
   }
 
@@ -165,12 +165,12 @@ export class UserManagementService {
     // Filtrar campos undefined para compatibilidade com Prisma
     const updateData = Object.fromEntries(
       Object.entries(data).filter(([_, value]) => value !== undefined)
-    );
+    )
 
     const user = await prisma.user.update({
       where: { id: userId },
       data: updateData,
-      include: { plan: true }
+      include: { plan: true },
     })
 
     // Registrar no audit log
@@ -179,7 +179,7 @@ export class UserManagementService {
       action: 'update',
       target_user_id: userId,
       details: { updated_fields: Object.keys(data), data },
-      ...auditData
+      ...auditData,
     })
 
     return user
@@ -199,13 +199,13 @@ export class UserManagementService {
       where: { id: userId },
       data: {
         is_active: false,
-        updated_at: new Date()
-      }
+        updated_at: new Date(),
+      },
     })
 
     // Invalidar todos os refresh tokens do usuário
     await prisma.refreshToken.deleteMany({
-      where: { user_id: userId }
+      where: { user_id: userId },
     })
 
     // Registrar no audit log
@@ -214,7 +214,7 @@ export class UserManagementService {
       action: 'suspend',
       target_user_id: userId,
       details: { reason },
-      ...auditData
+      ...auditData,
     })
 
     return user
@@ -233,8 +233,8 @@ export class UserManagementService {
       where: { id: userId },
       data: {
         is_active: true,
-        updated_at: new Date()
-      }
+        updated_at: new Date(),
+      },
     })
 
     // Registrar no audit log
@@ -243,7 +243,7 @@ export class UserManagementService {
       action: 'reactivate',
       target_user_id: userId,
       details: {},
-      ...auditData
+      ...auditData,
     })
 
     return user
@@ -260,7 +260,7 @@ export class UserManagementService {
   ): Promise<ImpersonationToken> {
     // Buscar usuário
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     })
 
     if (!user) {
@@ -282,7 +282,7 @@ export class UserManagementService {
         role: user.role,
         impersonated: true,
         impersonator_id: adminId,
-        exp: Math.floor(expiresAt.getTime() / 1000)
+        exp: Math.floor(expiresAt.getTime() / 1000),
       },
       process.env.JWT_SECRET || 'your-secret-key'
     )
@@ -293,13 +293,13 @@ export class UserManagementService {
       action: 'impersonate',
       target_user_id: userId,
       details: { expires_at: expiresAt },
-      ...auditData
+      ...auditData,
     })
 
     return {
       token,
       expires_at: expiresAt,
-      user_id: userId
+      user_id: userId,
     }
   }
 
@@ -317,12 +317,12 @@ export class UserManagementService {
       action: 'delete',
       target_user_id: userId,
       details: { permanent: true },
-      ...auditData
+      ...auditData,
     })
 
     // Deletar usuário (cascade deleta relacionados)
     await prisma.user.delete({
-      where: { id: userId }
+      where: { id: userId },
     })
   }
 
@@ -338,8 +338,8 @@ export class UserManagementService {
         target_user_id: data.target_user_id,
         details: data.details || {},
         ip_address: data.ip_address,
-        user_agent: data.user_agent
-      }
+        user_agent: data.user_agent,
+      },
     })
   }
 
@@ -347,13 +347,15 @@ export class UserManagementService {
    * Lista audit logs (últimos 90 dias)
    * Referência: tasks.md Task 11.2.3
    */
-  async getAuditLogs(filters: {
-    admin_id?: string
-    target_user_id?: string
-    action?: string
-    page?: number
-    limit?: number
-  } = {}): Promise<{
+  async getAuditLogs(
+    filters: {
+      admin_id?: string
+      target_user_id?: string
+      action?: string
+      page?: number
+      limit?: number
+    } = {}
+  ): Promise<{
     logs: any[]
     total: number
     page: number
@@ -368,7 +370,7 @@ export class UserManagementService {
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
     const where: any = {
-      created_at: { gte: ninetyDaysAgo }
+      created_at: { gte: ninetyDaysAgo },
     }
 
     if (filters.admin_id) {
@@ -390,22 +392,22 @@ export class UserManagementService {
         take: limit,
         include: {
           admin: {
-            select: { id: true, nome: true, email: true, role: true }
+            select: { id: true, nome: true, email: true, role: true },
           },
           target_user: {
-            select: { id: true, nome: true, email: true }
-          }
+            select: { id: true, nome: true, email: true },
+          },
         },
-        orderBy: { created_at: 'desc' }
+        orderBy: { created_at: 'desc' },
       }),
-      prisma.auditLog.count({ where })
+      prisma.auditLog.count({ where }),
     ])
 
     return {
       logs,
       total,
       page,
-      limit
+      limit,
     }
   }
 
@@ -432,9 +434,9 @@ export class UserManagementService {
       prisma.user.count({ where: { subscription_status: 'ACTIVE' } }),
       prisma.user.count({
         where: {
-          created_at: { gte: firstDayOfMonth }
-        }
-      })
+          created_at: { gte: firstDayOfMonth },
+        },
+      }),
     ])
 
     return {
@@ -443,7 +445,7 @@ export class UserManagementService {
       suspended,
       trial,
       paid,
-      newThisMonth
+      newThisMonth,
     }
   }
 }

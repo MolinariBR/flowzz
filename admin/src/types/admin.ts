@@ -66,7 +66,7 @@ export interface NavigationItem {
   key: string
   label: string
   href?: string
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   badge?: number
   requiredRole?: 'ADMIN' | 'SUPER_ADMIN'
   children?: NavigationItem[]

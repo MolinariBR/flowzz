@@ -1,29 +1,29 @@
 // src/controllers/AuthController.ts
 // Referência: tasks.md Task 2.1.3, dev-stories.md Dev Story 1.3, openapi.yaml Auth endpoints
 
-import type { Request, Response } from 'express';
-import { AuthService } from '../shared/services/AuthService';
-import { SubscriptionService } from '../shared/services/SubscriptionService';
-import { prisma } from '../shared/config/database';
-import { logger } from '../shared/utils/logger';
+import type { Request, Response } from 'express'
+import { prisma } from '../shared/config/database'
 import {
-  registerSchema,
-  loginSchema,
-  refreshTokenSchema,
-  logoutSchema,
-  type RegisterData,
   type LoginData,
-  type RefreshTokenData,
   type LogoutData,
-} from '../shared/schemas/auth';
+  loginSchema,
+  logoutSchema,
+  type RefreshTokenData,
+  type RegisterData,
+  refreshTokenSchema,
+  registerSchema,
+} from '../shared/schemas/auth'
+import { AuthService } from '../shared/services/AuthService'
+import { SubscriptionService } from '../shared/services/SubscriptionService'
+import { logger } from '../shared/utils/logger'
 
 export class AuthController {
-  private authService: AuthService;
-  private subscriptionService: SubscriptionService;
+  private authService: AuthService
+  private subscriptionService: SubscriptionService
 
   constructor() {
-    this.authService = new AuthService(prisma);
-    this.subscriptionService = new SubscriptionService(prisma);
+    this.authService = new AuthService(prisma)
+    this.subscriptionService = new SubscriptionService(prisma)
   }
 
   /**
@@ -34,36 +34,36 @@ export class AuthController {
   async register(req: Request, res: Response): Promise<void> {
     try {
       // Validate request body
-      const validationResult = registerSchema.safeParse(req.body);
+      const validationResult = registerSchema.safeParse(req.body)
 
       if (!validationResult.success) {
         res.status(400).json({
           error: 'Validation failed',
           message: 'Dados inválidos',
-          details: validationResult.error.issues.map(issue => ({
+          details: validationResult.error.issues.map((issue) => ({
             field: issue.path.join('.'),
             message: issue.message,
           })),
-        });
-        return;
+        })
+        return
       }
 
-      const data: RegisterData = validationResult.data;
+      const data: RegisterData = validationResult.data
 
       // Register user
       const result = await this.authService.register({
         email: data.email,
         password: data.password,
         nome: data.nome,
-      });
+      })
 
       logger.info('User registered successfully', {
         userId: result.user.id,
         email: result.user.email,
-      });
+      })
 
       // Return user data without password hash
-      const { password_hash: _, ...userWithoutPassword } = result.user;
+      const { password_hash: _, ...userWithoutPassword } = result.user
 
       res.status(201).json({
         message: 'Usuário cadastrado com sucesso',
@@ -71,24 +71,24 @@ export class AuthController {
           user: userWithoutPassword,
           tokens: result.tokens,
         },
-      });
+      })
     } catch (error) {
-      logger.error('Registration failed', { error, body: req.body });
+      logger.error('Registration failed', { error, body: req.body })
 
       if (error instanceof Error) {
         if (error.message === 'User with this email already exists') {
           res.status(409).json({
             error: 'Conflict',
             message: 'Usuário com este email já existe',
-          });
-          return;
+          })
+          return
         }
       }
 
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 
@@ -100,35 +100,35 @@ export class AuthController {
   async login(req: Request, res: Response): Promise<void> {
     try {
       // Validate request body
-      const validationResult = loginSchema.safeParse(req.body);
+      const validationResult = loginSchema.safeParse(req.body)
 
       if (!validationResult.success) {
         res.status(400).json({
           error: 'Validation failed',
           message: 'Dados inválidos',
-          details: validationResult.error.issues.map(issue => ({
+          details: validationResult.error.issues.map((issue) => ({
             field: issue.path.join('.'),
             message: issue.message,
           })),
-        });
-        return;
+        })
+        return
       }
 
-      const data: LoginData = validationResult.data;
+      const data: LoginData = validationResult.data
 
       // Login user
       const result = await this.authService.login({
         email: data.email,
         password: data.password,
-      });
+      })
 
       logger.info('User logged in successfully', {
         userId: result.user.id,
         email: result.user.email,
-      });
+      })
 
       // Return user data without password hash
-      const { password_hash: _, ...userWithoutPassword } = result.user;
+      const { password_hash: _, ...userWithoutPassword } = result.user
 
       res.status(200).json({
         message: 'Login realizado com sucesso',
@@ -136,32 +136,32 @@ export class AuthController {
           user: userWithoutPassword,
           tokens: result.tokens,
         },
-      });
+      })
     } catch (error) {
-      logger.error('Login failed', { error, email: req.body?.email });
+      logger.error('Login failed', { error, email: req.body?.email })
 
       if (error instanceof Error) {
         if (error.message === 'Invalid credentials') {
           res.status(401).json({
             error: 'Unauthorized',
             message: 'Email ou senha inválidos',
-          });
-          return;
+          })
+          return
         }
 
         if (error.message === 'Account is suspended') {
           res.status(403).json({
             error: 'Forbidden',
             message: 'Conta suspensa',
-          });
-          return;
+          })
+          return
         }
       }
 
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 
@@ -173,52 +173,54 @@ export class AuthController {
   async refresh(req: Request, res: Response): Promise<void> {
     try {
       // Validate request body
-      const validationResult = refreshTokenSchema.safeParse(req.body);
+      const validationResult = refreshTokenSchema.safeParse(req.body)
 
       if (!validationResult.success) {
         res.status(400).json({
           error: 'Validation failed',
           message: 'Dados inválidos',
-          details: validationResult.error.issues.map(issue => ({
+          details: validationResult.error.issues.map((issue) => ({
             field: issue.path.join('.'),
             message: issue.message,
           })),
-        });
-        return;
+        })
+        return
       }
 
-      const data: RefreshTokenData = validationResult.data;
+      const data: RefreshTokenData = validationResult.data
 
       // Refresh token
-      const newAccessToken = await this.authService.refreshToken(data.refreshToken);
+      const newAccessToken = await this.authService.refreshToken(data.refreshToken)
 
-      logger.info('Access token refreshed successfully');
+      logger.info('Access token refreshed successfully')
 
       res.status(200).json({
         message: 'Token renovado com sucesso',
         data: {
           accessToken: newAccessToken,
         },
-      });
+      })
     } catch (error) {
-      logger.error('Token refresh failed', { error });
+      logger.error('Token refresh failed', { error })
 
       if (error instanceof Error) {
-        if (error.message.includes('Invalid refresh token') ||
-            error.message.includes('Refresh token expired') ||
-            error.message.includes('Account is suspended')) {
+        if (
+          error.message.includes('Invalid refresh token') ||
+          error.message.includes('Refresh token expired') ||
+          error.message.includes('Account is suspended')
+        ) {
           res.status(401).json({
             error: 'Unauthorized',
             message: 'Refresh token inválido ou expirado',
-          });
-          return;
+          })
+          return
         }
       }
 
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 
@@ -230,37 +232,37 @@ export class AuthController {
   async logout(req: Request, res: Response): Promise<void> {
     try {
       // Validate request body
-      const validationResult = logoutSchema.safeParse(req.body);
+      const validationResult = logoutSchema.safeParse(req.body)
 
       if (!validationResult.success) {
         res.status(400).json({
           error: 'Validation failed',
           message: 'Dados inválidos',
-          details: validationResult.error.issues.map(issue => ({
+          details: validationResult.error.issues.map((issue) => ({
             field: issue.path.join('.'),
             message: issue.message,
           })),
-        });
-        return;
+        })
+        return
       }
 
-      const data: LogoutData = validationResult.data;
+      const data: LogoutData = validationResult.data
 
       // Logout user
-      await this.authService.logout(data.refreshToken);
+      await this.authService.logout(data.refreshToken)
 
-      logger.info('User logged out successfully');
+      logger.info('User logged out successfully')
 
       res.status(200).json({
         message: 'Logout realizado com sucesso',
-      });
+      })
     } catch (error) {
-      logger.error('Logout failed', { error });
+      logger.error('Logout failed', { error })
 
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 
@@ -275,47 +277,50 @@ export class AuthController {
         res.status(401).json({
           error: 'Unauthorized',
           message: 'Token inválido',
-        });
-        return;
+        })
+        return
       }
 
       // Get user data from database
-      const user = await this.authService.getUserById(req.user.userId);
+      const user = await this.authService.getUserById(req.user.userId)
 
       if (!user) {
         res.status(404).json({
           error: 'Not Found',
           message: 'Usuário não encontrado',
-        });
-        return;
+        })
+        return
       }
 
       if (!user.is_active) {
         res.status(403).json({
           error: 'Forbidden',
           message: 'Conta suspensa',
-        });
-        return;
+        })
+        return
       }
 
-      logger.info('User data retrieved successfully', { userId: user.id });
+      logger.info('User data retrieved successfully', { userId: user.id })
 
       // Return user data without password hash
-      const { password_hash: _, ...userWithoutPassword } = user;
+      const { password_hash: _, ...userWithoutPassword } = user
 
       res.status(200).json({
         message: 'Dados do usuário obtidos com sucesso',
         data: {
           user: userWithoutPassword,
         },
-      });
+      })
     } catch (error) {
-      logger.error('Failed to get user data', { error, userId: req.user?.userId });
+      logger.error('Failed to get user data', {
+        error,
+        userId: req.user?.userId,
+      })
 
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 
@@ -330,23 +335,26 @@ export class AuthController {
         res.status(401).json({
           error: 'Unauthorized',
           message: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
-      const trialStatus = await this.subscriptionService.getTrialStatus(req.user.userId);
+      const trialStatus = await this.subscriptionService.getTrialStatus(req.user.userId)
 
       res.status(200).json({
         message: 'Status do trial obtido com sucesso',
         data: trialStatus,
-      });
+      })
     } catch (error) {
-      logger.error('Failed to get trial status', { error, userId: req.user?.userId });
+      logger.error('Failed to get trial status', {
+        error,
+        userId: req.user?.userId,
+      })
 
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 
@@ -361,23 +369,26 @@ export class AuthController {
         res.status(401).json({
           error: 'Unauthorized',
           message: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
-      const subscriptionInfo = await this.subscriptionService.getSubscriptionInfo(req.user.userId);
+      const subscriptionInfo = await this.subscriptionService.getSubscriptionInfo(req.user.userId)
 
       res.status(200).json({
         message: 'Informações da assinatura obtidas com sucesso',
         data: subscriptionInfo,
-      });
+      })
     } catch (error) {
-      logger.error('Failed to get subscription info', { error, userId: req.user?.userId });
+      logger.error('Failed to get subscription info', {
+        error,
+        userId: req.user?.userId,
+      })
 
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 }

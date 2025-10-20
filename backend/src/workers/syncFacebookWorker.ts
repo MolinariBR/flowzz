@@ -11,29 +11,33 @@
  * - user-stories.md: Story 1.3
  */
 
-import type { Job } from 'bull';
-import { syncFacebookQueue } from '../queues/queues';
-import { prisma } from '../shared/config/database';
-import { logger } from '../shared/utils/logger';
-import { FacebookAdsService } from '../services/FacebookAdsService';
+import type { Job } from 'bull'
+import { syncFacebookQueue } from '../queues/queues'
+import { FacebookAdsService } from '../services/FacebookAdsService'
+import { prisma } from '../shared/config/database'
+import { logger } from '../shared/utils/logger'
 
 /**
  * Interface para job payload
  */
 interface FacebookSyncJobData {
-  userId: string;
-  forceFullSync?: boolean;
+  userId: string
+  forceFullSync?: boolean
 }
 
 /**
  * Processar job de sincronização individual
  */
 async function processSyncFacebookJob(job: Job<FacebookSyncJobData>): Promise<unknown> {
-  const { userId, forceFullSync = false } = job.data;
+  const { userId, forceFullSync = false } = job.data
 
-  logger.info('Processing Facebook sync job', { userId, jobId: job.id, forceFullSync });
+  logger.info('Processing Facebook sync job', {
+    userId,
+    jobId: job.id,
+    forceFullSync,
+  })
 
-  const facebookAdsService = new FacebookAdsService();
+  const facebookAdsService = new FacebookAdsService()
 
   try {
     // Verificar se integração está ativa
@@ -44,15 +48,15 @@ async function processSyncFacebookJob(job: Job<FacebookSyncJobData>): Promise<un
           provider: 'FACEBOOK_ADS',
         },
       },
-    });
+    })
 
     if (!integration || integration.status !== 'CONNECTED') {
-      logger.warn('Facebook integration not active, skipping sync', { userId });
-      return { success: false, reason: 'Integration not active' };
+      logger.warn('Facebook integration not active, skipping sync', { userId })
+      return { success: false, reason: 'Integration not active' }
     }
 
     // Executar sincronização
-    const result = await facebookAdsService.syncInsights(userId, forceFullSync);
+    const result = await facebookAdsService.syncInsights(userId, forceFullSync)
 
     logger.info('Facebook sync job completed', {
       userId,
@@ -61,17 +65,17 @@ async function processSyncFacebookJob(job: Job<FacebookSyncJobData>): Promise<un
       campaignsSynced: result.campaignsSynced,
       success: result.success,
       errors: result.errors.length,
-    });
+    })
 
-    return result;
+    return result
   } catch (error) {
     logger.error('Facebook sync job failed', {
       userId,
       jobId: job.id,
       error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    })
 
-    throw error; // Re-throw para Bull retry logic
+    throw error // Re-throw para Bull retry logic
   }
 }
 
@@ -79,7 +83,7 @@ async function processSyncFacebookJob(job: Job<FacebookSyncJobData>): Promise<un
  * Processar job de auto-sync para todos os usuários
  */
 async function processAutoSyncAllUsers(job: Job): Promise<unknown> {
-  logger.info('Starting Facebook auto-sync for all users', { jobId: job.id });
+  logger.info('Starting Facebook auto-sync for all users', { jobId: job.id })
 
   try {
     // Buscar todos os usuários com integração Facebook ativa
@@ -91,9 +95,9 @@ async function processAutoSyncAllUsers(job: Job): Promise<unknown> {
       select: {
         user_id: true,
       },
-    });
+    })
 
-    logger.info(`Found ${integrations.length} Facebook integrations to sync`);
+    logger.info(`Found ${integrations.length} Facebook integrations to sync`)
 
     // Adicionar job individual para cada usuário
     const jobs = integrations.map((integration) =>
@@ -105,28 +109,28 @@ async function processAutoSyncAllUsers(job: Job): Promise<unknown> {
         },
         {
           priority: 5, // Menor prioridade que syncs manuais
-        },
-      ),
-    );
+        }
+      )
+    )
 
-    await Promise.all(jobs);
+    await Promise.all(jobs)
 
     logger.info('Facebook auto-sync jobs scheduled', {
       jobId: job.id,
       usersCount: integrations.length,
-    });
+    })
 
     return {
       success: true,
       usersScheduled: integrations.length,
-    };
+    }
   } catch (error) {
     logger.error('Facebook auto-sync failed', {
       jobId: job.id,
       error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    })
 
-    throw error;
+    throw error
   }
 }
 
@@ -136,13 +140,13 @@ async function processAutoSyncAllUsers(job: Job): Promise<unknown> {
 export function startSyncFacebookWorker(): void {
   // Worker para sync individual
   syncFacebookQueue.process('sync-user', async (job) => {
-    return await processSyncFacebookJob(job as Job<FacebookSyncJobData>);
-  });
+    return await processSyncFacebookJob(job as Job<FacebookSyncJobData>)
+  })
 
   // Worker para auto-sync de todos os usuários
   syncFacebookQueue.process('auto-sync-all-users', async (job) => {
-    return await processAutoSyncAllUsers(job);
-  });
+    return await processAutoSyncAllUsers(job)
+  })
 
   // Event listeners
   syncFacebookQueue.on('completed', (job, result) => {
@@ -150,8 +154,8 @@ export function startSyncFacebookWorker(): void {
       jobId: job.id,
       jobName: job.name,
       result,
-    });
-  });
+    })
+  })
 
   syncFacebookQueue.on('failed', (job, error) => {
     logger.error('Facebook sync job failed', {
@@ -159,48 +163,52 @@ export function startSyncFacebookWorker(): void {
       jobName: job?.name,
       error: error.message,
       attempts: job?.attemptsMade,
-    });
-  });
+    })
+  })
 
   syncFacebookQueue.on('stalled', (job) => {
     logger.warn('Facebook sync job stalled', {
       jobId: job.id,
       jobName: job.name,
-    });
-  });
+    })
+  })
 
   // Agendar cron job para sincronização automática (a cada 6 horas)
-  syncFacebookQueue.add(
-    'auto-sync-all-users',
-    { userId: 'SYSTEM' }, // Placeholder - será substituído no processamento
-    {
-      repeat: {
-        cron: '0 */6 * * *', // A cada 6 horas
-      },
-      jobId: 'facebook-auto-sync',
-    },
-  ).catch((error) => {
-    logger.error('Failed to schedule Facebook auto-sync cron', { error: error.message });
-  });
+  syncFacebookQueue
+    .add(
+      'auto-sync-all-users',
+      { userId: 'SYSTEM' }, // Placeholder - será substituído no processamento
+      {
+        repeat: {
+          cron: '0 */6 * * *', // A cada 6 horas
+        },
+        jobId: 'facebook-auto-sync',
+      }
+    )
+    .catch((error) => {
+      logger.error('Failed to schedule Facebook auto-sync cron', {
+        error: error.message,
+      })
+    })
 
   logger.info('Sync Facebook Ads worker started', {
     queue: syncFacebookQueue.name,
-  });
+  })
 }
 
 /**
  * Parar worker gracefully
  */
 export async function stopSyncFacebookWorker(): Promise<void> {
-  await syncFacebookQueue.close();
-  logger.info('Sync Facebook Ads worker stopped');
+  await syncFacebookQueue.close()
+  logger.info('Sync Facebook Ads worker stopped')
 }
 
 /**
  * Função helper para adicionar sync manual
  */
 export async function scheduleFacebookSync(userId: string, forceFullSync = false): Promise<Job> {
-  logger.info('Scheduling manual Facebook sync', { userId, forceFullSync });
+  logger.info('Scheduling manual Facebook sync', { userId, forceFullSync })
 
   return syncFacebookQueue.add(
     'sync-user',
@@ -210,8 +218,8 @@ export async function scheduleFacebookSync(userId: string, forceFullSync = false
     },
     {
       priority: 1, // Alta prioridade para syncs manuais
-    },
-  );
+    }
+  )
 }
 
 /**
@@ -224,7 +232,7 @@ export async function getFacebookSyncQueueStats() {
     syncFacebookQueue.getCompletedCount(),
     syncFacebookQueue.getFailedCount(),
     syncFacebookQueue.getDelayedCount(),
-  ]);
+  ])
 
   return {
     waiting,
@@ -233,5 +241,5 @@ export async function getFacebookSyncQueueStats() {
     failed,
     delayed,
     total: waiting + active + completed + failed + delayed,
-  };
+  }
 }

@@ -1,10 +1,10 @@
+import { clsx } from 'clsx'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronRight, LayoutDashboard, Shield, TrendingUp, Users, Zap } from 'lucide-react'
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import {LayoutDashboard, TrendingUp, Users, Zap, Shield, ChevronDown, ChevronRight} from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { clsx } from 'clsx'
-import { useAuthStore } from '../../lib/stores/auth-store'
 import { useAdminStore } from '../../lib/stores/admin-store'
+import { useAuthStore } from '../../lib/stores/auth-store'
 import type { NavigationItem } from '../../types/admin'
 
 const navigationItems: NavigationItem[] = [
@@ -12,7 +12,7 @@ const navigationItems: NavigationItem[] = [
     key: 'dashboard',
     label: 'Dashboard',
     href: '/dashboard',
-    icon: LayoutDashboard
+    icon: LayoutDashboard,
   },
   {
     key: 'metrics',
@@ -21,8 +21,8 @@ const navigationItems: NavigationItem[] = [
     children: [
       { key: 'overview', label: 'Visão Geral', href: '/metrics', icon: TrendingUp },
       { key: 'revenue', label: 'Receita (MRR/ARR)', href: '/metrics/revenue', icon: TrendingUp },
-      { key: 'users', label: 'Usuários & Churn', href: '/metrics/users', icon: TrendingUp }
-    ]
+      { key: 'users', label: 'Usuários & Churn', href: '/metrics/users', icon: TrendingUp },
+    ],
   },
   {
     key: 'users',
@@ -32,8 +32,8 @@ const navigationItems: NavigationItem[] = [
     children: [
       { key: 'list', label: 'Lista Usuários', href: '/users', icon: Users },
       { key: 'subscriptions', label: 'Assinaturas', href: '/users/subscriptions', icon: Users },
-      { key: 'support', label: 'Tickets Suporte', href: '/users/support', icon: Users }
-    ]
+      { key: 'support', label: 'Tickets Suporte', href: '/users/support', icon: Users },
+    ],
   },
   {
     key: 'integrations',
@@ -42,16 +42,16 @@ const navigationItems: NavigationItem[] = [
     children: [
       { key: 'status', label: 'Status Geral', href: '/integrations', icon: Zap },
       { key: 'whatsapp', label: 'WhatsApp Business', href: '/whatsapp', icon: Zap },
-      { key: 'coinzz', label: 'Coinzz API', href: '/integrations/coinzz', icon: Zap }
-    ]
+      { key: 'coinzz', label: 'Coinzz API', href: '/integrations/coinzz', icon: Zap },
+    ],
   },
   {
     key: 'audit',
     label: 'Auditoria',
     icon: Shield,
     href: '/audit',
-    requiredRole: 'SUPER_ADMIN'
-  }
+    requiredRole: 'SUPER_ADMIN',
+  },
 ]
 
 interface AdminSidebarProps {
@@ -67,16 +67,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed = false })
   const isCollapsed = collapsed || sidebarCollapsed
 
   const toggleExpanded = (key: string) => {
-    setExpandedItems(prev => 
-      prev.includes(key) 
-        ? prev.filter(item => item !== key)
-        : [...prev, key]
+    setExpandedItems((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
     )
   }
 
   const isActive = (href?: string) => {
     if (!href) return false
-    return location.pathname === href || location.pathname.startsWith(href + '/')
+    return location.pathname === href || location.pathname.startsWith(`${href}/`)
   }
 
   const canAccess = (item: NavigationItem) => {
@@ -118,6 +116,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed = false })
           </Link>
         ) : (
           <button
+            type="button"
             onClick={() => toggleExpanded(item.key)}
             className={clsx(
               'w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-300 hover:bg-gray-700 hover:text-white',
@@ -157,7 +156,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed = false })
               className="overflow-hidden"
             >
               <div className="ml-4 mt-1 space-y-1">
-                {item.children?.map(child => renderNavItem(child, depth + 1))}
+                {item.children?.map((child) => renderNavItem(child, depth + 1))}
               </div>
             </motion.div>
           )}
@@ -189,15 +188,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed = false })
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
-        {navigationItems.map(item => renderNavItem(item))}
+        {navigationItems.map((item) => renderNavItem(item))}
       </nav>
 
       {/* Footer */}
       {!isCollapsed && (
         <div className="p-4 border-t border-gray-700">
-          <div className="text-xs text-gray-400 text-center">
-            FlowZZ Admin v2.5
-          </div>
+          <div className="text-xs text-gray-400 text-center">FlowZZ Admin v2.5</div>
         </div>
       )}
     </motion.aside>

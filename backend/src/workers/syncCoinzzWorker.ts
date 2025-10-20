@@ -9,14 +9,14 @@
  * Responsabilidade: Chamar CoinzzService.syncSales para buscar vendas da API Coinzz
  */
 
-import type { Job } from 'bull';
-import { syncCoinzzQueue, type SyncCoinzzJobData } from '../queues/queues';
-import { CoinzzService } from '../services/CoinzzService';
-import { prisma } from '../shared/config/database';
-import { logger } from '../shared/utils/logger';
+import type { Job } from 'bull'
+import { type SyncCoinzzJobData, syncCoinzzQueue } from '../queues/queues'
+import { CoinzzService } from '../services/CoinzzService'
+import { prisma } from '../shared/config/database'
+import { logger } from '../shared/utils/logger'
 
 // Criar instância do serviço
-const coinzzService = new CoinzzService(prisma);
+const coinzzService = new CoinzzService(prisma)
 
 /**
  * Processa job de sincronização Coinzz
@@ -25,7 +25,7 @@ const coinzzService = new CoinzzService(prisma);
  * @returns Promise com resultado da sincronização
  */
 export async function processSyncCoinzzJob(job: Job<SyncCoinzzJobData>): Promise<void> {
-  const { empresaId, forceFullSync } = job.data;
+  const { empresaId, forceFullSync } = job.data
 
   logger.info('Starting Coinzz sync job', {
     jobId: job.id,
@@ -33,12 +33,12 @@ export async function processSyncCoinzzJob(job: Job<SyncCoinzzJobData>): Promise
     forceFullSync,
     attempt: job.attemptsMade + 1,
     maxAttempts: job.opts.attempts,
-  });
+  })
 
   try {
     // Chamar CoinzzService.syncSales para sincronizar vendas
     // Referência: tasks.md Task 5.2.4
-    const result = await coinzzService.syncSales(empresaId, forceFullSync);
+    const result = await coinzzService.syncSales(empresaId, forceFullSync)
 
     logger.info('Coinzz sync job completed successfully', {
       jobId: job.id,
@@ -50,7 +50,7 @@ export async function processSyncCoinzzJob(job: Job<SyncCoinzzJobData>): Promise
         errors: result.errors,
         syncedAt: result.syncedAt,
       },
-    });
+    })
 
     // Log de erros individuais se houver
     if (result.errors > 0 && result.errorDetails) {
@@ -59,7 +59,7 @@ export async function processSyncCoinzzJob(job: Job<SyncCoinzzJobData>): Promise
         empresaId,
         errorCount: result.errors,
         errorDetails: result.errorDetails,
-      });
+      })
     }
   } catch (error) {
     logger.error('Coinzz sync job failed', {
@@ -67,9 +67,9 @@ export async function processSyncCoinzzJob(job: Job<SyncCoinzzJobData>): Promise
       empresaId,
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-    });
+    })
 
-    throw error; // Re-throw para ativar retry policy do Bull
+    throw error // Re-throw para ativar retry policy do Bull
   }
 }
 
@@ -79,12 +79,12 @@ export async function processSyncCoinzzJob(job: Job<SyncCoinzzJobData>): Promise
  */
 export function startSyncCoinzzWorker(): void {
   syncCoinzzQueue.process(async (job) => {
-    await processSyncCoinzzJob(job);
-  });
+    await processSyncCoinzzJob(job)
+  })
 
   logger.info('Sync Coinzz worker started', {
     queue: syncCoinzzQueue.name,
-  });
+  })
 }
 
 /**
@@ -92,6 +92,6 @@ export function startSyncCoinzzWorker(): void {
  * Deve ser chamado no shutdown do servidor
  */
 export async function stopSyncCoinzzWorker(): Promise<void> {
-  await syncCoinzzQueue.close();
-  logger.info('Sync Coinzz worker stopped');
+  await syncCoinzzQueue.close()
+  logger.info('Sync Coinzz worker stopped')
 }

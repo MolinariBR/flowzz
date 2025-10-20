@@ -9,10 +9,10 @@
  * Responsabilidade: Chamar WhatsAppService.sendMessage para enviar mensagens via API WhatsApp Business
  */
 
-import type { Job } from 'bull';
-import { whatsappQueue, type WhatsAppJobData } from '../queues/queues';
-import { logger } from '../shared/utils/logger';
-import { whatsAppService } from '../services/WhatsAppService';
+import type { Job } from 'bull'
+import { type WhatsAppJobData, whatsappQueue } from '../queues/queues'
+import { whatsAppService } from '../services/WhatsAppService'
+import { logger } from '../shared/utils/logger'
 
 /**
  * Processa job de envio de mensagem WhatsApp
@@ -21,7 +21,7 @@ import { whatsAppService } from '../services/WhatsAppService';
  * @returns Promise com resultado do envio
  */
 export async function processWhatsAppJob(job: Job<WhatsAppJobData>): Promise<void> {
-  const { empresaId, to, templateName, templateParams, message } = job.data;
+  const { empresaId, to, templateName, templateParams, message } = job.data
 
   logger.info('Starting WhatsApp message job', {
     jobId: job.id,
@@ -32,31 +32,31 @@ export async function processWhatsAppJob(job: Job<WhatsAppJobData>): Promise<voi
     message,
     attempt: job.attemptsMade + 1,
     maxAttempts: job.opts.attempts,
-  });
+  })
 
   try {
-    let result;
+    let result
 
     if (templateName) {
       // Enviar template message
-      const variables = templateParams ? Object.values(templateParams) : [];
+      const variables = templateParams ? Object.values(templateParams) : []
       result = await whatsAppService.sendTemplate(
         empresaId, // userId
         templateName,
         to,
         variables
-      );
+      )
     } else {
       // Enviar text message
       result = await whatsAppService.sendText(
         empresaId, // userId
         to,
         message
-      );
+      )
     }
 
     if (!result.success) {
-      throw new Error(result.error || 'Failed to send WhatsApp message');
+      throw new Error(result.error || 'Failed to send WhatsApp message')
     }
 
     logger.info('WhatsApp message job completed successfully', {
@@ -65,7 +65,7 @@ export async function processWhatsAppJob(job: Job<WhatsAppJobData>): Promise<voi
       to,
       messageId: result.messageId,
       result,
-    });
+    })
   } catch (error) {
     logger.error('WhatsApp message job failed', {
       jobId: job.id,
@@ -73,9 +73,9 @@ export async function processWhatsAppJob(job: Job<WhatsAppJobData>): Promise<voi
       to,
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-    });
+    })
 
-    throw error; // Re-throw para ativar retry policy do Bull
+    throw error // Re-throw para ativar retry policy do Bull
   }
 }
 
@@ -85,12 +85,12 @@ export async function processWhatsAppJob(job: Job<WhatsAppJobData>): Promise<voi
  */
 export function startWhatsAppWorker(): void {
   whatsappQueue.process(async (job) => {
-    await processWhatsAppJob(job);
-  });
+    await processWhatsAppJob(job)
+  })
 
   logger.info('WhatsApp worker started', {
     queue: whatsappQueue.name,
-  });
+  })
 }
 
 /**
@@ -98,6 +98,6 @@ export function startWhatsAppWorker(): void {
  * Deve ser chamado no shutdown do servidor
  */
 export async function stopWhatsAppWorker(): Promise<void> {
-  await whatsappQueue.close();
-  logger.info('WhatsApp worker stopped');
+  await whatsappQueue.close()
+  logger.info('WhatsApp worker stopped')
 }

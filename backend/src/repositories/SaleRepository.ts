@@ -1,63 +1,63 @@
 // Referência: design.md §Repository Pattern, user-stories.md Story 2.1, tasks.md Task 3.2
 // Implementação do repositório de vendas seguindo padrões Prisma
 
-import type { Sale } from '@prisma/client';
-import { prisma } from '../shared/config/database';
+import type { Sale } from '@prisma/client'
 import type {
   CreateSaleDTO,
   ISaleRepository,
   PaginatedSales,
   SaleFilters,
   UpdateSaleDTO,
-} from '../interfaces/SaleRepository.interface';
+} from '../interfaces/SaleRepository.interface'
+import { prisma } from '../shared/config/database'
 
 export class SaleRepository implements ISaleRepository {
   async findByUserId(
     userId: string,
     filters: SaleFilters,
     page: number = 1,
-    limit: number = 10,
+    limit: number = 10
   ): Promise<PaginatedSales> {
-    const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit
 
     // Build where clause with filters
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = {
       user_id: userId,
-    };
+    }
 
     if (filters.client_id) {
-      whereClause.client_id = filters.client_id;
+      whereClause.client_id = filters.client_id
     }
 
     if (filters.status) {
-      whereClause.status = filters.status;
+      whereClause.status = filters.status
     }
 
     if (filters.product_name) {
       whereClause.product_name = {
         contains: filters.product_name,
         mode: 'insensitive',
-      };
+      }
     }
 
     if (filters.start_date || filters.end_date) {
-      whereClause.created_at = {};
+      whereClause.created_at = {}
       if (filters.start_date) {
-        whereClause.created_at.gte = filters.start_date;
+        whereClause.created_at.gte = filters.start_date
       }
       if (filters.end_date) {
-        whereClause.created_at.lte = filters.end_date;
+        whereClause.created_at.lte = filters.end_date
       }
     }
 
     if (filters.min_amount || filters.max_amount) {
-      whereClause.total_price = {};
+      whereClause.total_price = {}
       if (filters.min_amount) {
-        whereClause.total_price.gte = filters.min_amount;
+        whereClause.total_price.gte = filters.min_amount
       }
       if (filters.max_amount) {
-        whereClause.total_price.lte = filters.max_amount;
+        whereClause.total_price.lte = filters.max_amount
       }
     }
 
@@ -82,7 +82,7 @@ export class SaleRepository implements ISaleRepository {
       prisma.sale.count({
         where: whereClause,
       }),
-    ]);
+    ])
 
     return {
       sales,
@@ -90,7 +90,7 @@ export class SaleRepository implements ISaleRepository {
       page,
       limit,
       total_pages: Math.ceil(total / limit),
-    };
+    }
   }
 
   async findById(id: string, userId: string): Promise<Sale | null> {
@@ -109,7 +109,7 @@ export class SaleRepository implements ISaleRepository {
           },
         },
       },
-    });
+    })
   }
 
   async create(userId: string, data: CreateSaleDTO): Promise<Sale> {
@@ -126,7 +126,7 @@ export class SaleRepository implements ISaleRepository {
       shipped_at: data.shipped_at || null,
       delivered_at: data.delivered_at || null,
       status: data.status || 'PENDING',
-    };
+    }
 
     return prisma.sale.create({
       data: saleData,
@@ -139,20 +139,20 @@ export class SaleRepository implements ISaleRepository {
           },
         },
       },
-    });
+    })
   }
 
   async update(id: string, userId: string, data: UpdateSaleDTO): Promise<Sale | null> {
     // Check ownership first
-    const exists = await this.checkOwnership(id, userId);
+    const exists = await this.checkOwnership(id, userId)
     if (!exists) {
-      return null;
+      return null
     }
 
     // Convert undefined to null for Prisma
     const updateData = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, value === undefined ? null : value]),
-    );
+      Object.entries(data).map(([key, value]) => [key, value === undefined ? null : value])
+    )
 
     return prisma.sale.update({
       where: {
@@ -169,7 +169,7 @@ export class SaleRepository implements ISaleRepository {
           },
         },
       },
-    });
+    })
   }
 
   async delete(id: string, userId: string): Promise<boolean> {
@@ -179,10 +179,10 @@ export class SaleRepository implements ISaleRepository {
           id,
           user_id: userId,
         },
-      });
-      return true;
+      })
+      return true
     } catch (_error) {
-      return false;
+      return false
     }
   }
 
@@ -195,9 +195,9 @@ export class SaleRepository implements ISaleRepository {
       select: {
         id: true,
       },
-    });
+    })
 
-    return !!sale;
+    return !!sale
   }
 
   async findByExternalId(externalId: string, userId: string): Promise<Sale | null> {
@@ -206,17 +206,17 @@ export class SaleRepository implements ISaleRepository {
         external_id: externalId,
         user_id: userId,
       },
-    });
+    })
   }
 
   async getTotalsByPeriod(
     userId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<{
-    total_sales: number;
-    total_commission: number;
-    count: number;
+    total_sales: number
+    total_commission: number
+    count: number
   }> {
     const result = await prisma.sale.aggregate({
       where: {
@@ -236,12 +236,12 @@ export class SaleRepository implements ISaleRepository {
       _count: {
         id: true,
       },
-    });
+    })
 
     return {
       total_sales: Number(result._sum.total_price) || 0,
       total_commission: Number(result._sum.commission) || 0,
       count: result._count.id || 0,
-    };
+    }
   }
 }

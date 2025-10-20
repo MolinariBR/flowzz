@@ -9,7 +9,7 @@
  * Schemas de validação para integração Coinzz usando Zod
  */
 
-import { z } from 'zod';
+import { z } from 'zod'
 
 /**
  * Schema para dados do cliente no webhook
@@ -28,7 +28,7 @@ export const coinzzClientSchema = z.object({
   client_address_city: z.string().max(100),
   client_address_state: z.string().length(2), // UF: SP, RJ, etc
   client_address_country: z.string().length(2).default('BR'),
-});
+})
 
 /**
  * Schema para dados do pedido no webhook
@@ -60,7 +60,7 @@ export const coinzzOrderSchema = z.object({
   affiliate_email: z.string().email().nullable(),
   affiliate_phone: z.string().nullable(),
   deleted_at: z.string().nullable(),
-});
+})
 
 /**
  * Schema para UTMs no webhook
@@ -72,7 +72,7 @@ export const coinzzUtmsSchema = z.object({
   utm_campaign: z.string().nullable(),
   utm_content: z.string().nullable(),
   utm_term: z.string().nullable(),
-});
+})
 
 /**
  * Schema completo do payload do webhook de Pedidos
@@ -82,7 +82,7 @@ export const coinzzWebhookPayloadSchema = z.object({
   client: coinzzClientSchema,
   order: coinzzOrderSchema,
   utms: coinzzUtmsSchema,
-});
+})
 
 /**
  * Schema para dados de assinatura no webhook
@@ -94,7 +94,7 @@ export const coinzzSubscriptionSchema = z.object({
   frequency: z.string().min(1),
   cycle: z.string(),
   next_charge_date: z.string(),
-});
+})
 
 /**
  * Schema completo do payload do webhook de Assinaturas
@@ -109,7 +109,7 @@ export const coinzzSubscriptionWebhookPayloadSchema = z.object({
     date_sent: z.string(),
     name_sent: z.string(),
   }),
-});
+})
 
 /**
  * Schema para conectar integração Coinzz
@@ -121,7 +121,7 @@ export const connectCoinzzSchema = z.object({
     .min(20, 'API Key deve ter no mínimo 20 caracteres')
     .max(500, 'API Key inválida'),
   webhookUrl: z.string().url().optional(),
-});
+})
 
 /**
  * Schema para forçar sincronização manual
@@ -129,35 +129,35 @@ export const connectCoinzzSchema = z.object({
  */
 export const syncCoinzzSchema = z.object({
   forceFullSync: z.boolean().optional().default(false),
-});
+})
 
 /**
  * Schema para validação de UUID (usado em params de rotas)
  */
 export const uuidSchema = z.object({
   id: z.string().uuid('ID inválido'),
-});
+})
 
 /**
  * Mapeamento de status Coinzz para SaleStatus do Prisma
  * Referência: tasks.md Task 5.2.2
  */
 export const COINZZ_STATUS_MAP: Record<string, string> = {
-  'Aprovada': 'PAID',
-  'Pendente': 'PENDING',
-  'Cancelada': 'CANCELLED',
-  'Entregue': 'DELIVERED',
+  Aprovada: 'PAID',
+  Pendente: 'PENDING',
+  Cancelada: 'CANCELLED',
+  Entregue: 'DELIVERED',
   'Em Processamento': 'PENDING',
   'Aguardando Pagamento': 'PENDING',
-  'Reembolsada': 'REFUNDED',
-  'Chargeback': 'REFUNDED',
-};
+  Reembolsada: 'REFUNDED',
+  Chargeback: 'REFUNDED',
+}
 
 /**
  * Função helper para mapear status Coinzz → SaleStatus
  */
 export function mapCoinzzStatus(coinzzStatus: string): string {
-  return COINZZ_STATUS_MAP[coinzzStatus] || 'PENDING';
+  return COINZZ_STATUS_MAP[coinzzStatus] || 'PENDING'
 }
 
 /**
@@ -165,10 +165,10 @@ export function mapCoinzzStatus(coinzzStatus: string): string {
  */
 export function formatDocument(document: string): string {
   // Remove caracteres não numéricos
-  const cleaned = document.replace(/\D/g, '');
+  const cleaned = document.replace(/\D/g, '')
 
   // Retorna formatado com zeros à esquerda se necessário
-  return cleaned.padStart(11, '0'); // Mínimo CPF
+  return cleaned.padStart(11, '0') // Mínimo CPF
 }
 
 /**
@@ -176,10 +176,10 @@ export function formatDocument(document: string): string {
  */
 export function formatCep(cep: string): string {
   // Remove caracteres não numéricos
-  const cleaned = cep.replace(/\D/g, '');
+  const cleaned = cep.replace(/\D/g, '')
 
   // Retorna com 8 dígitos
-  return cleaned.padStart(8, '0');
+  return cleaned.padStart(8, '0')
 }
 
 /**
@@ -189,8 +189,8 @@ export function formatCep(cep: string): string {
 export function parseCoinzzDate(dateString: string): Date {
   // Coinzz usa formato: '2023-12-06 14:30:00'
   // JavaScript Date pode parsear isso diretamente se substituir espaço por T
-  const isoString = dateString.replace(' ', 'T');
-  return new Date(isoString);
+  const isoString = dateString.replace(' ', 'T')
+  return new Date(isoString)
 }
 
 /**
@@ -198,12 +198,12 @@ export function parseCoinzzDate(dateString: string): Date {
  */
 export function formatPhone(phone: string): string {
   // Remove caracteres não numéricos
-  const cleaned = phone.replace(/\D/g, '');
+  const cleaned = phone.replace(/\D/g, '')
 
   // Se não começa com código do país, adiciona +55
   if (!cleaned.startsWith('55')) {
-    return `+55${cleaned}`;
+    return `+55${cleaned}`
   }
 
-  return `+${cleaned}`;
+  return `+${cleaned}`
 }

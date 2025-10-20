@@ -2,18 +2,18 @@
 // Atende user-stories.md Story 3.1 - Rotas REST para API de clientes
 // Atende tasks.md Task 3.2.2 - Many-to-many Client-Tag associations
 
-import { Router } from 'express';
-import { ClientController } from '../controllers/ClientController';
-import { TagController } from '../controllers/TagController';
-import { authenticate } from '../shared/middlewares/authenticate';
-import { clientListingsRateLimiter } from '../shared/middlewares/rateLimiter';
+import { Router } from 'express'
+import { ClientController } from '../controllers/ClientController'
+import { TagController } from '../controllers/TagController'
+import { authenticate } from '../shared/middlewares/authenticate'
+import { clientListingsRateLimiter } from '../shared/middlewares/rateLimiter'
 
-const router = Router();
-const clientController = new ClientController();
-const tagController = new TagController();
+const router = Router()
+const clientController = new ClientController()
+const tagController = new TagController()
 
 // Apply authentication middleware to all routes
-router.use(authenticate);
+router.use(authenticate)
 
 /**
  * @route GET /clients
@@ -25,7 +25,7 @@ router.use(authenticate);
  * @param {string} [status] - Filter by status (ACTIVE, INACTIVE, BLOCKED)
  * @param {string[]} [tags] - Filter by tag IDs
  */
-router.get('/', clientListingsRateLimiter, clientController.getClients);
+router.get('/', clientListingsRateLimiter, clientController.getClients)
 
 /**
  * @route GET /clients/:id
@@ -33,7 +33,7 @@ router.get('/', clientListingsRateLimiter, clientController.getClients);
  * @access Private
  * @param {string} id - Client UUID
  */
-router.get('/:id', clientController.getClientById);
+router.get('/:id', clientController.getClientById)
 
 /**
  * @route POST /clients
@@ -41,7 +41,7 @@ router.get('/:id', clientController.getClientById);
  * @access Private
  * @body {CreateClientInput} Client data
  */
-router.post('/', clientController.createClient);
+router.post('/', clientController.createClient)
 
 /**
  * @route PUT /clients/:id
@@ -50,7 +50,7 @@ router.post('/', clientController.createClient);
  * @param {string} id - Client UUID
  * @body {UpdateClientInput} Updated client data
  */
-router.put('/:id', clientController.updateClient);
+router.put('/:id', clientController.updateClient)
 
 /**
  * @route DELETE /clients/:id
@@ -58,7 +58,7 @@ router.put('/:id', clientController.updateClient);
  * @access Private
  * @param {string} id - Client UUID
  */
-router.delete('/:id', clientController.deleteClient);
+router.delete('/:id', clientController.deleteClient)
 
 /**
  * CLIENT-TAG ASSOCIATIONS (Many-to-Many)
@@ -72,7 +72,7 @@ router.delete('/:id', clientController.deleteClient);
  * @param {string} clientId - Client UUID
  * @body {string} tagId - Tag UUID to associate
  */
-router.post('/:clientId/tags', tagController.addToClient);
+router.post('/:clientId/tags', tagController.addToClient)
 
 /**
  * @route DELETE /clients/:clientId/tags/:tagId
@@ -81,6 +81,6 @@ router.post('/:clientId/tags', tagController.addToClient);
  * @param {string} clientId - Client UUID
  * @param {string} tagId - Tag UUID to remove
  */
-router.delete('/:clientId/tags/:tagId', tagController.removeFromClient);
+router.delete('/:clientId/tags/:tagId', tagController.removeFromClient)
 
-export default router;
+export default router

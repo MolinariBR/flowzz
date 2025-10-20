@@ -13,7 +13,7 @@
  * - tasks.md: Task 9.1 - ProjectionService
  */
 
-import type { Decimal } from '@prisma/client/runtime/library';
+import type { Decimal } from '@prisma/client/runtime/library'
 
 /**
  * Tipos de período para projeções
@@ -30,84 +30,87 @@ export enum ProjectionPeriod {
  * Tendência detectada nos dados históricos
  */
 export enum TrendType {
-  GROWTH = 'growth',       // Crescimento > 5%
-  STABLE = 'stable',       // Variação entre -5% e +5%
-  DECLINE = 'decline',     // Queda > 5%
+  GROWTH = 'growth', // Crescimento > 5%
+  STABLE = 'stable', // Variação entre -5% e +5%
+  DECLINE = 'decline', // Queda > 5%
 }
 
 /**
  * Dados de uma venda para cálculo de projeções
  */
 export interface SaleData {
-  id: string;
-  valor: Decimal;
-  total_price?: Decimal; // Agregado do Prisma
-  data_venda: Date;
-  status: string;
+  id: string
+  valor: Decimal
+  total_price?: Decimal // Agregado do Prisma
+  data_venda: Date
+  status: string
 }
 
 /**
  * Resultado de uma projeção com 3 cenários
  */
 export interface ProjectionResult {
-  period: number;                    // Período em dias
-  pessimistic: number;               // Cenário pessimista (-20% do mínimo)
-  realistic: number;                 // Cenário realista (média ponderada)
-  optimistic: number;                // Cenário otimista (+30% do máximo)
-  confidence: number;                // Confiança 0-100% (baseada em variância)
-  trend: TrendType;                  // Tendência detectada
-  historical_data_days: number;      // Dias de histórico utilizados
-  avg_7_days: number;                // Média móvel 7 dias
-  avg_30_days: number;               // Média móvel 30 dias
-  avg_90_days: number;               // Média móvel 90 dias
-  seasonality_adjusted: boolean;     // Se considerou sazonalidade
-  cache_expires_at?: Date;           // Quando cache expira
+  period: number // Período em dias
+  pessimistic: number // Cenário pessimista (-20% do mínimo)
+  realistic: number // Cenário realista (média ponderada)
+  optimistic: number // Cenário otimista (+30% do máximo)
+  confidence: number // Confiança 0-100% (baseada em variância)
+  trend: TrendType // Tendência detectada
+  historical_data_days: number // Dias de histórico utilizados
+  avg_7_days: number // Média móvel 7 dias
+  avg_30_days: number // Média móvel 30 dias
+  avg_90_days: number // Média móvel 90 dias
+  seasonality_adjusted: boolean // Se considerou sazonalidade
+  cache_expires_at?: Date // Quando cache expira
 }
 
 /**
  * Projeção detalhada de fluxo de caixa
  */
 export interface CashflowProjection {
-  period: number;                    // Período em dias
-  projected_sales: ProjectionResult;  // Projeção de vendas
-  projected_expenses: {              // Projeção de despesas
-    ads: number;                     // Gasto com anúncios projetado
-    operational: number;             // Custos operacionais
-    total: number;                   // Total de despesas
-  };
-  net_profit: {                      // Lucro líquido projetado
-    pessimistic: number;
-    realistic: number;
-    optimistic: number;
-  };
-  roi: {                             // ROI projetado
-    pessimistic: number;             // ROI cenário pessimista
-    realistic: number;               // ROI cenário realista
-    optimistic: number;              // ROI cenário otimista
-  };
+  period: number // Período em dias
+  projected_sales: ProjectionResult // Projeção de vendas
+  projected_expenses: {
+    // Projeção de despesas
+    ads: number // Gasto com anúncios projetado
+    operational: number // Custos operacionais
+    total: number // Total de despesas
+  }
+  net_profit: {
+    // Lucro líquido projetado
+    pessimistic: number
+    realistic: number
+    optimistic: number
+  }
+  roi: {
+    // ROI projetado
+    pessimistic: number // ROI cenário pessimista
+    realistic: number // ROI cenário realista
+    optimistic: number // ROI cenário otimista
+  }
 }
 
 /**
  * Score de saúde financeira (0-100%)
  */
 export interface HealthScore {
-  overall_score: number;             // Score geral 0-100%
-  trend_score: number;               // Score de tendência (30%)
-  profitability_score: number;       // Score de lucratividade (40%)
-  consistency_score: number;         // Score de consistência (30%)
-  interpretation: string;            // Interpretação textual
-  alerts: string[];                  // Alertas importantes
-  recommendations: string[];         // Recomendações para melhorar
+  overall_score: number // Score geral 0-100%
+  trend_score: number // Score de tendência (30%)
+  profitability_score: number // Score de lucratividade (40%)
+  consistency_score: number // Score de consistência (30%)
+  interpretation: string // Interpretação textual
+  alerts: string[] // Alertas importantes
+  recommendations: string[] // Recomendações para melhorar
 }
 
 /**
  * Dados de sazonalidade por dia da semana
  */
 export interface SeasonalityData {
-  day_of_week: number;               // 0 = Domingo, 6 = Sábado
-  multiplier: number;                // Multiplicador de ajuste (0.7 - 1.3)
-  avg_sales: number;                 // Média de vendas neste dia
-  sample_size: number;               // Quantidade de amostras
+  day_of_week: number // 0 = Domingo, 6 = Sábado
+  multiplier: number // Multiplicador de ajuste (0.7 - 1.3)
+  avg_sales: number // Média de vendas neste dia
+  sample_size: number // Quantidade de amostras
 }
 
 /**
@@ -129,10 +132,7 @@ export interface IProjectionService {
    * @returns Projeção com 3 cenários e confiança
    * @throws Error se dados históricos insuficientes (< 30 dias)
    */
-  calculateSalesProjection(
-    userId: string,
-    period: ProjectionPeriod
-  ): Promise<ProjectionResult>;
+  calculateSalesProjection(userId: string, period: ProjectionPeriod): Promise<ProjectionResult>
 
   /**
    * Calcula projeção de fluxo de caixa (vendas - despesas)
@@ -141,10 +141,7 @@ export interface IProjectionService {
    * @param period - Período em dias
    * @returns Projeção de cashflow com lucro líquido
    */
-  calculateCashflowProjection(
-    userId: string,
-    period: ProjectionPeriod
-  ): Promise<CashflowProjection>;
+  calculateCashflowProjection(userId: string, period: ProjectionPeriod): Promise<CashflowProjection>
 
   /**
    * Calcula score de saúde financeira (0-100%)
@@ -157,7 +154,7 @@ export interface IProjectionService {
    * @param userId - ID do usuário
    * @returns Score com interpretação e recomendações
    */
-  calculateHealthScore(userId: string): Promise<HealthScore>;
+  calculateHealthScore(userId: string): Promise<HealthScore>
 
   /**
    * Detecta tendência nos dados de vendas
@@ -165,7 +162,7 @@ export interface IProjectionService {
    * @param sales - Array de vendas ordenadas por data
    * @returns Tipo de tendência detectada
    */
-  detectTrend(sales: SaleData[]): TrendType;
+  detectTrend(sales: SaleData[]): TrendType
 
   /**
    * Calcula média móvel para período específico
@@ -174,7 +171,7 @@ export interface IProjectionService {
    * @param days - Número de dias para média
    * @returns Valor médio diário
    */
-  calculateMovingAverage(sales: SaleData[], days: number): number;
+  calculateMovingAverage(sales: SaleData[], days: number): number
 
   /**
    * Calcula variância para determinar confiança
@@ -182,7 +179,7 @@ export interface IProjectionService {
    * @param sales - Array de vendas
    * @returns Variância dos dados (0-1)
    */
-  calculateVariance(sales: SaleData[]): number;
+  calculateVariance(sales: SaleData[]): number
 
   /**
    * Ajusta valor considerando sazonalidade do dia da semana
@@ -195,7 +192,7 @@ export interface IProjectionService {
    * @param date - Data para verificar dia da semana
    * @returns Valor ajustado
    */
-  adjustForSeasonality(value: number, date: Date): number;
+  adjustForSeasonality(value: number, date: Date): number
 
   /**
    * Analisa sazonalidade dos dados históricos
@@ -203,7 +200,7 @@ export interface IProjectionService {
    * @param sales - Array de vendas
    * @returns Dados de sazonalidade por dia da semana
    */
-  analyzeSeasonality(sales: SaleData[]): SeasonalityData[];
+  analyzeSeasonality(sales: SaleData[]): SeasonalityData[]
 
   /**
    * Invalida cache de projeções do usuário
@@ -215,5 +212,5 @@ export interface IProjectionService {
    *
    * @param userId - ID do usuário
    */
-  invalidateCache(userId: string): Promise<void>;
+  invalidateCache(userId: string): Promise<void>
 }

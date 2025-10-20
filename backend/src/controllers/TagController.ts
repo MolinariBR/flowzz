@@ -7,10 +7,10 @@
  * - tasks.md: Task 3.2 - Tags API
  */
 
-import type { Request, Response } from 'express';
-import { TagService } from '../services/TagService';
+import type { Request, Response } from 'express'
+import { TagService } from '../services/TagService'
 
-const tagService = new TagService();
+const tagService = new TagService()
 
 export class TagController {
   /**
@@ -20,19 +20,19 @@ export class TagController {
    */
   async create(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
-        return res.status(401).json({ error: 'Não autorizado' });
+        return res.status(401).json({ error: 'Não autorizado' })
       }
 
-      const { nome, cor } = req.body;
+      const { nome, cor } = req.body
 
-      const tag = await tagService.create(userId, { nome, cor });
+      const tag = await tagService.create(userId, { nome, cor })
 
       return res.status(201).json({
         success: true,
         data: tag,
-      });
+      })
     } catch (error) {
       if (error instanceof Error) {
         // Tratamento de erros específicos de negócio
@@ -40,20 +40,20 @@ export class TagController {
           return res.status(400).json({
             error: error.message,
             code: 'TAG_LIMIT_EXCEEDED',
-          });
+          })
         }
         if (error.message.includes('Já existe')) {
           return res.status(400).json({
             error: error.message,
             code: 'TAG_NAME_NOT_UNIQUE',
-          });
+          })
         }
         return res.status(500).json({
           error: 'Erro ao criar tag',
           details: error.message,
-        });
+        })
       }
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' })
     }
   }
 
@@ -64,26 +64,26 @@ export class TagController {
    */
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
-        return res.status(401).json({ error: 'Não autorizado' });
+        return res.status(401).json({ error: 'Não autorizado' })
       }
 
-      const tags = await tagService.getAll(userId);
+      const tags = await tagService.getAll(userId)
 
       return res.status(200).json({
         success: true,
         data: tags,
         count: tags.length,
-      });
+      })
     } catch (error) {
       if (error instanceof Error) {
         return res.status(500).json({
           error: 'Erro ao listar tags',
           details: error.message,
-        });
+        })
       }
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' })
     }
   }
 
@@ -94,33 +94,33 @@ export class TagController {
    */
   async getById(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
-        return res.status(401).json({ error: 'Não autorizado' });
+        return res.status(401).json({ error: 'Não autorizado' })
       }
 
-      const tagId = req.params.id as string;
+      const tagId = req.params.id as string
 
-      const tag = await tagService.getById(userId, tagId);
+      const tag = await tagService.getById(userId, tagId)
 
       return res.status(200).json({
         success: true,
         data: tag,
-      });
+      })
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Tag não encontrada') {
           return res.status(404).json({
             error: error.message,
             code: 'TAG_NOT_FOUND',
-          });
+          })
         }
         return res.status(500).json({
           error: 'Erro ao obter tag',
           details: error.message,
-        });
+        })
       }
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' })
     }
   }
 
@@ -131,40 +131,40 @@ export class TagController {
    */
   async update(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
-        return res.status(401).json({ error: 'Não autorizado' });
+        return res.status(401).json({ error: 'Não autorizado' })
       }
 
-      const tagId = req.params.id as string;
-      const { nome, cor } = req.body;
+      const tagId = req.params.id as string
+      const { nome, cor } = req.body
 
-      const tag = await tagService.update(userId, tagId, { nome, cor });
+      const tag = await tagService.update(userId, tagId, { nome, cor })
 
       return res.status(200).json({
         success: true,
         data: tag,
-      });
+      })
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Tag não encontrada') {
           return res.status(404).json({
             error: error.message,
             code: 'TAG_NOT_FOUND',
-          });
+          })
         }
         if (error.message.includes('Já existe')) {
           return res.status(400).json({
             error: error.message,
             code: 'TAG_NAME_NOT_UNIQUE',
-          });
+          })
         }
         return res.status(500).json({
           error: 'Erro ao atualizar tag',
           details: error.message,
-        });
+        })
       }
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' })
     }
   }
 
@@ -175,36 +175,36 @@ export class TagController {
    */
   async delete(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
-        return res.status(401).json({ error: 'Não autorizado' });
+        return res.status(401).json({ error: 'Não autorizado' })
       }
 
-      const tagId = req.params.id as string;
+      const tagId = req.params.id as string
 
-      await tagService.delete(userId, tagId);
+      await tagService.delete(userId, tagId)
 
-      return res.status(204).send();
+      return res.status(204).send()
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Tag não encontrada') {
           return res.status(404).json({
             error: error.message,
             code: 'TAG_NOT_FOUND',
-          });
+          })
         }
         if (error.message.includes('clientes associados')) {
           return res.status(400).json({
             error: error.message,
             code: 'TAG_HAS_CLIENTS',
-          });
+          })
         }
         return res.status(500).json({
           error: 'Erro ao excluir tag',
           details: error.message,
-        });
+        })
       }
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' })
     }
   }
 
@@ -215,46 +215,46 @@ export class TagController {
    */
   async addToClient(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
-        return res.status(401).json({ error: 'Não autorizado' });
+        return res.status(401).json({ error: 'Não autorizado' })
       }
 
-      const clientId = req.params.clientId as string;
-      const { tagId } = req.body;
+      const clientId = req.params.clientId as string
+      const { tagId } = req.body
 
-      await tagService.addTagToClient(userId, clientId, tagId);
+      await tagService.addTagToClient(userId, clientId, tagId)
 
       return res.status(200).json({
         success: true,
         message: 'Tag adicionada ao cliente com sucesso',
-      });
+      })
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Tag não encontrada') {
           return res.status(404).json({
             error: error.message,
             code: 'TAG_NOT_FOUND',
-          });
+          })
         }
         if (error.message === 'Cliente não encontrado') {
           return res.status(404).json({
             error: error.message,
             code: 'CLIENT_NOT_FOUND',
-          });
+          })
         }
         if (error.message.includes('já possui')) {
           return res.status(400).json({
             error: error.message,
             code: 'TAG_ALREADY_ASSIGNED',
-          });
+          })
         }
         return res.status(500).json({
           error: 'Erro ao adicionar tag ao cliente',
           details: error.message,
-        });
+        })
       }
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' })
     }
   }
 
@@ -265,46 +265,46 @@ export class TagController {
    */
   async removeFromClient(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
-        return res.status(401).json({ error: 'Não autorizado' });
+        return res.status(401).json({ error: 'Não autorizado' })
       }
 
-      const clientId = req.params.clientId as string;
-      const tagId = req.params.tagId as string;
+      const clientId = req.params.clientId as string
+      const tagId = req.params.tagId as string
 
-      await tagService.removeTagFromClient(userId, clientId, tagId);
+      await tagService.removeTagFromClient(userId, clientId, tagId)
 
       return res.status(200).json({
         success: true,
         message: 'Tag removida do cliente com sucesso',
-      });
+      })
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Tag não encontrada') {
           return res.status(404).json({
             error: error.message,
             code: 'TAG_NOT_FOUND',
-          });
+          })
         }
         if (error.message === 'Cliente não encontrado') {
           return res.status(404).json({
             error: error.message,
             code: 'CLIENT_NOT_FOUND',
-          });
+          })
         }
         if (error.message.includes('não possui')) {
           return res.status(400).json({
             error: error.message,
             code: 'TAG_NOT_ASSIGNED',
-          });
+          })
         }
         return res.status(500).json({
           error: 'Erro ao remover tag do cliente',
           details: error.message,
-        });
+        })
       }
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' })
     }
   }
 
@@ -315,34 +315,34 @@ export class TagController {
    */
   async getClients(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
-        return res.status(401).json({ error: 'Não autorizado' });
+        return res.status(401).json({ error: 'Não autorizado' })
       }
 
-      const tagId = req.params.id as string;
+      const tagId = req.params.id as string
 
-      const clients = await tagService.getClientsByTag(userId, tagId);
+      const clients = await tagService.getClientsByTag(userId, tagId)
 
       return res.status(200).json({
         success: true,
         data: clients,
         count: clients.length,
-      });
+      })
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Tag não encontrada') {
           return res.status(404).json({
             error: error.message,
             code: 'TAG_NOT_FOUND',
-          });
+          })
         }
         return res.status(500).json({
           error: 'Erro ao listar clientes da tag',
           details: error.message,
-        });
+        })
       }
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' })
     }
   }
 }

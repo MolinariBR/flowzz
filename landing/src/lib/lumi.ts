@@ -1,4 +1,3 @@
-
 import { createClient } from '@lumi.new/sdk'
 
 export const lumi = createClient({
@@ -6,4 +5,3 @@ export const lumi = createClient({
   apiBaseUrl: 'https://api.lumi.new',
   authOrigin: 'https://auth.lumi.new',
 })
-

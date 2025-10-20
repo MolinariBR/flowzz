@@ -11,14 +11,13 @@
  * - user-stories.md: Story 1.3
  */
 
-import { Router } from 'express';
-import { FacebookAdsController } from '../controllers/FacebookAdsController';
-import { authenticate } from '../shared/middlewares/authenticate';
-import { integrationSyncRateLimiter } from '../shared/middlewares/rateLimiter';
-import { logger } from '../shared/utils/logger';
+import { Router } from 'express'
+import { FacebookAdsController } from '../controllers/FacebookAdsController'
+import { authenticate } from '../shared/middlewares/authenticate'
+import { logger } from '../shared/utils/logger'
 
-const router = Router();
-const facebookAdsController = new FacebookAdsController();
+const router = Router()
+const facebookAdsController = new FacebookAdsController()
 
 /**
  * @route GET /api/v1/integrations/facebook/connect
@@ -28,14 +27,12 @@ const facebookAdsController = new FacebookAdsController();
  * @returns {object} 401 - Unauthorized
  * @returns {object} 500 - Internal Server Error
  */
-router.get(
-  '/connect',
-  authenticate,
-  async (req, res) => {
-    logger.info('GET /integrations/facebook/connect', { userId: req.user?.userId });
-    await facebookAdsController.connect(req, res);
-  },
-);
+router.get('/connect', authenticate, async (req, res) => {
+  logger.info('GET /integrations/facebook/connect', {
+    userId: req.user?.userId,
+  })
+  await facebookAdsController.connect(req, res)
+})
 
 /**
  * @route GET /api/v1/integrations/facebook/callback
@@ -48,14 +45,13 @@ router.get(
  * @returns {object} 401 - Unauthorized
  * @returns {object} 500 - Internal Server Error
  */
-router.get(
-  '/callback',
-  authenticate,
-  async (req, res) => {
-    logger.info('GET /integrations/facebook/callback', { userId: req.user?.userId, hasCode: !!req.query.code });
-    await facebookAdsController.callback(req, res);
-  },
-);
+router.get('/callback', authenticate, async (req, res) => {
+  logger.info('GET /integrations/facebook/callback', {
+    userId: req.user?.userId,
+    hasCode: !!req.query.code,
+  })
+  await facebookAdsController.callback(req, res)
+})
 
 /**
  * @route GET /api/v1/integrations/facebook/status
@@ -65,14 +61,12 @@ router.get(
  * @returns {object} 401 - Unauthorized
  * @returns {object} 500 - Internal Server Error
  */
-router.get(
-  '/status',
-  authenticate,
-  async (req, res) => {
-    logger.info('GET /integrations/facebook/status', { userId: req.user?.userId });
-    await facebookAdsController.getStatus(req, res);
-  },
-);
+router.get('/status', authenticate, async (req, res) => {
+  logger.info('GET /integrations/facebook/status', {
+    userId: req.user?.userId,
+  })
+  await facebookAdsController.getStatus(req, res)
+})
 
 /**
  * @route POST /api/v1/integrations/facebook/insights
@@ -85,14 +79,13 @@ router.get(
  * @returns {object} 429 - Rate limit exceeded
  * @returns {object} 500 - Internal Server Error
  */
-router.post(
-  '/insights',
-  authenticate,
-  async (req, res) => {
-    logger.info('POST /integrations/facebook/insights', { userId: req.user?.userId, adAccountId: req.body?.adAccountId });
-    await facebookAdsController.getInsights(req, res);
-  },
-);
+router.post('/insights', authenticate, async (req, res) => {
+  logger.info('POST /integrations/facebook/insights', {
+    userId: req.user?.userId,
+    adAccountId: req.body?.adAccountId,
+  })
+  await facebookAdsController.getInsights(req, res)
+})
 
 /**
  * @route POST /api/v1/integrations/facebook/sync
@@ -103,14 +96,10 @@ router.post(
  * @returns {object} 401 - Unauthorized
  * @returns {object} 500 - Internal Server Error
  */
-router.post(
-  '/sync',
-  authenticate,
-  async (req, res) => {
-    logger.info('POST /integrations/facebook/sync', { userId: req.user?.userId });
-    await facebookAdsController.syncManual(req, res);
-  },
-);
+router.post('/sync', authenticate, async (req, res) => {
+  logger.info('POST /integrations/facebook/sync', { userId: req.user?.userId })
+  await facebookAdsController.syncManual(req, res)
+})
 
 /**
  * @route GET /api/v1/integrations/facebook/ad-accounts
@@ -120,14 +109,12 @@ router.post(
  * @returns {object} 401 - Unauthorized
  * @returns {object} 500 - Internal Server Error
  */
-router.get(
-  '/ad-accounts',
-  authenticate,
-  async (req, res) => {
-    logger.info('GET /integrations/facebook/ad-accounts', { userId: req.user?.userId });
-    await facebookAdsController.getAdAccounts(req, res);
-  },
-);
+router.get('/ad-accounts', authenticate, async (req, res) => {
+  logger.info('GET /integrations/facebook/ad-accounts', {
+    userId: req.user?.userId,
+  })
+  await facebookAdsController.getAdAccounts(req, res)
+})
 
 /**
  * @route GET /api/v1/integrations/facebook/test
@@ -137,14 +124,10 @@ router.get(
  * @returns {object} 401 - Unauthorized
  * @returns {object} 500 - Internal Server Error
  */
-router.get(
-  '/test',
-  authenticate,
-  async (req, res) => {
-    logger.info('GET /integrations/facebook/test', { userId: req.user?.userId });
-    await facebookAdsController.testConnection(req, res);
-  },
-);
+router.get('/test', authenticate, async (req, res) => {
+  logger.info('GET /integrations/facebook/test', { userId: req.user?.userId })
+  await facebookAdsController.testConnection(req, res)
+})
 
 /**
  * @route POST /api/v1/integrations/facebook/disconnect
@@ -154,13 +137,11 @@ router.get(
  * @returns {object} 401 - Unauthorized
  * @returns {object} 500 - Internal Server Error
  */
-router.post(
-  '/disconnect',
-  authenticate,
-  async (req, res) => {
-    logger.info('POST /integrations/facebook/disconnect', { userId: req.user?.userId });
-    await facebookAdsController.disconnect(req, res);
-  },
-);
+router.post('/disconnect', authenticate, async (req, res) => {
+  logger.info('POST /integrations/facebook/disconnect', {
+    userId: req.user?.userId,
+  })
+  await facebookAdsController.disconnect(req, res)
+})
 
-export default router;
+export default router

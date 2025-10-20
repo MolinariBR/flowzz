@@ -1,12 +1,12 @@
 // Referência: design.md §Routes, user-stories.md Story 2.1, tasks.md Task 3.2
 // Rotas REST para vendas com autenticação e documentação OpenAPI
 
-import { Router } from 'express';
-import { SaleController } from '../controllers/SaleController';
-import { authenticate } from '../shared/middlewares/authenticate';
+import { Router } from 'express'
+import { SaleController } from '../controllers/SaleController'
+import { authenticate } from '../shared/middlewares/authenticate'
 
-export const saleRoutes = Router();
-const saleController = new SaleController();
+export const saleRoutes = Router()
+const saleController = new SaleController()
 
 /**
  * @swagger
@@ -195,7 +195,7 @@ const saleController = new SaleController();
  *       401:
  *         description: Token de acesso inválido
  */
-saleRoutes.get('/', authenticate, saleController.getAllSales);
+saleRoutes.get('/', authenticate, saleController.getAllSales)
 
 /**
  * @swagger
@@ -232,7 +232,7 @@ saleRoutes.get('/', authenticate, saleController.getAllSales);
  *       401:
  *         description: Token de acesso inválido
  */
-saleRoutes.get('/:id', authenticate, saleController.getSaleById);
+saleRoutes.get('/:id', authenticate, saleController.getSaleById)
 
 /**
  * @swagger
@@ -326,7 +326,7 @@ saleRoutes.get('/:id', authenticate, saleController.getSaleById);
  *       401:
  *         description: Token de acesso inválido
  */
-saleRoutes.post('/', authenticate, saleController.createSale);
+saleRoutes.post('/', authenticate, saleController.createSale)
 
 /**
  * @swagger
@@ -401,7 +401,7 @@ saleRoutes.post('/', authenticate, saleController.createSale);
  *       401:
  *         description: Token de acesso inválido
  */
-saleRoutes.put('/:id', authenticate, saleController.updateSale);
+saleRoutes.put('/:id', authenticate, saleController.updateSale)
 
 /**
  * @swagger
@@ -439,7 +439,7 @@ saleRoutes.put('/:id', authenticate, saleController.updateSale);
  *       401:
  *         description: Token de acesso inválido
  */
-saleRoutes.delete('/:id', authenticate, saleController.deleteSale);
+saleRoutes.delete('/:id', authenticate, saleController.deleteSale)
 
 /**
  * @swagger
@@ -493,4 +493,4 @@ saleRoutes.delete('/:id', authenticate, saleController.deleteSale);
  *       401:
  *         description: Token de acesso inválido
  */
-saleRoutes.get('/analytics/summary', authenticate, saleController.getSalesSummary);
+saleRoutes.get('/analytics/summary', authenticate, saleController.getSalesSummary)

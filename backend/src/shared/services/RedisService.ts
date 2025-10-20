@@ -1,30 +1,30 @@
 // Referência: tasks.md Task 3.3.2, design.md §Cache Layer, user-stories.md Story 2.1
 // Serviço de cache Redis para dashboard metrics com TTL 5min
 
-import { createClient, type RedisClientType } from 'redis';
-import { logger } from '../utils/logger';
-import { env } from '../config/env';
+import { createClient, type RedisClientType } from 'redis'
+import { env } from '../config/env'
+import { logger } from '../utils/logger'
 
 export class RedisService {
-  private static instance: RedisService;
-  private client: RedisClientType;
-  private isConnected: boolean = false;
+  private static instance: RedisService
+  private client: RedisClientType
+  private isConnected: boolean = false
 
   constructor() {
     const redisOptions: {
-      url: string;
-      password?: string;
+      url: string
+      password?: string
     } = {
       url: env.REDIS_URL,
-    };
-
-    if (env.REDIS_PASSWORD) {
-      redisOptions.password = env.REDIS_PASSWORD;
     }
 
-    this.client = createClient(redisOptions);
+    if (env.REDIS_PASSWORD) {
+      redisOptions.password = env.REDIS_PASSWORD
+    }
 
-    this.setupEventListeners();
+    this.client = createClient(redisOptions)
+
+    this.setupEventListeners()
   }
 
   /**
@@ -32,9 +32,9 @@ export class RedisService {
    */
   public static getInstance(): RedisService {
     if (!RedisService.instance) {
-      RedisService.instance = new RedisService();
+      RedisService.instance = new RedisService()
     }
-    return RedisService.instance;
+    return RedisService.instance
   }
 
   /**
@@ -42,23 +42,23 @@ export class RedisService {
    */
   private setupEventListeners(): void {
     this.client.on('connect', () => {
-      logger.info('🔗 Redis: Conectando...');
-    });
+      logger.info('🔗 Redis: Conectando...')
+    })
 
     this.client.on('ready', () => {
-      this.isConnected = true;
-      logger.info('✅ Redis: Conectado e pronto para uso');
-    });
+      this.isConnected = true
+      logger.info('✅ Redis: Conectado e pronto para uso')
+    })
 
     this.client.on('error', (error) => {
-      this.isConnected = false;
-      logger.error('❌ Redis: Erro de conexão', { error: error.message });
-    });
+      this.isConnected = false
+      logger.error('❌ Redis: Erro de conexão', { error: error.message })
+    })
 
     this.client.on('end', () => {
-      this.isConnected = false;
-      logger.info('🔌 Redis: Conexão encerrada');
-    });
+      this.isConnected = false
+      logger.info('🔌 Redis: Conexão encerrada')
+    })
   }
 
   /**
@@ -67,11 +67,11 @@ export class RedisService {
   async connect(): Promise<void> {
     if (!this.isConnected) {
       try {
-        await this.client.connect();
-        logger.info('✅ Redis: Conectado com sucesso');
+        await this.client.connect()
+        logger.info('✅ Redis: Conectado com sucesso')
       } catch (error) {
-        logger.error('❌ Redis: Falha na conexão', { error });
-        throw error;
+        logger.error('❌ Redis: Falha na conexão', { error })
+        throw error
       }
     }
   }
@@ -82,12 +82,12 @@ export class RedisService {
   async disconnect(): Promise<void> {
     if (this.isConnected) {
       try {
-        await this.client.disconnect();
-        this.isConnected = false;
-        logger.info('🔌 Redis: Desconectado com sucesso');
+        await this.client.disconnect()
+        this.isConnected = false
+        logger.info('🔌 Redis: Desconectado com sucesso')
       } catch (error) {
-        logger.error('❌ Redis: Erro ao desconectar', { error });
-        throw error;
+        logger.error('❌ Redis: Erro ao desconectar', { error })
+        throw error
       }
     }
   }
@@ -96,7 +96,7 @@ export class RedisService {
    * Verifica se está conectado
    */
   isReady(): boolean {
-    return this.isConnected && this.client.isReady;
+    return this.isConnected && this.client.isReady
   }
 
   /**
@@ -104,16 +104,16 @@ export class RedisService {
    */
   async set(key: string, value: unknown, ttlSeconds: number = 300): Promise<void> {
     if (!this.isReady()) {
-      logger.warn('⚠️  Redis: Tentativa de escrita sem conexão ativa');
-      return;
+      logger.warn('⚠️  Redis: Tentativa de escrita sem conexão ativa')
+      return
     }
 
     try {
-      const serializedValue = JSON.stringify(value);
-      await this.client.setEx(key, ttlSeconds, serializedValue);
-      logger.debug('📝 Redis: Dados armazenados', { key, ttl: ttlSeconds });
+      const serializedValue = JSON.stringify(value)
+      await this.client.setEx(key, ttlSeconds, serializedValue)
+      logger.debug('📝 Redis: Dados armazenados', { key, ttl: ttlSeconds })
     } catch (error) {
-      logger.error('❌ Redis: Erro ao armazenar dados', { key, error });
+      logger.error('❌ Redis: Erro ao armazenar dados', { key, error })
     }
   }
 
@@ -122,23 +122,23 @@ export class RedisService {
    */
   async get<T>(key: string): Promise<T | null> {
     if (!this.isReady()) {
-      logger.warn('⚠️  Redis: Tentativa de leitura sem conexão ativa');
-      return null;
+      logger.warn('⚠️  Redis: Tentativa de leitura sem conexão ativa')
+      return null
     }
 
     try {
-      const value = await this.client.get(key);
+      const value = await this.client.get(key)
       if (!value) {
-        logger.debug('🔍 Redis: Cache miss', { key });
-        return null;
+        logger.debug('🔍 Redis: Cache miss', { key })
+        return null
       }
 
-      const parsedValue = JSON.parse(value);
-      logger.debug('✅ Redis: Cache hit', { key });
-      return parsedValue;
+      const parsedValue = JSON.parse(value)
+      logger.debug('✅ Redis: Cache hit', { key })
+      return parsedValue
     } catch (error) {
-      logger.error('❌ Redis: Erro ao recuperar dados', { key, error });
-      return null;
+      logger.error('❌ Redis: Erro ao recuperar dados', { key, error })
+      return null
     }
   }
 
@@ -147,15 +147,15 @@ export class RedisService {
    */
   async delete(key: string): Promise<void> {
     if (!this.isReady()) {
-      logger.warn('⚠️  Redis: Tentativa de remoção sem conexão ativa');
-      return;
+      logger.warn('⚠️  Redis: Tentativa de remoção sem conexão ativa')
+      return
     }
 
     try {
-      await this.client.del(key);
-      logger.debug('🗑️  Redis: Dados removidos', { key });
+      await this.client.del(key)
+      logger.debug('🗑️  Redis: Dados removidos', { key })
     } catch (error) {
-      logger.error('❌ Redis: Erro ao remover dados', { key, error });
+      logger.error('❌ Redis: Erro ao remover dados', { key, error })
     }
   }
 
@@ -164,18 +164,21 @@ export class RedisService {
    */
   async deletePattern(pattern: string): Promise<void> {
     if (!this.isReady()) {
-      logger.warn('⚠️  Redis: Tentativa de remoção por padrão sem conexão ativa');
-      return;
+      logger.warn('⚠️  Redis: Tentativa de remoção por padrão sem conexão ativa')
+      return
     }
 
     try {
-      const keys = await this.client.keys(pattern);
+      const keys = await this.client.keys(pattern)
       if (keys.length > 0) {
-        await this.client.del(keys);
-        logger.debug('🗑️  Redis: Múltiplas chaves removidas', { pattern, count: keys.length });
+        await this.client.del(keys)
+        logger.debug('🗑️  Redis: Múltiplas chaves removidas', {
+          pattern,
+          count: keys.length,
+        })
       }
     } catch (error) {
-      logger.error('❌ Redis: Erro ao remover por padrão', { pattern, error });
+      logger.error('❌ Redis: Erro ao remover por padrão', { pattern, error })
     }
   }
 
@@ -184,15 +187,15 @@ export class RedisService {
    */
   async exists(key: string): Promise<boolean> {
     if (!this.isReady()) {
-      return false;
+      return false
     }
 
     try {
-      const exists = await this.client.exists(key);
-      return exists === 1;
+      const exists = await this.client.exists(key)
+      return exists === 1
     } catch (error) {
-      logger.error('❌ Redis: Erro ao verificar existência', { key, error });
-      return false;
+      logger.error('❌ Redis: Erro ao verificar existência', { key, error })
+      return false
     }
   }
 
@@ -201,14 +204,14 @@ export class RedisService {
    */
   async getTTL(key: string): Promise<number> {
     if (!this.isReady()) {
-      return -1;
+      return -1
     }
 
     try {
-      return await this.client.ttl(key);
+      return await this.client.ttl(key)
     } catch (error) {
-      logger.error('❌ Redis: Erro ao obter TTL', { key, error });
-      return -1;
+      logger.error('❌ Redis: Erro ao obter TTL', { key, error })
+      return -1
     }
   }
 
@@ -220,73 +223,74 @@ export class RedisService {
    * Chave padrão para métricas do dashboard
    */
   private getDashboardMetricsKey(userId: string): string {
-    return `dashboard:metrics:${userId}`;
+    return `dashboard:metrics:${userId}`
   }
 
   /**
    * Armazena métricas do dashboard com TTL de 5 minutos
    */
   async setDashboardMetrics(userId: string, metrics: unknown): Promise<void> {
-    const key = this.getDashboardMetricsKey(userId);
-    await this.set(key, metrics, 300); // 5 minutos
+    const key = this.getDashboardMetricsKey(userId)
+    await this.set(key, metrics, 300) // 5 minutos
   }
 
   /**
    * Recupera métricas do dashboard
    */
   async getDashboardMetrics<T>(userId: string): Promise<T | null> {
-    const key = this.getDashboardMetricsKey(userId);
-    return await this.get<T>(key);
+    const key = this.getDashboardMetricsKey(userId)
+    return await this.get<T>(key)
   }
 
   /**
    * Remove cache de métricas do dashboard
    */
   async invalidateDashboardMetrics(userId: string): Promise<void> {
-    const key = this.getDashboardMetricsKey(userId);
-    await this.delete(key);
+    const key = this.getDashboardMetricsKey(userId)
+    await this.delete(key)
   }
 
   /**
    * Remove cache de métricas de todos os usuários
    */
   async invalidateAllDashboardMetrics(): Promise<void> {
-    await this.deletePattern('dashboard:metrics:*');
+    await this.deletePattern('dashboard:metrics:*')
   }
 
   /**
    * Obtém estatísticas do cache do dashboard
    */
   async getDashboardCacheStats(): Promise<{
-    totalKeys: number;
-    avgTTL: number;
+    totalKeys: number
+    avgTTL: number
   }> {
     if (!this.isReady()) {
-      return { totalKeys: 0, avgTTL: 0 };
+      return { totalKeys: 0, avgTTL: 0 }
     }
 
     try {
-      const keys = await this.client.keys('dashboard:metrics:*');
+      const keys = await this.client.keys('dashboard:metrics:*')
       if (keys.length === 0) {
-        return { totalKeys: 0, avgTTL: 0 };
+        return { totalKeys: 0, avgTTL: 0 }
       }
 
-      const ttls = await Promise.all(keys.map(key => this.getTTL(key)));
-      const validTTLs = ttls.filter(ttl => ttl > 0);
-      const avgTTL = validTTLs.length > 0
-        ? Math.round(validTTLs.reduce((sum, ttl) => sum + ttl, 0) / validTTLs.length)
-        : 0;
+      const ttls = await Promise.all(keys.map((key) => this.getTTL(key)))
+      const validTTLs = ttls.filter((ttl) => ttl > 0)
+      const avgTTL =
+        validTTLs.length > 0
+          ? Math.round(validTTLs.reduce((sum, ttl) => sum + ttl, 0) / validTTLs.length)
+          : 0
 
       return {
         totalKeys: keys.length,
         avgTTL,
-      };
+      }
     } catch (error) {
-      logger.error('❌ Redis: Erro ao obter estatísticas do cache', { error });
-      return { totalKeys: 0, avgTTL: 0 };
+      logger.error('❌ Redis: Erro ao obter estatísticas do cache', { error })
+      return { totalKeys: 0, avgTTL: 0 }
     }
   }
 }
 
 // Instância singleton
-export const redisService = RedisService.getInstance();
+export const redisService = RedisService.getInstance()

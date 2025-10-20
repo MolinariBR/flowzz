@@ -4,20 +4,20 @@
 import { Router } from 'express'
 import {
   getAdminMetrics,
-  getUserGrowthMetrics,
-  listUsers,
-  getUserDetails,
-  updateUser,
-  suspendUser,
-  reactivateUser,
-  impersonateUser,
   getAuditLogs,
+  getUserDetails,
+  getUserGrowthMetrics,
   getUserStats,
   getWhatsAppConfig,
+  impersonateUser,
+  listUsers,
+  reactivateUser,
   saveWhatsAppConfig,
-  testWhatsAppConnection
+  suspendUser,
+  testWhatsAppConnection,
+  updateUser,
 } from '../controllers/AdminController'
-import { requireAdmin, requireSuperAdmin, authenticate } from '../shared/middlewares/authenticate'
+import { authenticate, requireAdmin, requireSuperAdmin } from '../shared/middlewares/authenticate'
 import { adminActionsRateLimiter } from '../shared/middlewares/rateLimiter'
 
 const router = Router()

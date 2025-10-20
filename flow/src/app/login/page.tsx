@@ -3,15 +3,17 @@
 
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Mail, Lock, Eye, EyeOff, Zap } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, Zap } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useId, useState } from 'react'
 import toast from 'react-hot-toast'
 import { login } from '@/lib/api/auth'
 
 export default function LoginPage() {
   const router = useRouter()
+  const emailId = useId()
+  const passwordId = useId()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -24,7 +26,7 @@ export default function LoginPage() {
     try {
       await login({ email, password })
       toast.success('Login realizado com sucesso!')
-      
+
       // Redirecionar para dashboard
       router.push('/dashboard')
       router.refresh()
@@ -64,13 +66,13 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Campo Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor={emailId} className="block text-sm font-medium text-slate-700 mb-2">
               Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
-                id="email"
+                id={emailId}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -84,13 +86,13 @@ export default function LoginPage() {
 
           {/* Campo Senha */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor={passwordId} className="block text-sm font-medium text-slate-700 mb-2">
               Senha
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
-                id="password"
+                id={passwordId}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -160,7 +162,8 @@ export default function LoginPage() {
         {/* Info Trial */}
         <div className="mt-8 text-center">
           <p className="text-xs text-slate-500">
-            🎉 <strong className="text-indigo-600">7 dias grátis</strong> para testar todas as funcionalidades
+            🎉 <strong className="text-indigo-600">7 dias grátis</strong> para testar todas as
+            funcionalidades
           </p>
         </div>
       </motion.div>

@@ -3,40 +3,40 @@
  * Referência: implement.md §Development Setup, plan.md §Sample Data
  */
 
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  console.log('🌱 Starting database seed...')
 
   // Clear existing data in development
   if (process.env.NODE_ENV === 'development') {
-    console.log('🧹 Cleaning development database...');
+    console.log('🧹 Cleaning development database...')
 
-    await prisma.activity.deleteMany();
-    await prisma.subscription.deleteMany();
-    await prisma.report.deleteMany();
-    await prisma.goal.deleteMany();
-    await prisma.ad.deleteMany();
-    await prisma.integration.deleteMany();
-    await prisma.sale.deleteMany();
-    await prisma.clientTag.deleteMany();
-    await prisma.tag.deleteMany();
-    await prisma.client.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.plan.deleteMany();
+    await prisma.activity.deleteMany()
+    await prisma.subscription.deleteMany()
+    await prisma.report.deleteMany()
+    await prisma.goal.deleteMany()
+    await prisma.ad.deleteMany()
+    await prisma.integration.deleteMany()
+    await prisma.sale.deleteMany()
+    await prisma.clientTag.deleteMany()
+    await prisma.tag.deleteMany()
+    await prisma.client.deleteMany()
+    await prisma.user.deleteMany()
+    await prisma.plan.deleteMany()
   }
 
   // Create subscription plans
-  console.log('📋 Creating subscription plans...');
+  console.log('📋 Creating subscription plans...')
 
   const basicPlan = await prisma.plan.create({
     data: {
       name: 'Básico',
       description: 'Plano ideal para iniciantes',
-      price: 29.90,
+      price: 29.9,
       interval: 'month',
       features: {
         max_clients: 100,
@@ -49,13 +49,13 @@ async function main() {
         storage_gb: 1,
       },
     },
-  });
+  })
 
   const proPlan = await prisma.plan.create({
     data: {
       name: 'Profissional',
       description: 'Plano completo para profissionais',
-      price: 79.90,
+      price: 79.9,
       interval: 'month',
       features: {
         max_clients: 1000,
@@ -68,12 +68,12 @@ async function main() {
         storage_gb: 10,
       },
     },
-  });
+  })
 
   // Create demo user
-  console.log('👤 Creating demo user...');
+  console.log('👤 Creating demo user...')
 
-  const passwordHash = await bcrypt.hash('demo123456', 12);
+  const passwordHash = await bcrypt.hash('demo123456', 12)
 
   const demoUser = await prisma.user.create({
     data: {
@@ -85,12 +85,12 @@ async function main() {
       trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       plan_id: basicPlan.id,
     },
-  });
+  })
 
   // Create admin user
-  console.log('🔧 Creating admin user...');
+  console.log('🔧 Creating admin user...')
 
-  const adminPasswordHash = await bcrypt.hash('admin123456', 12);
+  const adminPasswordHash = await bcrypt.hash('admin123456', 12)
 
   await prisma.user.create({
     data: {
@@ -101,10 +101,10 @@ async function main() {
       subscription_status: 'ACTIVE',
       plan_id: proPlan.id,
     },
-  });
+  })
 
   // Create sample clients for demo user
-  console.log('👥 Creating sample clients...');
+  console.log('👥 Creating sample clients...')
 
   const clients = await Promise.all([
     prisma.client.create({
@@ -117,7 +117,7 @@ async function main() {
         city: 'São Paulo',
         state: 'SP',
         status: 'ACTIVE',
-        total_spent: 1250.50,
+        total_spent: 1250.5,
         total_orders: 3,
       },
     }),
@@ -131,7 +131,7 @@ async function main() {
         city: 'Rio de Janeiro',
         state: 'RJ',
         status: 'ACTIVE',
-        total_spent: 890.30,
+        total_spent: 890.3,
         total_orders: 2,
       },
     }),
@@ -148,10 +148,10 @@ async function main() {
         total_orders: 0,
       },
     }),
-  ]);
+  ])
 
   // Create sample tags
-  console.log('🏷️ Creating sample tags...');
+  console.log('🏷️ Creating sample tags...')
 
   const tags = await Promise.all([
     prisma.tag.create({
@@ -175,7 +175,7 @@ async function main() {
         color: '#FF6347',
       },
     }),
-  ]);
+  ])
 
   // Associate tags with clients
   await Promise.all([
@@ -197,10 +197,10 @@ async function main() {
         tag_id: tags[2].id, // Pedro Oliveira - Inativo
       },
     }),
-  ]);
+  ])
 
   // Create sample sales
-  console.log('💰 Creating sample sales...');
+  console.log('💰 Creating sample sales...')
 
   await Promise.all([
     prisma.sale.create({
@@ -210,9 +210,9 @@ async function main() {
         product_name: 'Curso de Marketing Digital',
         product_sku: 'CMD-001',
         quantity: 1,
-        unit_price: 497.00,
-        total_price: 497.00,
-        commission: 149.10,
+        unit_price: 497.0,
+        total_price: 497.0,
+        commission: 149.1,
         status: 'DELIVERED',
         payment_method: 'PIX',
         payment_date: new Date('2024-09-15'),
@@ -227,9 +227,9 @@ async function main() {
         product_name: 'Ebook: Estratégias de Vendas',
         product_sku: 'EBK-002',
         quantity: 1,
-        unit_price: 97.00,
-        total_price: 97.00,
-        commission: 29.10,
+        unit_price: 97.0,
+        total_price: 97.0,
+        commission: 29.1,
         status: 'DELIVERED',
         payment_method: 'Cartão de Crédito',
         payment_date: new Date('2024-09-20'),
@@ -243,8 +243,8 @@ async function main() {
         product_name: 'Consultoria Personalizada',
         product_sku: 'CONS-003',
         quantity: 1,
-        unit_price: 890.30,
-        total_price: 890.30,
+        unit_price: 890.3,
+        total_price: 890.3,
         commission: 267.09,
         status: 'DELIVERED',
         payment_method: 'Boleto',
@@ -259,18 +259,18 @@ async function main() {
         product_name: 'Workshop Avançado',
         product_sku: 'WORK-004',
         quantity: 1,
-        unit_price: 656.50,
-        total_price: 656.50,
+        unit_price: 656.5,
+        total_price: 656.5,
         commission: 196.95,
         status: 'PAID',
         payment_method: 'PIX',
         payment_date: new Date('2024-09-28'),
       },
     }),
-  ]);
+  ])
 
   // Create sample integration
-  console.log('🔗 Creating sample integration...');
+  console.log('🔗 Creating sample integration...')
 
   await prisma.integration.create({
     data: {
@@ -284,10 +284,10 @@ async function main() {
       },
       last_sync: new Date(),
     },
-  });
+  })
 
   // Create sample goal
-  console.log('🎯 Creating sample goal...');
+  console.log('🎯 Creating sample goal...')
 
   await prisma.goal.create({
     data: {
@@ -295,16 +295,16 @@ async function main() {
       title: 'Meta de Vendas - Outubro 2024',
       description: 'Alcançar R$ 10.000 em vendas no mês',
       target_type: 'REVENUE',
-      target_value: 10000.00,
-      current_value: 2141.30, // Sum of current sales
+      target_value: 10000.0,
+      current_value: 2141.3, // Sum of current sales
       period_type: 'MONTHLY',
       period_start: new Date('2024-10-01'),
       period_end: new Date('2024-10-31'),
     },
-  });
+  })
 
   // Create sample activities
-  console.log('📋 Creating sample activities...');
+  console.log('📋 Creating sample activities...')
 
   await Promise.all([
     prisma.activity.create({
@@ -332,31 +332,31 @@ async function main() {
         metadata: { provider: 'COINZZ' },
       },
     }),
-  ]);
+  ])
 
-  console.log('✅ Database seed completed successfully!');
-  console.log('\n📊 Created:');
-  console.log('  - 2 subscription plans');
-  console.log('  - 2 users (demo + admin)');
-  console.log('  - 3 clients');
-  console.log('  - 3 tags');
-  console.log('  - 4 sales');
-  console.log('  - 1 integration');
-  console.log('  - 1 goal');
-  console.log('  - 3 activities');
-  console.log('\n🔑 Demo credentials:');
-  console.log('  Email: demo@flowzz.com.br');
-  console.log('  Password: demo123456');
-  console.log('\n🔧 Admin credentials:');
-  console.log('  Email: admin@flowzz.com.br');
-  console.log('  Password: admin123456');
+  console.log('✅ Database seed completed successfully!')
+  console.log('\n📊 Created:')
+  console.log('  - 2 subscription plans')
+  console.log('  - 2 users (demo + admin)')
+  console.log('  - 3 clients')
+  console.log('  - 3 tags')
+  console.log('  - 4 sales')
+  console.log('  - 1 integration')
+  console.log('  - 1 goal')
+  console.log('  - 3 activities')
+  console.log('\n🔑 Demo credentials:')
+  console.log('  Email: demo@flowzz.com.br')
+  console.log('  Password: demo123456')
+  console.log('\n🔧 Admin credentials:')
+  console.log('  Email: admin@flowzz.com.br')
+  console.log('  Password: admin123456')
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seed:', e);
-    process.exit(1);
+    console.error('❌ Error during seed:', e)
+    process.exit(1)
   })
   .finally(async () => {
-    await prisma.$disconnect();
-  });
+    await prisma.$disconnect()
+  })

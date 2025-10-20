@@ -1,20 +1,20 @@
-import React from 'react'
-import {Users, TrendingUp, DollarSign, UserX, AlertCircle} from 'lucide-react'
-import { MetricCard } from '../components/ui/metric-card'
-import { UserGrowthChart } from '../components/charts/user-growth-chart'
-import { RevenueChart } from '../components/charts/revenue-chart'
-import { useAdminMetrics } from '../lib/hooks/use-admin-data'
 import { motion } from 'framer-motion'
+import { AlertCircle, DollarSign, TrendingUp, Users, UserX } from 'lucide-react'
+import type React from 'react'
+import { RevenueChart } from '../components/charts/revenue-chart'
+import { UserGrowthChart } from '../components/charts/user-growth-chart'
+import { MetricCard } from '../components/ui/metric-card'
+import { useAdminMetrics } from '../lib/hooks/use-admin-data'
 
 export const Dashboard: React.FC = () => {
-  const { data: metrics, isLoading, error } = useAdminMetrics()
+  const { data: metrics, isLoading } = useAdminMetrics()
 
   if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(7)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-lg" />
+          {Array.from({ length: 7 }, (_, i) => (
+            <div key={`skeleton-${i + 1}`} className="h-32 bg-gray-200 animate-pulse rounded-lg" />
           ))}
         </div>
       </div>
@@ -24,7 +24,6 @@ export const Dashboard: React.FC = () => {
   if (!metrics) return null
 
   const activeUserPercentage = ((metrics.activeUsers / metrics.totalUsers) * 100).toFixed(1)
-  const ltvCacRatio = metrics.cac > 0 ? (metrics.ltv / metrics.cac).toFixed(2) : '0'
 
   return (
     <div className="space-y-6">
@@ -34,10 +33,10 @@ export const Dashboard: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white"
       >
-        <h1 data-testid="dashboard-heading" className="text-2xl font-bold">Dashboard Administrativo</h1>
-        <p className="text-primary-100 mt-2">
-          Visão geral das métricas do FlowZZ SaaS
-        </p>
+        <h1 data-testid="dashboard-heading" className="text-2xl font-bold">
+          Dashboard Administrativo
+        </h1>
+        <p className="text-primary-100 mt-2">Visão geral das métricas do FlowZZ SaaS</p>
       </motion.div>
 
       {/* KPI Cards */}
@@ -49,7 +48,7 @@ export const Dashboard: React.FC = () => {
           trend="up"
           icon={Users}
         />
-        
+
         <MetricCard
           title="Usuários Ativos"
           value={`${metrics.activeUsers} (${activeUserPercentage}%)`}
@@ -57,7 +56,7 @@ export const Dashboard: React.FC = () => {
           trend="up"
           icon={TrendingUp}
         />
-        
+
         <MetricCard
           title="MRR"
           value={metrics.mrr}
@@ -66,7 +65,7 @@ export const Dashboard: React.FC = () => {
           icon={DollarSign}
           prefix="R$ "
         />
-        
+
         <MetricCard
           title="Churn Rate"
           value={`${metrics.churnRate}%`}
@@ -87,7 +86,7 @@ export const Dashboard: React.FC = () => {
           prefix="R$ "
           suffix=" anual"
         />
-        
+
         <MetricCard
           title="LTV"
           value={metrics.ltv}
@@ -96,7 +95,7 @@ export const Dashboard: React.FC = () => {
           icon={DollarSign}
           prefix="R$ "
         />
-        
+
         <MetricCard
           title="CAC"
           value={metrics.cac}
@@ -131,19 +130,28 @@ export const Dashboard: React.FC = () => {
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Ações Rápidas</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors text-left">
+          <button
+            type="button"
+            className="p-4 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors text-left"
+          >
             <Users className="w-6 h-6 text-primary-600 mb-2" />
             <h4 className="font-medium text-gray-900">Gerenciar Usuários</h4>
             <p className="text-sm text-gray-500">Ver lista completa de usuários</p>
           </button>
-          
-          <button className="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-left">
+
+          <button
+            type="button"
+            className="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-left"
+          >
             <TrendingUp className="w-6 h-6 text-green-600 mb-2" />
             <h4 className="font-medium text-gray-900">Relatórios</h4>
             <p className="text-sm text-gray-500">Gerar relatórios detalhados</p>
           </button>
-          
-          <button className="p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors text-left">
+
+          <button
+            type="button"
+            className="p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors text-left"
+          >
             <AlertCircle className="w-6 h-6 text-orange-600 mb-2" />
             <h4 className="font-medium text-gray-900">Alertas</h4>
             <p className="text-sm text-gray-500">Configurar notificações</p>

@@ -3,15 +3,20 @@
 
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Mail, Lock, Eye, EyeOff, User, Zap, Check } from 'lucide-react'
+import { Check, Eye, EyeOff, Lock, Mail, User, Zap } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useId, useState } from 'react'
 import toast from 'react-hot-toast'
 import { register } from '@/lib/api/auth'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const nomeId = useId()
+  const emailId = useId()
+  const passwordId = useId()
+  const confirmPasswordId = useId()
+  const termsId = useId()
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -56,9 +61,9 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
       })
-      
+
       toast.success('Cadastro realizado com sucesso! 🎉')
-      
+
       // Redirecionar para dashboard
       router.push('/dashboard')
       router.refresh()
@@ -91,9 +96,7 @@ export default function RegisterPage() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             FLOWZZ
           </h1>
-          <p className="text-slate-600 mt-2">
-            Crie sua conta e comece seu trial grátis
-          </p>
+          <p className="text-slate-600 mt-2">Crie sua conta e comece seu trial grátis</p>
         </div>
 
         {/* Trial Benefits */}
@@ -117,12 +120,13 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Campo Nome */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor={nomeId} className="block text-sm font-medium text-slate-700 mb-2">
               Nome completo
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
+                id={nomeId}
                 type="text"
                 value={formData.nome}
                 onChange={(e) => handleChange('nome', e.target.value)}
@@ -137,12 +141,13 @@ export default function RegisterPage() {
 
           {/* Campo Email */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor={emailId} className="block text-sm font-medium text-slate-700 mb-2">
               Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
+                id={emailId}
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
@@ -156,12 +161,13 @@ export default function RegisterPage() {
 
           {/* Campo Senha */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor={passwordId} className="block text-sm font-medium text-slate-700 mb-2">
               Senha
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
+                id={passwordId}
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={(e) => handleChange('password', e.target.value)}
@@ -189,12 +195,16 @@ export default function RegisterPage() {
 
           {/* Campo Confirmar Senha */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label
+              htmlFor={confirmPasswordId}
+              className="block text-sm font-medium text-slate-700 mb-2"
+            >
               Confirmar senha
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
+                id={confirmPasswordId}
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={formData.confirmPassword}
                 onChange={(e) => handleChange('confirmPassword', e.target.value)}
@@ -222,18 +232,20 @@ export default function RegisterPage() {
           {/* Checkbox Termos */}
           <div className="flex items-start space-x-3">
             <input
+              id={termsId}
               type="checkbox"
               checked={acceptTerms}
               onChange={(e) => setAcceptTerms(e.target.checked)}
               disabled={isLoading}
               className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
             />
-            <label className="text-sm text-slate-600">
+            <label htmlFor={termsId} className="text-sm text-slate-600">
               Eu aceito os{' '}
               <a
                 href="/termos"
                 target="_blank"
                 className="text-indigo-600 font-medium hover:underline"
+                rel="noopener"
               >
                 termos de uso
               </a>{' '}
@@ -242,6 +254,7 @@ export default function RegisterPage() {
                 href="/privacidade"
                 target="_blank"
                 className="text-indigo-600 font-medium hover:underline"
+                rel="noopener"
               >
                 política de privacidade
               </a>

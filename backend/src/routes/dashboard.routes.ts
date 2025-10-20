@@ -1,13 +1,13 @@
 // Referência: tasks.md Task 3.3.3, user-stories.md Story 2.1, design.md §Routes
 // Rotas REST para dashboard com autenticação e documentação OpenAPI
 
-import { Router } from 'express';
-import { DashboardController } from '../controllers/DashboardController';
-import { authenticate } from '../shared/middlewares/authenticate';
-import { dashboardRateLimiter } from '../shared/middlewares/rateLimiter';
+import { Router } from 'express'
+import { DashboardController } from '../controllers/DashboardController'
+import { authenticate } from '../shared/middlewares/authenticate'
+import { dashboardRateLimiter } from '../shared/middlewares/rateLimiter'
 
-export const dashboardRoutes = Router();
-const dashboardController = new DashboardController();
+export const dashboardRoutes = Router()
+const dashboardController = new DashboardController()
 
 /**
  * @swagger
@@ -182,7 +182,7 @@ const dashboardController = new DashboardController();
  *       500:
  *         description: Erro interno do servidor
  */
-dashboardRoutes.get('/metrics', authenticate, dashboardRateLimiter, dashboardController.getMetrics);
+dashboardRoutes.get('/metrics', authenticate, dashboardRateLimiter, dashboardController.getMetrics)
 
 /**
  * @swagger
@@ -251,7 +251,7 @@ dashboardRoutes.get('/metrics', authenticate, dashboardRateLimiter, dashboardCon
  *       500:
  *         description: Erro interno do servidor
  */
-dashboardRoutes.get('/chart', authenticate, dashboardController.getChartData);
+dashboardRoutes.get('/chart', authenticate, dashboardController.getChartData)
 
 /**
  * @swagger
@@ -317,7 +317,7 @@ dashboardRoutes.get('/chart', authenticate, dashboardController.getChartData);
  *       500:
  *         description: Erro interno do servidor
  */
-dashboardRoutes.get('/activities', authenticate, dashboardController.getActivities);
+dashboardRoutes.get('/activities', authenticate, dashboardController.getActivities)
 
 /**
  * @swagger
@@ -358,7 +358,7 @@ dashboardRoutes.get('/activities', authenticate, dashboardController.getActiviti
  *       500:
  *         description: Erro interno do servidor
  */
-dashboardRoutes.delete('/cache', authenticate, dashboardController.invalidateCache);
+dashboardRoutes.delete('/cache', authenticate, dashboardController.invalidateCache)
 
 /**
  * @swagger
@@ -398,7 +398,7 @@ dashboardRoutes.delete('/cache', authenticate, dashboardController.invalidateCac
  *       500:
  *         description: Erro interno do servidor
  */
-dashboardRoutes.get('/cache/stats', authenticate, dashboardController.getCacheStats);
+dashboardRoutes.get('/cache/stats', authenticate, dashboardController.getCacheStats)
 
 /**
  * @swagger
@@ -424,4 +424,4 @@ dashboardRoutes.get('/cache/stats', authenticate, dashboardController.getCacheSt
  *       500:
  *         description: Erro interno do servidor
  */
-dashboardRoutes.get('/top-clients', authenticate, dashboardController.getTopClients);
+dashboardRoutes.get('/top-clients', authenticate, dashboardController.getTopClients)

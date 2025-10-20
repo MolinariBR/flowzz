@@ -12,10 +12,10 @@
  * @data 2025-01-13
  */
 
-import type { Request, Response } from 'express';
-import type { CoinzzService } from '../services/CoinzzService';
-import { connectCoinzzSchema, syncCoinzzSchema } from '../validators/coinzz.validator';
-import logger from '../shared/utils/logger';
+import type { Request, Response } from 'express'
+import type { CoinzzService } from '../services/CoinzzService'
+import logger from '../shared/utils/logger'
+import { connectCoinzzSchema, syncCoinzzSchema } from '../validators/coinzz.validator'
 
 /**
  * CoinzzController - Handlers para endpoints de integração Coinzz
@@ -42,42 +42,47 @@ export class CoinzzController {
   async connect(req: Request, res: Response): Promise<void> {
     try {
       // Validar body
-      const validationResult = connectCoinzzSchema.safeParse(req.body);
+      const validationResult = connectCoinzzSchema.safeParse(req.body)
       if (!validationResult.success) {
         res.status(400).json({
           error: 'VALIDATION_ERROR',
           message: 'Dados inválidos para conectar Coinzz',
           details: validationResult.error.errors,
-        });
-        return;
+        })
+        return
       }
 
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           error: 'UNAUTHORIZED',
           message: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       const dto = {
         apiKey: validationResult.data.apiKey,
-        ...(validationResult.data.webhookUrl && { webhookUrl: validationResult.data.webhookUrl }),
-      };
+        ...(validationResult.data.webhookUrl && {
+          webhookUrl: validationResult.data.webhookUrl,
+        }),
+      }
 
       // Chamar serviço
-      const status = await this.coinzzService.connect(userId, dto as { apiKey: string; webhookUrl?: string });
+      const status = await this.coinzzService.connect(
+        userId,
+        dto as { apiKey: string; webhookUrl?: string }
+      )
 
-      logger.info('Coinzz integration connected via controller', { userId });
+      logger.info('Coinzz integration connected via controller', { userId })
 
       res.status(200).json({
         success: true,
         data: status,
         message: 'Integração Coinzz conectada com sucesso',
-      });
+      })
     } catch (error) {
-      this.handleError(res, error, 'connect');
+      this.handleError(res, error, 'connect')
     }
   }
 
@@ -92,23 +97,23 @@ export class CoinzzController {
    */
   async getStatus(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           error: 'UNAUTHORIZED',
           message: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
-      const status = await this.coinzzService.getStatus(userId);
+      const status = await this.coinzzService.getStatus(userId)
 
       res.status(200).json({
         success: true,
         data: status,
-      });
+      })
     } catch (error) {
-      this.handleError(res, error, 'getStatus');
+      this.handleError(res, error, 'getStatus')
     }
   }
 
@@ -125,39 +130,39 @@ export class CoinzzController {
   async syncManual(req: Request, res: Response): Promise<void> {
     try {
       // Validar body
-      const validationResult = syncCoinzzSchema.safeParse(req.body);
+      const validationResult = syncCoinzzSchema.safeParse(req.body)
       if (!validationResult.success) {
         res.status(400).json({
           error: 'VALIDATION_ERROR',
           message: 'Dados inválidos para sincronização',
           details: validationResult.error.errors,
-        });
-        return;
+        })
+        return
       }
 
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           error: 'UNAUTHORIZED',
           message: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
-      const { forceFullSync } = validationResult.data;
+      const { forceFullSync } = validationResult.data
 
       // Chamar serviço
-      const result = await this.coinzzService.syncSales(userId, forceFullSync);
+      const result = await this.coinzzService.syncSales(userId, forceFullSync)
 
-      logger.info('Coinzz manual sync completed', { userId, result });
+      logger.info('Coinzz manual sync completed', { userId, result })
 
       res.status(200).json({
         success: true,
         data: result,
         message: `Sincronização concluída: ${result.salesCreated} vendas criadas, ${result.salesUpdated} atualizadas`,
-      });
+      })
     } catch (error) {
-      this.handleError(res, error, 'syncManual');
+      this.handleError(res, error, 'syncManual')
     }
   }
 
@@ -172,25 +177,25 @@ export class CoinzzController {
    */
   async disconnect(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
       if (!userId) {
         res.status(401).json({
           error: 'UNAUTHORIZED',
           message: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
-      await this.coinzzService.disconnect(userId);
+      await this.coinzzService.disconnect(userId)
 
-      logger.info('Coinzz integration disconnected via controller', { userId });
+      logger.info('Coinzz integration disconnected via controller', { userId })
 
       res.status(200).json({
         success: true,
         message: 'Integração Coinzz desconectada com sucesso',
-      });
+      })
     } catch (error) {
-      this.handleError(res, error, 'disconnect');
+      this.handleError(res, error, 'disconnect')
     }
   }
 
@@ -200,27 +205,31 @@ export class CoinzzController {
    * Mapeia erros do serviço para respostas HTTP apropriadas
    */
   private handleError(res: Response, error: unknown, operation: string): void {
-    logger.error(`CoinzzController.${operation} error`, { error });
+    logger.error(`CoinzzController.${operation} error`, { error })
 
     if (error instanceof Error) {
-      const message = error.message.toLowerCase();
+      const message = error.message.toLowerCase()
 
       // Integração não encontrada
       if (message.includes('não encontrada') || message.includes('not found')) {
         res.status(404).json({
           error: 'COINZZ_NOT_FOUND',
           message: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Erro de conexão com Coinzz
-      if (message.includes('conexão') || message.includes('connection') || message.includes('api key')) {
+      if (
+        message.includes('conexão') ||
+        message.includes('connection') ||
+        message.includes('api key')
+      ) {
         res.status(400).json({
           error: 'COINZZ_CONNECTION_FAILED',
           message: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Integração não conectada
@@ -228,8 +237,8 @@ export class CoinzzController {
         res.status(400).json({
           error: 'COINZZ_NOT_CONNECTED',
           message: error.message,
-        });
-        return;
+        })
+        return
       }
 
       // Erro genérico
@@ -237,14 +246,14 @@ export class CoinzzController {
         error: 'INTERNAL_SERVER_ERROR',
         message: 'Erro ao processar requisição Coinzz',
         details: error.message,
-      });
-      return;
+      })
+      return
     }
 
     // Erro desconhecido
     res.status(500).json({
       error: 'INTERNAL_SERVER_ERROR',
       message: 'Erro desconhecido ao processar requisição Coinzz',
-    });
+    })
   }
 }

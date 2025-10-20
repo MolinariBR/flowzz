@@ -1,32 +1,32 @@
 // Referência: design.md §API Client, tasks.md Integração Frontend-Backend
 // API client configurado com Axios para Admin Panel
 
-import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'
 
 // Tipos de erro da API
 export interface ApiError {
-  error: string;
-  message: string;
-  statusCode: number;
+  error: string
+  message: string
+  statusCode: number
 }
 
 // Tipos de resposta da API
 export interface ApiResponse<T = unknown> {
-  data: T;
-  message?: string;
+  data: T
+  message?: string
 }
 
 // Tipos de paginação
 export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  data: T[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
 }
 
 // Configuração da API
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1'
 
 // Criar instância do Axios
 const apiClient: AxiosInstance = axios.create({
@@ -37,7 +37,7 @@ const apiClient: AxiosInstance = axios.create({
     Accept: 'application/json',
   },
   withCredentials: true, // Permitir cookies (para refresh token)
-});
+})
 
 // ============================================
 // INTERCEPTORS
@@ -47,71 +47,71 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Obter token do localStorage
-    const token = localStorage.getItem('access_token');
-    
+    const token = localStorage.getItem('access_token')
+
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
 
-    return config;
+    return config
   },
   (error) => {
-    return Promise.reject(error);
-  },
-);
+    return Promise.reject(error)
+  }
+)
 
 // Response Interceptor - Tratar erros e refresh token
 apiClient.interceptors.response.use(
   (response) => {
     // Retornar dados diretamente
-    return response.data;
+    return response.data
   },
   async (error: AxiosError<ApiError>) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
     // Se erro 401 e não é tentativa de refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+      originalRequest._retry = true
 
       try {
         // Tentar refresh token
-        const refreshToken = localStorage.getItem('refresh_token');
-        
+        const refreshToken = localStorage.getItem('refresh_token')
+
         if (!refreshToken) {
-          throw new Error('No refresh token available');
+          throw new Error('No refresh token available')
         }
 
         const response = await axios.post(
           `${API_URL}/auth/refresh`,
           { refreshToken: refreshToken },
-          { withCredentials: true },
-        );
+          { withCredentials: true }
+        )
 
         // API retorna em camelCase
-        const data = response.data.data || response.data;
-        const { accessToken, refreshToken: newRefreshToken } = data.tokens || data;
+        const data = response.data.data || response.data
+        const { accessToken, refreshToken: newRefreshToken } = data.tokens || data
 
         // Salvar novos tokens
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('refresh_token', newRefreshToken);
+        localStorage.setItem('access_token', accessToken)
+        localStorage.setItem('refresh_token', newRefreshToken)
 
         // Atualizar header da requisição original
         if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`
         }
 
         // Repetir requisição original
-        return apiClient(originalRequest);
+        return apiClient(originalRequest)
       } catch (refreshError) {
         // Falha no refresh - fazer logout
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('user')
+
         // Redirecionar para login
-        window.location.href = '/login';
-        
-        return Promise.reject(refreshError);
+        window.location.href = '/login'
+
+        return Promise.reject(refreshError)
       }
     }
 
@@ -120,11 +120,11 @@ apiClient.interceptors.response.use(
       error: error.response?.data?.error || 'Unknown Error',
       message: error.response?.data?.message || error.message || 'An unexpected error occurred',
       statusCode: error.response?.status || 500,
-    };
+    }
 
-    return Promise.reject(apiError);
-  },
-);
+    return Promise.reject(apiError)
+  }
+)
 
 // ============================================
 // HELPER FUNCTIONS
@@ -134,38 +134,38 @@ apiClient.interceptors.response.use(
  * Salvar tokens de autenticação
  */
 export const saveTokens = (accessToken: string, refreshToken: string): void => {
-  localStorage.setItem('access_token', accessToken);
-  localStorage.setItem('refresh_token', refreshToken);
-};
+  localStorage.setItem('access_token', accessToken)
+  localStorage.setItem('refresh_token', refreshToken)
+}
 
 /**
  * Limpar tokens de autenticação
  */
 export const clearTokens = (): void => {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('user');
-};
+  localStorage.removeItem('access_token')
+  localStorage.removeItem('refresh_token')
+  localStorage.removeItem('user')
+}
 
 /**
  * Verificar se usuário está autenticado
  */
 export const isAuthenticated = (): boolean => {
-  return !!localStorage.getItem('access_token');
-};
+  return !!localStorage.getItem('access_token')
+}
 
 /**
  * Obter token de acesso
  */
 export const getAccessToken = (): string | null => {
-  return localStorage.getItem('access_token');
-};
+  return localStorage.getItem('access_token')
+}
 
 // ============================================
 // API CLIENT EXPORT
 // ============================================
 
-export default apiClient;
+export default apiClient
 
 // Type helper para extrair tipo de resposta
-export type UnwrapApiResponse<T> = T extends ApiResponse<infer U> ? U : T;
+export type UnwrapApiResponse<T> = T extends ApiResponse<infer U> ? U : T

@@ -1,8 +1,8 @@
 // Mock helpers para testes com Vitest
 // Exporta mocks do Prisma configurados corretamente
 
-import { vi } from 'vitest';
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client'
+import { vi } from 'vitest'
 
 // Criar mocks para todas as operações do Prisma
 export const createPrismaMock = () => {
@@ -63,12 +63,12 @@ export const createPrismaMock = () => {
       deleteMany: vi.fn(),
     },
     $transaction: vi.fn(),
-  } as unknown as PrismaClient;
-};
+  } as unknown as PrismaClient
+}
 
-export const mockPrisma = createPrismaMock();
+export const mockPrisma = createPrismaMock()
 
 // Reset all mocks
 export const resetAllMocks = () => {
-  vi.clearAllMocks();
-};
+  vi.clearAllMocks()
+}

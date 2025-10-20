@@ -1,74 +1,75 @@
-
-import React from 'react'
 import { motion } from 'framer-motion'
-import {Check, Star, Zap, Crown} from 'lucide-react'
+import { Check, Crown, Star, Zap } from 'lucide-react'
+import { useId } from 'react'
 
 const Plans = () => {
+  const planosId = useId()
+
   const plans = [
     {
-      name: "Básico",
-      price: "R$ 59,90",
-      period: "/mês",
-      description: "Ideal para pequenos negócios que estão começando",
+      name: 'Básico',
+      price: 'R$ 59,90',
+      period: '/mês',
+      description: 'Ideal para pequenos negócios que estão começando',
       icon: Zap,
       features: [
-        "Teste grátis de 7 dias",
-        "Até 100 vendas por mês",
-        "Dashboard básico",
-        "Relatórios mensais",
-        "Suporte por email",
-        "Integração com 2 plataformas"
+        'Teste grátis de 7 dias',
+        'Até 100 vendas por mês',
+        'Dashboard básico',
+        'Relatórios mensais',
+        'Suporte por email',
+        'Integração com 2 plataformas',
       ],
       popular: false,
-      gradient: "from-gray-700 to-gray-800",
-      buttonGradient: "from-gray-600 to-gray-700",
-      hoverGradient: "from-gray-500 to-gray-600"
+      gradient: 'from-gray-700 to-gray-800',
+      buttonGradient: 'from-gray-600 to-gray-700',
+      hoverGradient: 'from-gray-500 to-gray-600',
     },
     {
-      name: "Pro",
-      price: "R$ 99,90",
-      period: "/mês",
-      description: "Perfeito para empresas em crescimento",
+      name: 'Pro',
+      price: 'R$ 99,90',
+      period: '/mês',
+      description: 'Perfeito para empresas em crescimento',
       icon: Star,
       features: [
-        "Até 500 vendas por mês",
-        "Dashboard avançado",
-        "Relatórios semanais",
-        "Suporte prioritário",
-        "Integração com 5 plataformas",
-        "Automação de cobrança",
-        "Análise de inadimplência"
+        'Até 500 vendas por mês',
+        'Dashboard avançado',
+        'Relatórios semanais',
+        'Suporte prioritário',
+        'Integração com 5 plataformas',
+        'Automação de cobrança',
+        'Análise de inadimplência',
       ],
       popular: true,
-      gradient: "from-indigo-900 to-purple-900",
-      buttonGradient: "from-indigo-600 via-purple-600 to-indigo-700",
-      hoverGradient: "from-indigo-500 via-purple-500 to-indigo-600"
+      gradient: 'from-indigo-900 to-purple-900',
+      buttonGradient: 'from-indigo-600 via-purple-600 to-indigo-700',
+      hoverGradient: 'from-indigo-500 via-purple-500 to-indigo-600',
     },
     {
-      name: "Premium",
-      price: "R$ 109,90",
-      period: "/mês",
-      description: "Solução completa para grandes empresas",
+      name: 'Premium',
+      price: 'R$ 109,90',
+      period: '/mês',
+      description: 'Solução completa para grandes empresas',
       icon: Crown,
       features: [
-        "Vendas ilimitadas",
-        "Dashboard personalizado",
-        "Relatórios em tempo real",
-        "Suporte 24/7",
-        "Integrações ilimitadas",
-        "Automação completa",
-        "Consultoria dedicada",
-        "API personalizada"
+        'Vendas ilimitadas',
+        'Dashboard personalizado',
+        'Relatórios em tempo real',
+        'Suporte 24/7',
+        'Integrações ilimitadas',
+        'Automação completa',
+        'Consultoria dedicada',
+        'API personalizada',
       ],
       popular: false,
-      gradient: "from-amber-900 to-orange-900",
-      buttonGradient: "from-amber-600 to-orange-600",
-      hoverGradient: "from-amber-500 to-orange-500"
-    }
+      gradient: 'from-amber-900 to-orange-900',
+      buttonGradient: 'from-amber-600 to-orange-600',
+      hoverGradient: 'from-amber-500 to-orange-500',
+    },
   ]
 
   return (
-    <section id="planos" className="py-20 px-6 lg:px-8">
+    <section id={planosId} className="py-20 px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -85,16 +86,17 @@ const Plans = () => {
           >
             💎 Planos e Preços
           </motion.div>
-          
+
           <h2 className="text-4xl md:text-5xl font-light text-white mb-6 tracking-tight">
             Escolha o plano ideal para{' '}
             <span className="font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
               seu negócio
             </span>
           </h2>
-          
+
           <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Todos os planos incluem nossa tecnologia de ponta para gestão de vendas e cobrança inteligente
+            Todos os planos incluem nossa tecnologia de ponta para gestão de vendas e cobrança
+            inteligente
           </p>
         </motion.div>
 
@@ -128,10 +130,10 @@ const Plans = () => {
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-full mb-4">
                     <IconComponent className="w-8 h-8 text-indigo-400" />
                   </div>
-                  
+
                   <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                   <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
-                  
+
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold text-white">{plan.price}</span>
                     <span className="text-gray-400 ml-1">{plan.period}</span>
@@ -142,7 +144,7 @@ const Plans = () => {
                 <div className="space-y-4 mb-8">
                   {plan.features.map((feature, featureIndex) => (
                     <motion.div
-                      key={featureIndex}
+                      key={`feature-${feature}`}
                       initial={{ opacity: 0, x: -10 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
@@ -152,7 +154,9 @@ const Plans = () => {
                       <div className="flex-shrink-0 w-5 h-5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
-                      <span className={`text-sm ${featureIndex === 0 && plan.name === 'Básico' ? 'text-green-400 font-semibold' : 'text-gray-300'}`}>
+                      <span
+                        className={`text-sm ${featureIndex === 0 && plan.name === 'Básico' ? 'text-green-400 font-semibold' : 'text-gray-300'}`}
+                      >
                         {feature}
                       </span>
                     </motion.div>
@@ -165,25 +169,25 @@ const Plans = () => {
                   whileTap={{ scale: 0.95 }}
                   className={`w-full relative bg-gradient-to-r ${plan.buttonGradient} text-white py-4 px-6 rounded-xl font-bold text-lg shadow-xl transition-all duration-300 overflow-hidden group hover:shadow-2xl`}
                   style={{
-                    boxShadow: plan.popular 
-                      ? '0 20px 40px rgba(99, 102, 241, 0.3)' 
-                      : '0 10px 30px rgba(0, 0, 0, 0.3)'
+                    boxShadow: plan.popular
+                      ? '0 20px 40px rgba(99, 102, 241, 0.3)'
+                      : '0 10px 30px rgba(0, 0, 0, 0.3)',
                   }}
                 >
                   <span className="relative z-10 flex items-center justify-center space-x-2">
                     <span>Eu quero!</span>
                     {plan.popular && <Star className="w-5 h-5" />}
                   </span>
-                  <div className={`absolute inset-0 bg-gradient-to-r ${plan.hoverGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-                  
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-r ${plan.hoverGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                  ></div>
+
                   {/* Shimmer effect */}
                   <div className="absolute inset-0 -top-2 -bottom-2 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                 </motion.button>
 
                 {/* Guarantee */}
-                <p className="text-center text-gray-400 text-xs mt-4">
-                  ✅ Garantia de 30 dias
-                </p>
+                <p className="text-center text-gray-400 text-xs mt-4">✅ Garantia de 30 dias</p>
               </motion.div>
             )
           })}

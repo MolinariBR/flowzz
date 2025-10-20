@@ -8,11 +8,11 @@
  * - TASK10_STORAGE_TODO.md: Cleanup de arquivos >30 dias
  */
 
-import { CronJob } from 'cron';
-import { StorageService } from '../services/StorageService';
-import { logger } from '../shared/utils/logger';
+import { CronJob } from 'cron'
+import { StorageService } from '../services/StorageService'
+import { logger } from '../shared/utils/logger'
 
-const storageService = new StorageService();
+const storageService = new StorageService()
 
 /**
  * Job que roda diariamente às 3h da manhã (horário de Brasília)
@@ -30,53 +30,57 @@ export const storageCleanupJob = new CronJob(
   async () => {
     try {
       if (!storageService.isReady()) {
-        logger.warn('Storage cleanup skipped - service not configured');
-        return;
+        logger.warn('Storage cleanup skipped - service not configured')
+        return
       }
 
-      logger.info('Starting storage cleanup job');
+      logger.info('Starting storage cleanup job')
 
-      const startTime = Date.now();
-      const deletedCount = await storageService.cleanupOldFiles(30); // 30 dias
-      const duration = Date.now() - startTime;
+      const startTime = Date.now()
+      const deletedCount = await storageService.cleanupOldFiles(30) // 30 dias
+      const duration = Date.now() - startTime
 
       logger.info('Storage cleanup completed successfully', {
         deletedCount,
         duration: `${duration}ms`,
         olderThanDays: 30,
-      });
+      })
     } catch (error) {
       logger.error('Storage cleanup job failed', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-      });
+      })
     }
   },
   null, // onComplete callback
   false, // start: false (será iniciado manualmente no server.ts)
-  'America/Sao_Paulo', // timezone
-);
+  'America/Sao_Paulo' // timezone
+)
 
 /**
  * Inicia o job de cleanup
  */
 export function startStorageCleanup(): void {
   if (!storageService.isReady()) {
-    logger.warn('Storage cleanup job not started - service not configured');
-    return;
+    logger.warn('Storage cleanup job not started - service not configured')
+    return
   }
 
-  storageCleanupJob.start();
-  logger.info('Storage cleanup job scheduled (daily at 3 AM Brasília time)');
+  storageCleanupJob.start()
+  logger.info('Storage cleanup job scheduled (daily at 3 AM Brasília time)')
 }
 
 /**
  * Para o job de cleanup
  */
 export function stopStorageCleanup(): void {
-  if (storageCleanupJob && typeof (storageCleanupJob as any).running !== 'undefined' && (storageCleanupJob as any).running) {
-    storageCleanupJob.stop();
-    logger.info('Storage cleanup job stopped');
+  if (
+    storageCleanupJob &&
+    typeof (storageCleanupJob as any).running !== 'undefined' &&
+    (storageCleanupJob as any).running
+  ) {
+    storageCleanupJob.stop()
+    logger.info('Storage cleanup job stopped')
   }
 }
 
@@ -85,12 +89,12 @@ export function stopStorageCleanup(): void {
  */
 export async function runStorageCleanupNow(): Promise<number> {
   if (!storageService.isReady()) {
-    throw new Error('Storage service not configured');
+    throw new Error('Storage service not configured')
   }
 
-  logger.info('Running manual storage cleanup');
-  const deletedCount = await storageService.cleanupOldFiles(30);
-  logger.info('Manual storage cleanup completed', { deletedCount });
+  logger.info('Running manual storage cleanup')
+  const deletedCount = await storageService.cleanupOldFiles(30)
+  logger.info('Manual storage cleanup completed', { deletedCount })
 
-  return deletedCount;
+  return deletedCount
 }

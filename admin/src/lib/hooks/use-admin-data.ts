@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { adminApi, type AdminMetrics } from '../api/admin-api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
+import { type AdminMetrics, adminApi } from '../api/admin-api'
 
 export const useAdminMetrics = () => {
   return useQuery<AdminMetrics>({
@@ -14,7 +14,7 @@ export const useUserGrowth = (period: number = 12) => {
   return useQuery({
     queryKey: ['user-growth', period],
     queryFn: () => adminApi.getUsersGrowth(period),
-    staleTime: 2 * 60 * 1000 // 2 minutos
+    staleTime: 2 * 60 * 1000, // 2 minutos
   })
 }
 
@@ -33,27 +33,24 @@ export const useRevenueData = () => {
         { month: 'Jun', mrr: 0 },
       ]
     },
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
   })
 }
 
-export const useUsers = (params: {
-  page?: number
-  search?: string
-  plan?: string
-  status?: string
-} = {}) => {
+export const useUsers = (
+  params: { page?: number; search?: string; plan?: string; status?: string } = {}
+) => {
   return useQuery({
     queryKey: ['users', params],
-    queryFn: () => adminApi.listUsers(params)
+    queryFn: () => adminApi.listUsers(params),
   })
 }
 
 export const useSuspendUser = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ userId, reason }: { userId: string; reason: string }) => 
+    mutationFn: ({ userId, reason }: { userId: string; reason: string }) =>
       adminApi.suspendUser(userId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
@@ -62,13 +59,13 @@ export const useSuspendUser = () => {
     },
     onError: () => {
       toast.error('Erro ao suspender usuário')
-    }
+    },
   })
 }
 
 export const useReactivateUser = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: adminApi.reactivateUser,
     onSuccess: () => {
@@ -78,7 +75,7 @@ export const useReactivateUser = () => {
     },
     onError: () => {
       toast.error('Erro ao reativar usuário')
-    }
+    },
   })
 }
 
@@ -92,6 +89,6 @@ export const useImpersonateUser = () => {
     },
     onError: () => {
       toast.error('Erro ao gerar token de impersonificação')
-    }
+    },
   })
 }

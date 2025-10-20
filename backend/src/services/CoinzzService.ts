@@ -22,26 +22,26 @@
  * - Mapeamento de dados Coinzz → Sale model
  */
 
-import crypto from 'crypto';
-import type { PrismaClient, SaleStatus } from '@prisma/client';
-import { logger } from '../shared/utils/logger';
+import crypto from 'node:crypto'
+import type { PrismaClient, SaleStatus } from '@prisma/client'
 import type {
-  ICoinzzService,
-  ICoinzzWebhookPayload,
-  ICoinzzSubscriptionWebhookPayload,
-  ConnectCoinzzDTO,
   CoinzzStatusDTO,
+  ConnectCoinzzDTO,
+  ICoinzzIntegrationConfig,
+  ICoinzzService,
+  ICoinzzSubscriptionWebhookPayload,
+  ICoinzzWebhookPayload,
   SyncResultDTO,
   TestConnectionResponseDTO,
-  ICoinzzIntegrationConfig,
-} from '../interfaces/CoinzzService.interface';
+} from '../interfaces/CoinzzService.interface'
+import { logger } from '../shared/utils/logger'
 import {
-  mapCoinzzStatus,
-  formatDocument,
   formatCep,
+  formatDocument,
   formatPhone,
+  mapCoinzzStatus,
   parseCoinzzDate,
-} from '../validators/coinzz.validator';
+} from '../validators/coinzz.validator'
 
 /**
  * CoinzzService Implementation
@@ -50,19 +50,19 @@ import {
  * Dependências: PrismaClient injetado via constructor
  */
 export class CoinzzService implements ICoinzzService {
-  private readonly prisma: PrismaClient;
-  private readonly encryptionKey: string;
-  private readonly encryptionAlgorithm = 'aes-256-cbc';
+  private readonly prisma: PrismaClient
+  private readonly encryptionKey: string
+  private readonly encryptionAlgorithm = 'aes-256-cbc'
 
   constructor(prisma: PrismaClient) {
-    this.prisma = prisma;
+    this.prisma = prisma
 
     // Encryption key deve estar em .env
     // Referência: design.md §Security - AES-256 encryption
-    this.encryptionKey = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
+    this.encryptionKey = process.env.ENCRYPTION_KEY || 'default-key-change-in-production'
 
     if (this.encryptionKey === 'default-key-change-in-production') {
-      logger.warn('⚠️ ENCRYPTION_KEY não configurada, usando chave padrão (INSEGURO)');
+      logger.warn('⚠️ ENCRYPTION_KEY não configurada, usando chave padrão (INSEGURO)')
     }
   }
 
@@ -74,22 +74,25 @@ export class CoinzzService implements ICoinzzService {
    * - user-stories.md: Story 1.3 Cenário 1
    */
   async connect(userId: string, dto: ConnectCoinzzDTO): Promise<CoinzzStatusDTO> {
-    logger.info('Connecting Coinzz integration', { userId });
+    logger.info('Connecting Coinzz integration', { userId })
 
     // 1. Testar conexão com API Key fornecida
-    const testResult = await this.testConnection(dto.apiKey);
+    const testResult = await this.testConnection(dto.apiKey)
 
     if (!testResult.connected) {
-      logger.error('Coinzz connection test failed', { userId, error: testResult.message });
-      throw new Error(`Falha ao conectar com Coinzz: ${testResult.message}`);
+      logger.error('Coinzz connection test failed', {
+        userId,
+        error: testResult.message,
+      })
+      throw new Error(`Falha ao conectar com Coinzz: ${testResult.message}`)
     }
 
     // 2. Criptografar API Key
-    const encryptedApiKey = this.encryptApiKey(dto.apiKey);
+    const encryptedApiKey = this.encryptApiKey(dto.apiKey)
 
     // 3. Gerar URL do webhook
-    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
-    const webhookUrl = dto.webhookUrl || `${baseUrl}/webhooks/coinzz`;
+    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000'
+    const webhookUrl = dto.webhookUrl || `${baseUrl}/webhooks/coinzz`
 
     // 4. Criar configuração da integração
     const config: ICoinzzIntegrationConfig = {
@@ -98,7 +101,7 @@ export class CoinzzService implements ICoinzzService {
       lastSyncAt: null,
       syncEnabled: true,
       syncFrequency: '0 * * * *', // Cron: a cada hora
-    };
+    }
 
     // 5. Verificar se já existe integração
     const existingIntegration = await this.prisma.integration.findFirst({
@@ -106,23 +109,23 @@ export class CoinzzService implements ICoinzzService {
         user_id: userId,
         provider: 'COINZZ',
       },
-    });
+    })
 
     type IntegrationRecord = {
-      id: string;
-      user_id: string;
-      status: string;
-      config: unknown;
-      last_sync: Date | null;
-      created_at: Date;
+      id: string
+      user_id: string
+      status: string
+      config: unknown
+      last_sync: Date | null
+      created_at: Date
       updated_at: Date
-    };
+    }
 
-    let integration: IntegrationRecord;
+    let integration: IntegrationRecord
 
     if (existingIntegration) {
       // Atualizar integração existente
-      integration = await this.prisma.integration.update({
+      integration = (await this.prisma.integration.update({
         where: { id: existingIntegration.id },
         data: {
           status: 'CONNECTED',
@@ -130,33 +133,39 @@ export class CoinzzService implements ICoinzzService {
           last_sync: null,
           updated_at: new Date(),
         },
-      }) as IntegrationRecord;
+      })) as IntegrationRecord
 
-      logger.info('Coinzz integration updated', { userId, integrationId: integration.id });
+      logger.info('Coinzz integration updated', {
+        userId,
+        integrationId: integration.id,
+      })
     } else {
       // Criar nova integração
-      integration = await this.prisma.integration.create({
+      integration = (await this.prisma.integration.create({
         data: {
           user_id: userId,
           provider: 'COINZZ',
           status: 'CONNECTED',
           config: JSON.parse(JSON.stringify(config)),
         },
-      }) as IntegrationRecord;
+      })) as IntegrationRecord
 
-      logger.info('Coinzz integration created', { userId, integrationId: integration.id });
+      logger.info('Coinzz integration created', {
+        userId,
+        integrationId: integration.id,
+      })
     }
 
     // 6. Realizar sincronização inicial (últimas 1000 vendas ou 90 dias)
     // Referência: user-stories.md Story 1.3 - Critérios de Aceitação
     try {
-      await this.syncSales(userId, false);
-      logger.info('Initial Coinzz sync completed', { userId });
+      await this.syncSales(userId, false)
+      logger.info('Initial Coinzz sync completed', { userId })
     } catch (error) {
       logger.error('Initial Coinzz sync failed', {
         userId,
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      })
       // Não falha a conexão se sync inicial falhar
     }
 
@@ -171,7 +180,7 @@ export class CoinzzService implements ICoinzzService {
       webhookUrl: '', // TODO: armazenar webhook_url em config
       createdAt: integration.created_at,
       updatedAt: integration.updated_at,
-    };
+    }
   }
 
   /**
@@ -185,28 +194,28 @@ export class CoinzzService implements ICoinzzService {
    * Por ora, retorna mock de sucesso se API Key tem formato válido
    */
   async testConnection(apiKey: string): Promise<TestConnectionResponseDTO> {
-    logger.info('Testing Coinzz connection');
+    logger.info('Testing Coinzz connection')
 
     // Validação básica de formato
     if (!apiKey || apiKey.length < 20) {
       return {
         connected: false,
         message: 'API Key inválida: deve ter no mínimo 20 caracteres',
-      };
+      }
     }
 
     // TODO: Quando API Coinzz estiver documentada, implementar chamada real
     // Exemplo: const response = await fetch('https://api.coinzz.com/v1/validate', ...)
 
     // Por ora, retorna sucesso para permitir desenvolvimento
-    logger.info('Coinzz connection test successful (mock)');
+    logger.info('Coinzz connection test successful (mock)')
 
     return {
       connected: true,
       message: 'Conexão bem-sucedida com Coinzz',
       lastSyncAt: new Date(),
       totalSales: 0,
-    };
+    }
   }
 
   /**
@@ -216,17 +225,17 @@ export class CoinzzService implements ICoinzzService {
    * - tasks.md: Task 5.2.5 - POST /integrations/coinzz/disconnect
    */
   async disconnect(userId: string): Promise<void> {
-    logger.info('Disconnecting Coinzz integration', { userId });
+    logger.info('Disconnecting Coinzz integration', { userId })
 
     const integration = await this.prisma.integration.findFirst({
       where: {
         user_id: userId,
         provider: 'COINZZ',
       },
-    });
+    })
 
     if (!integration) {
-      throw new Error('Integração Coinzz não encontrada');
+      throw new Error('Integração Coinzz não encontrada')
     }
 
     await this.prisma.integration.update({
@@ -235,9 +244,12 @@ export class CoinzzService implements ICoinzzService {
         status: 'DISCONNECTED',
         updated_at: new Date(),
       },
-    });
+    })
 
-    logger.info('Coinzz integration disconnected', { userId, integrationId: integration.id });
+    logger.info('Coinzz integration disconnected', {
+      userId,
+      integrationId: integration.id,
+    })
   }
 
   /**
@@ -252,10 +264,10 @@ export class CoinzzService implements ICoinzzService {
         user_id: userId,
         provider: 'COINZZ',
       },
-    });
+    })
 
     if (!integration) {
-      throw new Error('Integração Coinzz não encontrada');
+      throw new Error('Integração Coinzz não encontrada')
     }
 
     // Contar vendas sincronizadas
@@ -264,12 +276,17 @@ export class CoinzzService implements ICoinzzService {
         user_id: userId,
         external_id: { not: null }, // Vendas vindas do Coinzz têm external_id
       },
-    });
+    })
 
     return {
       id: integration.id,
       connected: integration.status === 'CONNECTED',
-      status: integration.status === 'CONNECTED' ? 'conectado' : integration.status === 'DISCONNECTED' ? 'desconectado' : 'erro',
+      status:
+        integration.status === 'CONNECTED'
+          ? 'conectado'
+          : integration.status === 'DISCONNECTED'
+            ? 'desconectado'
+            : 'erro',
       lastSyncAt: integration.last_sync,
       lastSyncStatus: null, // TODO: armazenar em metadados
       lastSyncError: null,
@@ -277,7 +294,7 @@ export class CoinzzService implements ICoinzzService {
       webhookUrl: '', // TODO: extrair de config
       createdAt: integration.created_at,
       updatedAt: integration.updated_at,
-    };
+    }
   }
 
   /**
@@ -291,7 +308,7 @@ export class CoinzzService implements ICoinzzService {
    * NOTA: Implementação mock até API real estar disponível
    */
   async syncSales(userId: string, forceFullSync = false): Promise<SyncResultDTO> {
-    logger.info('Starting Coinzz sync', { userId, forceFullSync });
+    logger.info('Starting Coinzz sync', { userId, forceFullSync })
 
     const integration = await this.prisma.integration.findFirst({
       where: {
@@ -299,22 +316,22 @@ export class CoinzzService implements ICoinzzService {
         provider: 'COINZZ',
         status: 'CONNECTED',
       },
-    });
+    })
 
     if (!integration) {
-      throw new Error('Integração Coinzz não está conectada');
+      throw new Error('Integração Coinzz não está conectada')
     }
 
-    const config = integration.config as unknown as ICoinzzIntegrationConfig;
+    const config = integration.config as unknown as ICoinzzIntegrationConfig
 
     // Decriptar API key para usar na sincronização
-    const _apiKey = this.decryptApiKey(config.apiKey);
+    const _apiKey = this.decryptApiKey(config.apiKey)
 
     // TODO: Implementar chamada real à API Coinzz quando documentação estiver disponível
     // Por ora, retorna mock de sucesso
     // Exemplo: const sales = await coinzzAPI.getSales(_apiKey, { since: lastSync })
 
-    logger.info('Coinzz sync completed (mock)', { userId });
+    logger.info('Coinzz sync completed (mock)', { userId })
 
     // Atualizar última sincronização
     await this.prisma.integration.update({
@@ -322,7 +339,7 @@ export class CoinzzService implements ICoinzzService {
       data: {
         last_sync: new Date(),
       },
-    });
+    })
 
     return {
       success: true,
@@ -331,7 +348,7 @@ export class CoinzzService implements ICoinzzService {
       salesUpdated: 0,
       errors: 0,
       syncedAt: new Date(),
-    };
+    }
   }
 
   /**
@@ -346,7 +363,7 @@ export class CoinzzService implements ICoinzzService {
     logger.info('Processing Coinzz webhook', {
       orderNumber: payload.order.order_number,
       clientName: payload.client.client_name,
-    });
+    })
 
     // 1. Encontrar integração pelo producer_email ou webhook
     const integration = await this.prisma.integration.findFirst({
@@ -354,30 +371,27 @@ export class CoinzzService implements ICoinzzService {
         provider: 'COINZZ',
         status: 'CONNECTED',
       },
-    });
+    })
 
     if (!integration) {
       logger.warn('No active Coinzz integration found for webhook', {
         producerEmail: payload.order.producer_email,
-      });
-      return;
+      })
+      return
     }
 
-    const userId = integration.user_id;
+    const userId = integration.user_id
 
     // 2. Mapear dados do webhook para Sale e Client
-    const { saleData, clientData } = await this.mapWebhookToSale(userId, payload);
+    const { saleData, clientData } = await this.mapWebhookToSale(userId, payload)
 
     // 3. Buscar ou criar cliente
     let client = await this.prisma.client.findFirst({
       where: {
         user_id: userId,
-        OR: [
-          { cpf: clientData.cpf },
-          { phone: clientData.phone },
-        ],
+        OR: [{ cpf: clientData.cpf }, { phone: clientData.phone }],
       },
-    });
+    })
 
     if (!client) {
       client = await this.prisma.client.create({
@@ -386,9 +400,12 @@ export class CoinzzService implements ICoinzzService {
           ...clientData,
           status: 'ACTIVE',
         },
-      });
+      })
 
-      logger.info('Client created from webhook', { clientId: client.id, userId });
+      logger.info('Client created from webhook', {
+        clientId: client.id,
+        userId,
+      })
     }
 
     // 4. Buscar venda existente por external_id
@@ -397,7 +414,7 @@ export class CoinzzService implements ICoinzzService {
         user_id: userId,
         external_id: saleData.external_id,
       },
-    });
+    })
 
     if (existingSale) {
       // Atualizar venda existente
@@ -408,9 +425,12 @@ export class CoinzzService implements ICoinzzService {
           status: saleData.status as SaleStatus, // Status already mapped by mapCoinzzStatus helper
           client_id: client.id,
         },
-      });
+      })
 
-      logger.info('Sale updated from webhook', { saleId: existingSale.id, userId });
+      logger.info('Sale updated from webhook', {
+        saleId: existingSale.id,
+        userId,
+      })
     } else {
       // Criar nova venda
       await this.prisma.sale.create({
@@ -420,9 +440,12 @@ export class CoinzzService implements ICoinzzService {
           ...saleData,
           status: saleData.status as SaleStatus, // Status already mapped by mapCoinzzStatus helper
         },
-      });
+      })
 
-      logger.info('Sale created from webhook', { external_id: saleData.external_id, userId });
+      logger.info('Sale created from webhook', {
+        external_id: saleData.external_id,
+        userId,
+      })
     }
 
     // 5. Invalidar cache do dashboard
@@ -432,7 +455,7 @@ export class CoinzzService implements ICoinzzService {
     logger.info('Coinzz webhook processed successfully', {
       orderNumber: payload.order.order_number,
       userId,
-    });
+    })
   }
 
   /**
@@ -445,7 +468,7 @@ export class CoinzzService implements ICoinzzService {
     logger.info('Processing Coinzz subscription webhook', {
       subscriptionHash: payload.subscription.subscription_hash,
       status: payload.subscription.status,
-    });
+    })
 
     // Processar como pedido normal, mas adicionar dados de assinatura aos metadados
     await this.processWebhook({
@@ -455,7 +478,7 @@ export class CoinzzService implements ICoinzzService {
         // Adicionar informações de assinatura aos metadados
       },
       utms: payload.utms,
-    });
+    })
   }
 
   /**
@@ -465,41 +488,44 @@ export class CoinzzService implements ICoinzzService {
    * - tasks.md: Task 5.2.2
    * - webhookcoinzz.md: Estrutura completa
    */
-  async mapWebhookToSale(_userId: string, payload: ICoinzzWebhookPayload): Promise<{
+  async mapWebhookToSale(
+    _userId: string,
+    payload: ICoinzzWebhookPayload
+  ): Promise<{
     saleData: {
-      product_name: string;
-      quantity: number;
-      unit_price: number;
-      total_price: number;
-      status: string;
-      payment_method: string;
-      external_id: string;
-      sale_date: Date;
-      metadata: Record<string, unknown>;
-    };
+      product_name: string
+      quantity: number
+      unit_price: number
+      total_price: number
+      status: string
+      payment_method: string
+      external_id: string
+      sale_date: Date
+      metadata: Record<string, unknown>
+    }
     clientData: {
-      name: string;
-      email: string | null;
-      phone: string;
-      cpf: string;
-      address: string;
-      city: string;
-      state: string;
-      cep: string;
-    };
+      name: string
+      email: string | null
+      phone: string
+      cpf: string
+      address: string
+      city: string
+      state: string
+      cep: string
+    }
   }> {
-    const { client, order, utms } = payload;
+    const { client, order, utms } = payload
 
     // Mapear status Coinzz → SaleStatus
-    const status = mapCoinzzStatus(order.order_status);
+    const status = mapCoinzzStatus(order.order_status)
 
     // Parsear data do pedido
-    const sale_date = parseCoinzzDate(order.date_order);
+    const sale_date = parseCoinzzDate(order.date_order)
 
     // Calcular pre\u00e7o unit\u00e1rio
-    const quantity = order.order_quantity;
-    const total_price = order.order_final_price;
-    const unit_price = quantity > 0 ? total_price / quantity : total_price;
+    const quantity = order.order_quantity
+    const total_price = order.order_final_price
+    const unit_price = quantity > 0 ? total_price / quantity : total_price
 
     // Montar metadados com informações extras
     const metadata = {
@@ -520,7 +546,7 @@ export class CoinzzService implements ICoinzzService {
         content: utms.utm_content,
         term: utms.utm_term,
       },
-    };
+    }
 
     const saleData = {
       product_name: order.product_name,
@@ -532,7 +558,7 @@ export class CoinzzService implements ICoinzzService {
       external_id: order.order_number,
       sale_date,
       metadata,
-    };
+    }
 
     const clientData = {
       name: client.client_name,
@@ -543,9 +569,9 @@ export class CoinzzService implements ICoinzzService {
       city: client.client_address_city,
       state: client.client_address_state,
       cep: formatCep(client.client_zip_code),
-    };
+    }
 
-    return { saleData, clientData };
+    return { saleData, clientData }
   }
 
   /**
@@ -556,35 +582,35 @@ export class CoinzzService implements ICoinzzService {
    * - design.md: Security - AES-256 encryption
    */
   encryptApiKey(apiKey: string): string {
-    const iv = crypto.randomBytes(16);
-    const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
-    const cipher = crypto.createCipheriv(this.encryptionAlgorithm, key, iv);
+    const iv = crypto.randomBytes(16)
+    const key = crypto.scryptSync(this.encryptionKey, 'salt', 32)
+    const cipher = crypto.createCipheriv(this.encryptionAlgorithm, key, iv)
 
-    let encrypted = cipher.update(apiKey, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
+    let encrypted = cipher.update(apiKey, 'utf8', 'hex')
+    encrypted += cipher.final('hex')
 
     // Retorna IV + encrypted (separados por :)
-    return `${iv.toString('hex')}:${encrypted}`;
+    return `${iv.toString('hex')}:${encrypted}`
   }
 
   /**
    * Descriptografa API Key
    */
   decryptApiKey(encryptedApiKey: string): string {
-    const parts = encryptedApiKey.split(':');
+    const parts = encryptedApiKey.split(':')
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
-      throw new Error('Formato inválido de API key criptografada');
+      throw new Error('Formato inválido de API key criptografada')
     }
 
-    const ivHex = parts[0];
-    const encrypted = parts[1];
+    const ivHex = parts[0]
+    const encrypted = parts[1]
 
-    const iv = Buffer.from(ivHex, 'hex');
-    const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
-    const decipher = crypto.createDecipheriv(this.encryptionAlgorithm, key, iv);
+    const iv = Buffer.from(ivHex, 'hex')
+    const key = crypto.scryptSync(this.encryptionKey, 'salt', 32)
+    const decipher = crypto.createDecipheriv(this.encryptionAlgorithm, key, iv)
 
-    const decrypted = decipher.update(encrypted, 'hex', 'utf8') + decipher.final('utf8');
+    const decrypted = decipher.update(encrypted, 'hex', 'utf8') + decipher.final('utf8')
 
-    return decrypted;
+    return decrypted
   }
 }

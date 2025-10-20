@@ -1,8 +1,7 @@
 // Referência: design.md §Repository Pattern, dev-stories.md §Dev Story 2.1
 // Atende user-stories.md Story 3.1 - API de clientes com paginação e filtros
 
-import type { Client } from '@prisma/client';
-import { prisma } from '../shared/config/database';
+import type { Client } from '@prisma/client'
 import type {
   ClientFilters,
   CreateClientDTO,
@@ -10,7 +9,8 @@ import type {
   PaginatedClients,
   PaginationOptions,
   UpdateClientDTO,
-} from '../interfaces/ClientRepository.interface';
+} from '../interfaces/ClientRepository.interface'
+import { prisma } from '../shared/config/database'
 
 export class ClientRepository implements IClientRepository {
   async findById(id: string): Promise<Client | null> {
@@ -23,33 +23,33 @@ export class ClientRepository implements IClientRepository {
           },
         },
       },
-    });
+    })
   }
 
   async findByUserId(
     userId: string,
     filters?: ClientFilters,
-    pagination?: PaginationOptions,
+    pagination?: PaginationOptions
   ): Promise<PaginatedClients> {
-    const page = pagination?.page || 1;
-    const limit = pagination?.limit || 20;
-    const skip = (page - 1) * limit;
+    const page = pagination?.page || 1
+    const limit = pagination?.limit || 20
+    const skip = (page - 1) * limit
 
     // Build where clause with filters
     const where: { [key: string]: unknown } = {
       user_id: userId,
-    };
+    }
 
     if (filters?.search) {
       where.OR = [
         { name: { contains: filters.search, mode: 'insensitive' } },
         { email: { contains: filters.search, mode: 'insensitive' } },
         { phone: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      ]
     }
 
     if (filters?.status) {
-      where.status = filters.status;
+      where.status = filters.status
     }
 
     if (filters?.tags && filters.tags.length > 0) {
@@ -59,7 +59,7 @@ export class ClientRepository implements IClientRepository {
             in: filters.tags,
           },
         },
-      };
+      }
     }
 
     // Execute query with pagination
@@ -78,7 +78,7 @@ export class ClientRepository implements IClientRepository {
         },
       }),
       this.count(userId, filters),
-    ]);
+    ])
 
     return {
       data,
@@ -88,7 +88,7 @@ export class ClientRepository implements IClientRepository {
         limit,
         pages: Math.ceil(total / limit),
       },
-    };
+    }
   }
 
   async create(data: CreateClientDTO): Promise<Client> {
@@ -104,7 +104,7 @@ export class ClientRepository implements IClientRepository {
       ...(data.state && { state: data.state }),
       ...(data.cep && { cep: data.cep }),
       ...(data.external_id && { external_id: data.external_id }),
-    };
+    }
 
     return await prisma.client.create({
       data: createData,
@@ -115,7 +115,7 @@ export class ClientRepository implements IClientRepository {
           },
         },
       },
-    });
+    })
   }
 
   async update(id: string, data: UpdateClientDTO): Promise<Client> {
@@ -129,7 +129,7 @@ export class ClientRepository implements IClientRepository {
       ...(data.state !== undefined && { state: data.state }),
       ...(data.cep !== undefined && { cep: data.cep }),
       ...(data.status !== undefined && { status: data.status }),
-    };
+    }
 
     return await prisma.client.update({
       where: { id },
@@ -141,30 +141,30 @@ export class ClientRepository implements IClientRepository {
           },
         },
       },
-    });
+    })
   }
 
   async delete(id: string): Promise<void> {
     await prisma.client.delete({
       where: { id },
-    });
+    })
   }
 
   async count(userId: string, filters?: ClientFilters): Promise<number> {
     const where: { [key: string]: unknown } = {
       user_id: userId,
-    };
+    }
 
     if (filters?.search) {
       where.OR = [
         { name: { contains: filters.search, mode: 'insensitive' } },
         { email: { contains: filters.search, mode: 'insensitive' } },
         { phone: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      ]
     }
 
     if (filters?.status) {
-      where.status = filters.status;
+      where.status = filters.status
     }
 
     if (filters?.tags && filters.tags.length > 0) {
@@ -174,18 +174,18 @@ export class ClientRepository implements IClientRepository {
             in: filters.tags,
           },
         },
-      };
+      }
     }
 
-    return await prisma.client.count({ where });
+    return await prisma.client.count({ where })
   }
 
   async checkOwnership(id: string, userId: string): Promise<boolean> {
     const client = await prisma.client.findFirst({
       where: { id, user_id: userId },
       select: { id: true },
-    });
+    })
 
-    return client !== null;
+    return client !== null
   }
 }

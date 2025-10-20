@@ -4,84 +4,82 @@
  */
 
 export {
-  coinzzHandlers,
   coinzzErrorHandlers,
+  coinzzHandlers,
   coinzzServer,
-} from './coinzz.mock';
+} from './coinzz.mock'
 
 export {
-  facebookHandlers,
   facebookErrorHandlers,
+  facebookHandlers,
   facebookServer,
-} from './facebook.mock';
-
+} from './facebook.mock'
 export {
-  whatsappHandlers,
-  whatsappErrorHandlers,
-  whatsappServer,
-  mockWhatsAppWebhookSent,
-  mockWhatsAppWebhookDelivered,
-  mockWhatsAppWebhookRead,
-} from './whatsapp.mock';
-
-export {
-  pagbankHandlers,
-  pagbankErrorHandlers,
-  pagbankServer,
   mockPagBankWebhookPaymentApproved,
   mockPagBankWebhookPaymentDeclined,
   mockPagBankWebhookSubscriptionCancelled,
-} from './pagbank.mock';
+  pagbankErrorHandlers,
+  pagbankHandlers,
+  pagbankServer,
+} from './pagbank.mock'
+export {
+  mockWhatsAppWebhookDelivered,
+  mockWhatsAppWebhookRead,
+  mockWhatsAppWebhookSent,
+  whatsappErrorHandlers,
+  whatsappHandlers,
+  whatsappServer,
+} from './whatsapp.mock'
 
 /**
  * Setup global de todos os servidores MSW
  * Use em vitest.setup.ts ou beforeAll global
  */
 export function setupAllMockServers() {
-  const { coinzzServer } = require('./coinzz.mock');
-  const { facebookServer } = require('./facebook.mock');
-  const { whatsappServer } = require('./whatsapp.mock');
-  const { pagbankServer } = require('./pagbank.mock');
+  const { coinzzServer } = require('./coinzz.mock')
+  const { facebookServer } = require('./facebook.mock')
+  const { whatsappServer } = require('./whatsapp.mock')
+  const { pagbankServer } = require('./pagbank.mock')
 
   return {
     coinzzServer,
     facebookServer,
     whatsappServer,
     pagbankServer,
-  };
+  }
 }
 
 /**
  * Inicia todos os servidores MSW
  */
 export function startAllMockServers() {
-  const servers = setupAllMockServers();
-  
-  Object.values(servers).forEach((server: any) => {
-    server.listen({ onUnhandledRequest: 'warn' });
-  });
+  const servers = setupAllMockServers()
 
-  return servers;
+  Object.values(servers).forEach((server: any) => {
+    server.listen({ onUnhandledRequest: 'warn' })
+  })
+
+  return servers
 }
 
 /**
  * Para todos os servidores MSW
  */
 export function stopAllMockServers() {
-  const servers = setupAllMockServers();
-  
+  const servers = setupAllMockServers()
+
   Object.values(servers).forEach((server: any) => {
-    server.close();
-  });
+    server.close()
+  })
 }
 
 /**
  * Reseta handlers de todos os servidores MSW
  */
 export function resetAllMockServers() {
-  const servers = setupAllMockServers();
-  
+  const servers = setupAllMockServers()
+
   Object.values(servers).forEach((server: any) => {
-    server.resetHandlers();
-  });
+    server.resetHandlers()
+  })
 }

@@ -2,11 +2,14 @@
 // Exemplo de uso dos middlewares de validação de subscription
 // Referência: tasks.md Task 2.2.3, design.md Authorization
 
-import { Router } from 'express';
-import { authenticate } from '../shared/middlewares/authenticate';
-import { validateSubscription, validateSubscriptionWithWarning } from '../shared/middlewares/validateSubscription';
+import { Router } from 'express'
+import { authenticate } from '../shared/middlewares/authenticate'
+import {
+  validateSubscription,
+  validateSubscriptionWithWarning,
+} from '../shared/middlewares/validateSubscription'
 
-const router = Router();
+const router = Router()
 
 /**
  * Rotas que requerem subscription ativa ou trial válido
@@ -19,8 +22,8 @@ router.get('/dashboard', authenticate, validateSubscriptionWithWarning, (req, re
     message: 'Dashboard data',
     user_id: req.user?.userId,
     note: 'Trial users have access to this feature',
-  });
-});
+  })
+})
 
 // Exemplo: Funcionalidade premium (requer subscription ativa)
 router.get('/analytics', authenticate, validateSubscription, (req, res) => {
@@ -28,8 +31,8 @@ router.get('/analytics', authenticate, validateSubscription, (req, res) => {
     message: 'Advanced analytics data',
     user_id: req.user?.userId,
     note: 'This feature requires active subscription',
-  });
-});
+  })
+})
 
 // Exemplo: Relatórios (requer subscription ativa)
 router.get('/reports', authenticate, validateSubscription, (req, res) => {
@@ -37,7 +40,7 @@ router.get('/reports', authenticate, validateSubscription, (req, res) => {
     message: 'Reports data',
     user_id: req.user?.userId,
     note: 'This feature requires active subscription',
-  });
-});
+  })
+})
 
-export { router as protectedRoutes };
+export { router as protectedRoutes }

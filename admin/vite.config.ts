@@ -1,5 +1,5 @@
-import type { UserConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
 
     define = {
       'process.env.NODE_ENV': '"development"',
-      '__DEV__': 'true',
+      __DEV__: 'true',
     }
   }
 
@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': '/src',
-      }
+      },
     },
     optimizeDeps: {
       exclude: ['lucide-react'],

@@ -1,39 +1,41 @@
-import React from 'react'
 import { motion } from 'framer-motion'
-import {Mail, Phone, MapPin} from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react'
+import { useId } from 'react'
 
 const Footer = () => {
+  const contatoId = useId()
+
   const footerLinks = {
     company: [
-      { name: 'Sobre nós', href: '#' },
-      { name: 'Carreiras', href: '#' },
-      { name: 'Blog', href: '#' }
+      { name: 'Sobre nós', href: '/sobre' },
+      { name: 'Carreiras', href: '/carreiras' },
+      { name: 'Blog', href: '/blog' },
     ],
     product: [
       { name: 'Funcionalidades', href: '#funcionalidades' },
       { name: 'Planos', href: '#planos' },
-      { name: 'Segurança', href: '#' }
+      { name: 'Segurança', href: '/seguranca' },
     ],
     support: [
-      { name: 'Central de Ajuda', href: '#' },
-      { name: 'Documentação', href: '#' },
-      { name: 'Contato', href: '#contato' }
+      { name: 'Central de Ajuda', href: '/ajuda' },
+      { name: 'Documentação', href: '/docs' },
+      { name: 'Contato', href: '#contato' },
     ],
     legal: [
-      { name: 'Termos de uso', href: '#' },
-      { name: 'Políticas de pagamento', href: '#' },
-      { name: 'Políticas de Reembolso', href: '#' },
-      { name: 'Privacidade', href: '#' }
-    ]
+      { name: 'Termos de uso', href: '/termos' },
+      { name: 'Políticas de pagamento', href: '/pagamento' },
+      { name: 'Políticas de Reembolso', href: '/reembolso' },
+      { name: 'Privacidade', href: '/privacidade' },
+    ],
   }
 
   return (
-    <footer id="contato" className="bg-gray-950 border-t border-gray-800">
+    <footer id={contatoId} className="bg-gray-950 border-t border-gray-800">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
         <div className="grid lg:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -42,9 +44,9 @@ const Footer = () => {
               <div className="flex items-center">
                 <span className="text-xl font-semibold text-white tracking-tight">Flowzz</span>
               </div>
-              
+
               <p className="text-gray-400 leading-relaxed max-w-md font-light">
-                Gestão financeira para afiliados que trabalham com pagamento após a entrega. 
+                Gestão financeira para afiliados que trabalham com pagamento após a entrega.
                 Simplifique suas vendas e maximize seus lucros.
               </p>
 
@@ -77,7 +79,10 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.company.map((link) => (
                   <li key={link.name}>
-                    <a href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    <a
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -95,7 +100,10 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.product.map((link) => (
                   <li key={link.name}>
-                    <a href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    <a
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -113,7 +121,10 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.support.map((link) => (
                   <li key={link.name}>
-                    <a href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    <a
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -131,7 +142,10 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.legal.map((link) => (
                   <li key={link.name}>
-                    <a href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    <a
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -148,14 +162,18 @@ const Footer = () => {
           viewport={{ once: true }}
           className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center"
         >
-          <p className="text-gray-500 text-sm">
-            © 2024 Flowzz. Todos os direitos reservados.
-          </p>
+          <p className="text-gray-500 text-sm">© 2024 Flowzz. Todos os direitos reservados.</p>
           <div className="flex space-x-6 mt-4 sm:mt-0">
-            <a href="#" className="text-gray-500 hover:text-gray-400 text-sm transition-colors">
+            <a
+              href="/privacidade"
+              className="text-gray-500 hover:text-gray-400 text-sm transition-colors"
+            >
               Política de privacidade
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-400 text-sm transition-colors">
+            <a
+              href="/termos"
+              className="text-gray-500 hover:text-gray-400 text-sm transition-colors"
+            >
               Termos e condições
             </a>
           </div>

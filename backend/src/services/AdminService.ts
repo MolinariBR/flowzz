@@ -59,7 +59,7 @@ export class AdminService {
       totalUsers,
       activeUsers,
       newUsersThisMonth,
-      revenueGrowth
+      revenueGrowth,
     }
 
     return metrics
@@ -73,19 +73,18 @@ export class AdminService {
     const activeUsers = await prisma.user.findMany({
       where: {
         is_active: true,
-        subscription_status: 'ACTIVE'
+        subscription_status: 'ACTIVE',
       },
       include: {
-        plan: true
-      }
+        plan: true,
+      },
     })
 
     const totalMRR = activeUsers.reduce((sum, user) => {
       if (user.plan?.price) {
         // Se o plano é anual, dividir por 12 para MRR
-        const monthlyPrice = user.plan.interval === 'year'
-          ? Number(user.plan.price) / 12
-          : Number(user.plan.price)
+        const monthlyPrice =
+          user.plan.interval === 'year' ? Number(user.plan.price) / 12 : Number(user.plan.price)
         return sum + monthlyPrice
       }
       return sum
@@ -106,16 +105,16 @@ export class AdminService {
       where: {
         subscription_status: 'CANCELED',
         updated_at: {
-          gte: firstDayOfMonth
-        }
-      }
+          gte: firstDayOfMonth,
+        },
+      },
     })
 
     // Total de usuários ativos
     const activeUsers = await prisma.user.count({
       where: {
-        subscription_status: 'ACTIVE'
-      }
+        subscription_status: 'ACTIVE',
+      },
     })
 
     if (activeUsers === 0) return 0
@@ -142,9 +141,9 @@ export class AdminService {
     const newCustomersThisYear = await prisma.user.count({
       where: {
         created_at: {
-          gte: new Date(new Date().getFullYear(), 0, 1)
-        }
-      }
+          gte: new Date(new Date().getFullYear(), 0, 1),
+        },
+      },
     })
 
     return newCustomersThisYear > 0 ? marketingCosts / newCustomersThisYear : 0
@@ -157,8 +156,8 @@ export class AdminService {
     return await prisma.user.count({
       where: {
         is_active: true,
-        subscription_status: 'ACTIVE'
-      }
+        subscription_status: 'ACTIVE',
+      },
     })
   }
 
@@ -171,9 +170,9 @@ export class AdminService {
     return await prisma.user.count({
       where: {
         created_at: {
-          gte: firstDayOfMonth
-        }
-      }
+          gte: firstDayOfMonth,
+        },
+      },
     })
   }
 
@@ -186,7 +185,10 @@ export class AdminService {
     const firstDayLastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
 
     const currentRevenue = await this.calculateRevenueForPeriod(firstDayCurrentMonth, new Date())
-    const lastMonthRevenue = await this.calculateRevenueForPeriod(firstDayLastMonth, firstDayCurrentMonth)
+    const lastMonthRevenue = await this.calculateRevenueForPeriod(
+      firstDayLastMonth,
+      firstDayCurrentMonth
+    )
 
     if (lastMonthRevenue === 0) return currentRevenue > 0 ? 100 : 0
 
@@ -201,20 +203,19 @@ export class AdminService {
       where: {
         created_at: {
           gte: startDate,
-          lt: endDate
+          lt: endDate,
         },
-        subscription_status: 'ACTIVE'
+        subscription_status: 'ACTIVE',
       },
       include: {
-        plan: true
-      }
+        plan: true,
+      },
     })
 
     return users.reduce((sum, user) => {
       if (user.plan?.price) {
-        const monthlyPrice = user.plan.interval === 'year'
-          ? Number(user.plan.price) / 12
-          : Number(user.plan.price)
+        const monthlyPrice =
+          user.plan.interval === 'year' ? Number(user.plan.price) / 12 : Number(user.plan.price)
         return sum + monthlyPrice
       }
       return sum
@@ -225,11 +226,11 @@ export class AdminService {
    * Receita média por usuário
    */
   private async calculateAvgRevenuePerUser(): Promise<number> {
-    const totalRevenue = await this.calculateMRR() * 12 // ARR
+    const totalRevenue = (await this.calculateMRR()) * 12 // ARR
     const totalUsers = await prisma.user.count({
       where: {
-        subscription_status: 'ACTIVE'
-      }
+        subscription_status: 'ACTIVE',
+      },
     })
 
     return totalUsers > 0 ? totalRevenue / totalUsers : 0
@@ -259,14 +260,17 @@ export class AdminService {
       where: {
         created_at: {
           gte: firstDayLastMonth,
-          lt: firstDayThisMonth
-        }
-      }
+          lt: firstDayThisMonth,
+        },
+      },
     })
 
-    const growthRate = newUsersLastMonth > 0
-      ? ((newUsersThisMonth - newUsersLastMonth) / newUsersLastMonth) * 100
-      : (newUsersThisMonth > 0 ? 100 : 0)
+    const growthRate =
+      newUsersLastMonth > 0
+        ? ((newUsersThisMonth - newUsersLastMonth) / newUsersLastMonth) * 100
+        : newUsersThisMonth > 0
+          ? 100
+          : 0
 
     const userRetention = await this.calculateUserRetention()
 
@@ -275,7 +279,7 @@ export class AdminService {
       newUsersThisMonth,
       newUsersLastMonth,
       growthRate,
-      userRetention
+      userRetention,
     }
 
     return metrics
@@ -296,8 +300,8 @@ export class AdminService {
     const integration = await prisma.integration.findFirst({
       where: {
         user_id: userId,
-        provider: 'WHATSAPP'
-      }
+        provider: 'WHATSAPP',
+      },
     })
 
     if (!integration) {
@@ -350,20 +354,20 @@ export class AdminService {
       where: {
         user_id_provider: {
           user_id: userId,
-          provider: 'WHATSAPP'
-        }
+          provider: 'WHATSAPP',
+        },
       },
       update: {
         config: encryptedConfig,
         status: 'CONNECTED',
-        updated_at: new Date()
+        updated_at: new Date(),
       },
       create: {
         user_id: userId,
         provider: 'WHATSAPP',
         config: encryptedConfig,
-        status: 'CONNECTED'
-      }
+        status: 'CONNECTED',
+      },
     })
   }
 
@@ -375,21 +379,33 @@ export class AdminService {
       const config = await this.getWhatsAppConfig(userId) // Já descriptografado
 
       if (!config) {
-        return { success: false, message: 'Configuração WhatsApp não encontrada' }
+        return {
+          success: false,
+          message: 'Configuração WhatsApp não encontrada',
+        }
       }
 
       // Validar campos obrigatórios
-      const requiredFields = ['businessAccountId', 'phoneNumberId', 'accessToken', 'appSecret', 'webhookVerifyToken']
-      const missingFields = requiredFields.filter(field => !config[field])
+      const requiredFields = [
+        'businessAccountId',
+        'phoneNumberId',
+        'accessToken',
+        'appSecret',
+        'webhookVerifyToken',
+      ]
+      const missingFields = requiredFields.filter((field) => !config[field])
 
       if (missingFields.length > 0) {
-        return { success: false, message: `Campos obrigatórios faltando: ${missingFields.join(', ')}` }
+        return {
+          success: false,
+          message: `Campos obrigatórios faltando: ${missingFields.join(', ')}`,
+        }
       }
 
       // Aqui poderia fazer uma chamada real para a API do WhatsApp
       // Por enquanto, apenas validamos se a configuração está completa
       return { success: true, message: 'Configuração válida e criptografada' }
-    } catch (error) {
+    } catch (_error) {
       return { success: false, message: 'Erro ao testar conexão' }
     }
   }

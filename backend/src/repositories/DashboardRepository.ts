@@ -3,17 +3,16 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { prisma } from '../shared/config/database';
 import type {
-  SalesAggregation,
   AdSpendAggregation,
   ChartDataRow,
-  ScheduledPayment,
   DashboardActivity,
-} from '../interfaces/DashboardService.interface';
+  SalesAggregation,
+  ScheduledPayment,
+} from '../interfaces/DashboardService.interface'
+import { prisma } from '../shared/config/database'
 
 export class DashboardRepository {
-
   /**
    * Busca vendas para um período específico
    * Referência: Story 2.1 - Vendas hoje
@@ -21,7 +20,7 @@ export class DashboardRepository {
   async getSalesForPeriod(
     userId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<SalesAggregation[]> {
     const sales = await prisma.sale.findMany({
       where: {
@@ -38,12 +37,14 @@ export class DashboardRepository {
         total_price: true,
         status: true,
       },
-    });
+    })
 
-    return sales.map((sale: any): SalesAggregation => ({
-      total_price: sale.total_price,
-      status: sale.status,
-    }));
+    return sales.map(
+      (sale: any): SalesAggregation => ({
+        total_price: sale.total_price,
+        status: sale.status,
+      })
+    )
   }
 
   /**
@@ -53,7 +54,7 @@ export class DashboardRepository {
   async getAdSpendForPeriod(
     userId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<AdSpendAggregation[]> {
     const ads = await prisma.ad.findMany({
       where: {
@@ -67,12 +68,14 @@ export class DashboardRepository {
         spend: true,
         date: true,
       },
-    });
+    })
 
-    return ads.map((ad: any): AdSpendAggregation => ({
-      spend: ad.spend,
-      date: ad.date,
-    }));
+    return ads.map(
+      (ad: any): AdSpendAggregation => ({
+        spend: ad.spend,
+        date: ad.date,
+      })
+    )
   }
 
   /**
@@ -82,7 +85,7 @@ export class DashboardRepository {
   async getScheduledPayments(
     userId: string,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<ScheduledPayment[]> {
     const scheduledPayments = await prisma.sale.findMany({
       where: {
@@ -111,30 +114,30 @@ export class DashboardRepository {
         payment_due_date: true,
         status: true,
       },
-    });
+    })
 
-    return scheduledPayments.map((payment: any): ScheduledPayment => ({
-      total_price: payment.total_price,
-      payment_due_date: payment.payment_due_date,
-      status: payment.status,
-    }));
+    return scheduledPayments.map(
+      (payment: any): ScheduledPayment => ({
+        total_price: payment.total_price,
+        payment_due_date: payment.payment_due_date,
+        status: payment.status,
+      })
+    )
   }
 
   /**
    * Busca dados para gráfico de vendas vs gastos
    * Referência: Story 2.2 - Gráfico vendas vs gastos (últimos 30 dias)
    */
-  async getChartData(
-    userId: string,
-    startDate: Date,
-    endDate: Date,
-  ): Promise<ChartDataRow[]> {
+  async getChartData(userId: string, startDate: Date, endDate: Date): Promise<ChartDataRow[]> {
     // Query SQL raw para agregar dados por dia
-    const result = await prisma.$queryRaw<Array<{
-      date: string;
-      vendas: number;
-      gastos: number;
-    }>>`
+    const result = await prisma.$queryRaw<
+      Array<{
+        date: string
+        vendas: number
+        gastos: number
+      }>
+    >`
       WITH date_series AS (
         SELECT generate_series(
           ${startDate}::date,
@@ -171,24 +174,23 @@ export class DashboardRepository {
       LEFT JOIN daily_sales s ON ds.date = s.date
       LEFT JOIN daily_ads a ON ds.date = a.date
       ORDER BY ds.date
-    `;
+    `
 
-    return result.map((row: any): ChartDataRow => ({
-      date: row.date,
-      vendas: Number(row.vendas),
-      gastos: Number(row.gastos),
-    }));
+    return result.map(
+      (row: any): ChartDataRow => ({
+        date: row.date,
+        vendas: Number(row.vendas),
+        gastos: Number(row.gastos),
+      })
+    )
   }
 
   /**
    * Busca atividades recentes para o dashboard
    * Referência: Dashboard activities endpoint
    */
-  async getRecentActivities(
-    userId: string,
-    limit: number = 10,
-  ): Promise<DashboardActivity[]> {
-    const activities: DashboardActivity[] = [];
+  async getRecentActivities(userId: string, limit: number = 10): Promise<DashboardActivity[]> {
+    const activities: DashboardActivity[] = []
 
     // Vendas recentes
     const recentSales = await prisma.sale.findMany({
@@ -206,7 +208,7 @@ export class DashboardRepository {
         created_at: 'desc',
       },
       take: Math.ceil(limit / 2), // Metade do limite para vendas
-    });
+    })
 
     // Adicionar vendas às atividades
     recentSales.forEach((sale: any) => {
@@ -222,8 +224,8 @@ export class DashboardRepository {
           clientName: sale.client?.name,
           status: sale.status,
         },
-      });
-    });
+      })
+    })
 
     // Pagamentos recentes (vendas com mudança de status para PAID)
     const recentPayments = await prisma.sale.findMany({
@@ -245,7 +247,7 @@ export class DashboardRepository {
         payment_date: 'desc',
       },
       take: Math.ceil(limit / 2), // Metade do limite para pagamentos
-    });
+    })
 
     // Adicionar pagamentos às atividades
     recentPayments.forEach((payment: any) => {
@@ -262,14 +264,12 @@ export class DashboardRepository {
             clientName: payment.client?.name,
             productName: payment.product_name,
           },
-        });
+        })
       }
-    });
+    })
 
     // Ordenar por timestamp e retornar apenas o limite solicitado
-    return activities
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, limit);
+    return activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, limit)
   }
 
   /**
@@ -277,13 +277,15 @@ export class DashboardRepository {
    */
   async getMonthlySalesAggregation(
     userId: string,
-    year: number,
+    year: number
   ): Promise<Array<{ month: number; total: number; count: number }>> {
-    const result = await prisma.$queryRaw<Array<{
-      month: number;
-      total: number;
-      count: number;
-    }>>`
+    const result = await prisma.$queryRaw<
+      Array<{
+        month: number
+        total: number
+        count: number
+      }>
+    >`
       SELECT 
         EXTRACT(MONTH FROM created_at) as month,
         COALESCE(SUM(total_price), 0) as total,
@@ -294,12 +296,12 @@ export class DashboardRepository {
         AND status IN ('PAID', 'SHIPPED', 'DELIVERED')
       GROUP BY EXTRACT(MONTH FROM created_at)
       ORDER BY month
-    `;
+    `
 
     return result.map((row: any) => ({
       month: Number(row.month),
       total: Number(row.total),
       count: Number(row.count),
-    }));
+    }))
   }
 }

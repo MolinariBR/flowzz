@@ -11,28 +11,28 @@
  */
 
 import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
   ListObjectsV2Command,
+  PutObjectCommand,
   type PutObjectCommandInput,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { env } from '../shared/config/env';
-import { logger } from '../shared/utils/logger';
+  S3Client,
+} from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { env } from '../shared/config/env'
+import { logger } from '../shared/utils/logger'
 
 /**
  * Interface para configuração de Storage
  */
 interface StorageConfig {
-  bucket: string;
-  region: string;
-  endpoint?: string;
+  bucket: string
+  region: string
+  endpoint?: string
   credentials: {
-    accessKeyId: string;
-    secretAccessKey: string;
-  };
+    accessKeyId: string
+    secretAccessKey: string
+  }
 }
 
 /**
@@ -47,13 +47,13 @@ interface StorageConfig {
  * - Suporte dual: AWS S3 ou Cloudflare R2
  */
 export class StorageService {
-  private s3Client: S3Client;
-  private bucket: string = '';
-  private isConfigured: boolean;
+  private s3Client: S3Client
+  private bucket: string = ''
+  private isConfigured: boolean
 
   constructor() {
-    this.s3Client = new S3Client({ region: 'us-east-1' }); // Initialize com defaults
-    this.isConfigured = this.initializeClient();
+    this.s3Client = new S3Client({ region: 'us-east-1' }) // Initialize com defaults
+    this.isConfigured = this.initializeClient()
   }
 
   /**
@@ -67,13 +67,13 @@ export class StorageService {
         logger.warn('Storage credentials not configured - uploads will fail', {
           hasAccessKey: !!env.AWS_ACCESS_KEY_ID,
           hasSecretKey: !!env.AWS_SECRET_ACCESS_KEY,
-        });
-        return false;
+        })
+        return false
       }
 
       if (!env.AWS_S3_BUCKET) {
-        logger.warn('S3 bucket not configured - uploads will fail');
-        return false;
+        logger.warn('S3 bucket not configured - uploads will fail')
+        return false
       }
 
       // Configurar cliente S3
@@ -84,37 +84,37 @@ export class StorageService {
           accessKeyId: env.AWS_ACCESS_KEY_ID,
           secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
         },
-      };
+      }
 
       // Cloudflare R2 usa endpoint customizado
       // R2 endpoint format: https://<account_id>.r2.cloudflarestorage.com
-      const isR2 = env.AWS_S3_BUCKET.includes('.r2.') || env.AWS_REGION === 'auto';
+      const isR2 = env.AWS_S3_BUCKET.includes('.r2.') || env.AWS_REGION === 'auto'
 
       if (isR2) {
         // Para R2, região deve ser 'auto'
-        config.region = 'auto';
+        config.region = 'auto'
         logger.info('StorageService initialized with Cloudflare R2', {
           bucket: config.bucket,
-        });
+        })
       } else {
         logger.info('StorageService initialized with AWS S3', {
           bucket: config.bucket,
           region: config.region,
-        });
+        })
       }
 
       this.s3Client = new S3Client({
         region: config.region,
         credentials: config.credentials,
-      });
+      })
 
-      this.bucket = config.bucket;
-      return true;
+      this.bucket = config.bucket
+      return true
     } catch (error) {
       logger.error('Failed to initialize StorageService', {
         error: error instanceof Error ? error.message : String(error),
-      });
-      return false;
+      })
+      return false
     }
   }
 
@@ -128,24 +128,19 @@ export class StorageService {
    *
    * @throws Error se storage não estiver configurado ou upload falhar
    */
-  async uploadFile(
-    buffer: Buffer,
-    filename: string,
-    contentType?: string,
-  ): Promise<string> {
+  async uploadFile(buffer: Buffer, filename: string, contentType?: string): Promise<string> {
     if (!this.isConfigured) {
       throw new Error(
-        'Storage service not configured. Please set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_S3_BUCKET environment variables.',
-      );
+        'Storage service not configured. Please set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_S3_BUCKET environment variables.'
+      )
     }
 
     try {
       // Definir chave do arquivo (path no S3)
-      const key = `reports/${filename}`;
+      const key = `reports/${filename}`
 
       // Detectar content type se não fornecido
-      const detectedContentType =
-        contentType || this.detectContentType(filename);
+      const detectedContentType = contentType || this.detectContentType(filename)
 
       const params: PutObjectCommandInput = {
         Bucket: this.bucket,
@@ -157,28 +152,28 @@ export class StorageService {
           uploadedAt: new Date().toISOString(),
           originalFilename: filename,
         },
-      };
+      }
 
-      const command = new PutObjectCommand(params);
-      await this.s3Client.send(command);
+      const command = new PutObjectCommand(params)
+      await this.s3Client.send(command)
 
       logger.info('File uploaded successfully to S3/R2', {
         key,
         size: buffer.length,
         contentType: detectedContentType,
         bucket: this.bucket,
-      });
+      })
 
-      return key;
+      return key
     } catch (error) {
       logger.error('Error uploading file to S3/R2', {
         filename,
         bucket: this.bucket,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
       throw new Error(
-        `Failed to upload file to S3/R2: ${error instanceof Error ? error.message : String(error)}`,
-      );
+        `Failed to upload file to S3/R2: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -193,35 +188,35 @@ export class StorageService {
    */
   async getSignedUrl(key: string, expiresIn: number = 604800): Promise<string> {
     if (!this.isConfigured) {
-      throw new Error('Storage service not configured');
+      throw new Error('Storage service not configured')
     }
 
     try {
       const command = new GetObjectCommand({
         Bucket: this.bucket,
         Key: key,
-      });
+      })
 
       const signedUrl = await getSignedUrl(this.s3Client, command, {
         expiresIn, // Default: 7 dias (604800 segundos)
-      });
+      })
 
       logger.info('Signed URL generated successfully', {
         key,
         expiresIn,
         expiresInHours: Math.floor(expiresIn / 3600),
-      });
+      })
 
-      return signedUrl;
+      return signedUrl
     } catch (error) {
       logger.error('Error generating signed URL', {
         key,
         bucket: this.bucket,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
       throw new Error(
-        `Failed to generate signed URL: ${error instanceof Error ? error.message : String(error)}`,
-      );
+        `Failed to generate signed URL: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -234,30 +229,30 @@ export class StorageService {
    */
   async deleteFile(key: string): Promise<void> {
     if (!this.isConfigured) {
-      throw new Error('Storage service not configured');
+      throw new Error('Storage service not configured')
     }
 
     try {
       const command = new DeleteObjectCommand({
         Bucket: this.bucket,
         Key: key,
-      });
+      })
 
-      await this.s3Client.send(command);
+      await this.s3Client.send(command)
 
       logger.info('File deleted successfully from S3/R2', {
         key,
         bucket: this.bucket,
-      });
+      })
     } catch (error) {
       logger.error('Error deleting file from S3/R2', {
         key,
         bucket: this.bucket,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
       throw new Error(
-        `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`,
-      );
+        `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -271,59 +266,59 @@ export class StorageService {
    */
   async cleanupOldFiles(olderThanDays: number = 30): Promise<number> {
     if (!this.isConfigured) {
-      throw new Error('Storage service not configured');
+      throw new Error('Storage service not configured')
     }
 
     try {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
+      const cutoffDate = new Date()
+      cutoffDate.setDate(cutoffDate.getDate() - olderThanDays)
 
       logger.info('Starting storage cleanup', {
         olderThanDays,
         cutoffDate: cutoffDate.toISOString(),
         bucket: this.bucket,
-      });
+      })
 
       // Listar arquivos no prefixo reports/
       const listCommand = new ListObjectsV2Command({
         Bucket: this.bucket,
         Prefix: 'reports/',
-      });
+      })
 
-      const { Contents } = await this.s3Client.send(listCommand);
+      const { Contents } = await this.s3Client.send(listCommand)
 
       if (!Contents || Contents.length === 0) {
-        logger.info('No files found for cleanup');
-        return 0;
+        logger.info('No files found for cleanup')
+        return 0
       }
 
       // Filtrar arquivos antigos
-      type S3Object = NonNullable<typeof Contents>[number];
+      type S3Object = NonNullable<typeof Contents>[number]
       const oldFiles = Contents.filter((file: S3Object): boolean => {
-        const lastModified = file.LastModified || new Date();
-        return lastModified < cutoffDate;
-      });
+        const lastModified = file.LastModified || new Date()
+        return lastModified < cutoffDate
+      })
 
       if (oldFiles.length === 0) {
         logger.info('No old files to cleanup', {
           totalFiles: Contents.length,
           olderThanDays,
-        });
-        return 0;
+        })
+        return 0
       }
 
       // Deletar arquivos em batch
-      let deletedCount = 0;
+      let deletedCount = 0
       for (const file of oldFiles) {
         if (file.Key) {
           try {
-            await this.deleteFile(file.Key);
-            deletedCount++;
+            await this.deleteFile(file.Key)
+            deletedCount++
           } catch (error) {
             logger.error('Failed to delete file during cleanup', {
               key: file.Key,
               error: error instanceof Error ? error.message : String(error),
-            });
+            })
             // Continua cleanup mesmo se um arquivo falhar
           }
         }
@@ -335,18 +330,18 @@ export class StorageService {
         oldFiles: oldFiles.length,
         deletedCount,
         bucket: this.bucket,
-      });
+      })
 
-      return deletedCount;
+      return deletedCount
     } catch (error) {
       logger.error('Error during storage cleanup', {
         olderThanDays,
         bucket: this.bucket,
         error: error instanceof Error ? error.message : String(error),
-      });
+      })
       throw new Error(
-        `Failed to cleanup old files: ${error instanceof Error ? error.message : String(error)}`,
-      );
+        `Failed to cleanup old files: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -357,29 +352,29 @@ export class StorageService {
    */
   async healthCheck(): Promise<boolean> {
     if (!this.isConfigured) {
-      logger.warn('Storage health check failed - not configured');
-      return false;
+      logger.warn('Storage health check failed - not configured')
+      return false
     }
 
     try {
       const command = new ListObjectsV2Command({
         Bucket: this.bucket,
         MaxKeys: 1, // Apenas 1 objeto para teste rápido
-      });
+      })
 
-      await this.s3Client.send(command);
+      await this.s3Client.send(command)
 
       logger.debug('Storage health check passed', {
         bucket: this.bucket,
-      });
+      })
 
-      return true;
+      return true
     } catch (error) {
       logger.error('Storage health check failed', {
         bucket: this.bucket,
         error: error instanceof Error ? error.message : String(error),
-      });
-      return false;
+      })
+      return false
     }
   }
 
@@ -390,7 +385,7 @@ export class StorageService {
    * @returns MIME type correspondente
    */
   private detectContentType(filename: string): string {
-    const ext = filename.split('.').pop()?.toLowerCase();
+    const ext = filename.split('.').pop()?.toLowerCase()
 
     const mimeTypes: Record<string, string> = {
       pdf: 'application/pdf',
@@ -404,22 +399,22 @@ export class StorageService {
       svg: 'image/svg+xml',
       zip: 'application/zip',
       json: 'application/json',
-    };
+    }
 
-    return mimeTypes[ext || ''] || 'application/octet-stream';
+    return mimeTypes[ext || ''] || 'application/octet-stream'
   }
 
   /**
    * Retorna se o serviço está configurado corretamente
    */
   isReady(): boolean {
-    return this.isConfigured;
+    return this.isConfigured
   }
 
   /**
    * Retorna nome do bucket configurado
    */
   getBucket(): string | null {
-    return this.isConfigured ? this.bucket : null;
+    return this.isConfigured ? this.bucket : null
   }
 }

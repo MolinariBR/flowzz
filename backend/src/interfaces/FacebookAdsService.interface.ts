@@ -14,12 +14,12 @@
  * Representa uma conta de anúncios do Facebook
  */
 export interface IFacebookAdAccount {
-  id: string;
-  account_id: string;
-  name: string;
-  currency: string;
-  timezone_name: string;
-  account_status: number;
+  id: string
+  account_id: string
+  name: string
+  currency: string
+  timezone_name: string
+  account_status: number
 }
 
 /**
@@ -29,20 +29,20 @@ export interface IFacebookAdAccount {
  * Referência: design.md - Facebook Marketing API v18+
  */
 export interface IFacebookAdInsights {
-  date_start: string;
-  date_stop: string;
-  spend: string; // Gasto total
-  impressions: string; // Impressões
-  clicks: string; // Cliques
-  ctr: string; // Click-through rate
-  cpc: string; // Cost per click
-  cpm: string; // Cost per mille (1000 impressões)
+  date_start: string
+  date_stop: string
+  spend: string // Gasto total
+  impressions: string // Impressões
+  clicks: string // Cliques
+  ctr: string // Click-through rate
+  cpc: string // Cost per click
+  cpm: string // Cost per mille (1000 impressões)
   actions?: Array<{
-    action_type: string;
-    value: string;
-  }>;
-  conversions?: string;
-  roas?: number; // Calculado: receita / gasto
+    action_type: string
+    value: string
+  }>
+  conversions?: string
+  roas?: number // Calculado: receita / gasto
 }
 
 /**
@@ -50,14 +50,14 @@ export interface IFacebookAdInsights {
  * Dados de campanha publicitária
  */
 export interface IFacebookCampaign {
-  id: string;
-  name: string;
-  status: string;
-  objective: string;
-  daily_budget?: string;
-  lifetime_budget?: string;
-  created_time: string;
-  updated_time: string;
+  id: string
+  name: string
+  status: string
+  objective: string
+  daily_budget?: string
+  lifetime_budget?: string
+  created_time: string
+  updated_time: string
 }
 
 /**
@@ -67,13 +67,13 @@ export interface IFacebookCampaign {
  * Referência: design.md - Integration Model Schema
  */
 export interface IFacebookIntegrationConfig {
-  accessToken: string; // Criptografado com AES-256
-  refreshToken?: string;
-  tokenExpiresAt: Date;
-  adAccountId: string;
-  adAccountName: string;
-  permissions: string[];
-  lastSyncAt?: Date;
+  accessToken: string // Criptografado com AES-256
+  refreshToken?: string
+  tokenExpiresAt: Date
+  adAccountId: string
+  adAccountName: string
+  permissions: string[]
+  lastSyncAt?: Date
 }
 
 /**
@@ -83,7 +83,7 @@ export interface IFacebookIntegrationConfig {
  * Referência: dev-stories.md - OAuth 2.0 flow
  */
 export interface FacebookConnectDTO {
-  redirectUri: string;
+  redirectUri: string
 }
 
 /**
@@ -91,8 +91,8 @@ export interface FacebookConnectDTO {
  * Resposta do callback OAuth
  */
 export interface FacebookOAuthCallbackDTO {
-  code: string;
-  state?: string;
+  code: string
+  state?: string
 }
 
 /**
@@ -100,9 +100,9 @@ export interface FacebookOAuthCallbackDTO {
  * Resposta do exchange code → token
  */
 export interface FacebookOAuthTokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number; // Segundos (geralmente 5184000 = 60 dias)
+  access_token: string
+  token_type: string
+  expires_in: number // Segundos (geralmente 5184000 = 60 dias)
 }
 
 /**
@@ -110,7 +110,7 @@ export interface FacebookOAuthTokenResponse {
  * Resposta da lista de contas de anúncios
  */
 export interface FacebookAdAccountDTO {
-  adAccounts: IFacebookAdAccount[];
+  adAccounts: IFacebookAdAccount[]
 }
 
 /**
@@ -120,12 +120,20 @@ export interface FacebookAdAccountDTO {
  * Referência: dev-stories.md - getInsights method
  */
 export interface FacebookInsightsParamsDTO {
-  adAccountId: string;
-  datePreset?: 'today' | 'yesterday' | 'last_7d' | 'last_14d' | 'last_30d' | 'last_90d' | 'this_month' | 'last_month';
-  startDate?: string; // YYYY-MM-DD
-  endDate?: string; // YYYY-MM-DD
-  level?: 'account' | 'campaign' | 'adset' | 'ad';
-  timeIncrement?: number; // 1 = daily
+  adAccountId: string
+  datePreset?:
+    | 'today'
+    | 'yesterday'
+    | 'last_7d'
+    | 'last_14d'
+    | 'last_30d'
+    | 'last_90d'
+    | 'this_month'
+    | 'last_month'
+  startDate?: string // YYYY-MM-DD
+  endDate?: string // YYYY-MM-DD
+  level?: 'account' | 'campaign' | 'adset' | 'ad'
+  timeIncrement?: number // 1 = daily
 }
 
 /**
@@ -133,23 +141,23 @@ export interface FacebookInsightsParamsDTO {
  * Resposta com insights agregados
  */
 export interface FacebookInsightsDTO {
-  adAccountId: string;
+  adAccountId: string
   period: {
-    start: string;
-    end: string;
-  };
+    start: string
+    end: string
+  }
   metrics: {
-    spend: number;
-    impressions: number;
-    clicks: number;
-    ctr: number;
-    cpc: number;
-    cpm: number;
-    conversions: number;
-  };
-  roas?: number;
-  campaigns?: IFacebookCampaign[];
-  insights: IFacebookAdInsights[];
+    spend: number
+    impressions: number
+    clicks: number
+    ctr: number
+    cpc: number
+    cpm: number
+    conversions: number
+  }
+  roas?: number
+  campaigns?: IFacebookCampaign[]
+  insights: IFacebookAdInsights[]
 }
 
 /**
@@ -157,13 +165,13 @@ export interface FacebookInsightsDTO {
  * Status da integração Facebook
  */
 export interface FacebookStatusDTO {
-  connected: boolean;
-  adAccountId?: string;
-  adAccountName?: string;
-  lastSyncAt?: Date;
-  tokenExpiresAt?: Date;
-  permissions?: string[];
-  syncEnabled: boolean;
+  connected: boolean
+  adAccountId?: string
+  adAccountName?: string
+  lastSyncAt?: Date
+  tokenExpiresAt?: Date
+  permissions?: string[]
+  syncEnabled: boolean
 }
 
 /**
@@ -171,25 +179,25 @@ export interface FacebookStatusDTO {
  * Resultado da sincronização de insights
  */
 export interface FacebookSyncResultDTO {
-  success: boolean;
-  adAccountId: string;
-  insightsSynced: number;
-  campaignsSynced: number;
-  errors: string[];
-  syncedAt: Date;
-  roas?: number;
+  success: boolean
+  adAccountId: string
+  insightsSynced: number
+  campaignsSynced: number
+  errors: string[]
+  syncedAt: Date
+  roas?: number
 }
 
 /**
  * DTO: Test Connection Response
  */
 export interface FacebookTestConnectionResponseDTO {
-  valid: boolean;
-  adAccountId?: string;
-  adAccountName?: string;
-  permissions?: string[];
-  expiresAt?: Date;
-  error?: string;
+  valid: boolean
+  adAccountId?: string
+  adAccountName?: string
+  permissions?: string[]
+  expiresAt?: Date
+  error?: string
 }
 
 /**
@@ -207,7 +215,7 @@ export interface IFacebookAdsService {
    * @param redirectUri - URI de callback após autorização
    * @returns URL de autorização Facebook
    */
-  getAuthorizationUrl(userId: string, redirectUri: string): Promise<string>;
+  getAuthorizationUrl(userId: string, redirectUri: string): Promise<string>
 
   /**
    * Processar callback OAuth
@@ -222,7 +230,7 @@ export interface IFacebookAdsService {
     userId: string,
     code: string,
     state?: string
-  ): Promise<IFacebookIntegrationConfig>;
+  ): Promise<IFacebookIntegrationConfig>
 
   /**
    * Renovar access token expirado
@@ -231,7 +239,7 @@ export interface IFacebookAdsService {
    * @param userId - ID do usuário
    * @returns Novo access token
    */
-  refreshAccessToken(userId: string): Promise<string>;
+  refreshAccessToken(userId: string): Promise<string>
 
   /**
    * Buscar contas de anúncios do usuário
@@ -239,7 +247,7 @@ export interface IFacebookAdsService {
    * @param userId - ID do usuário
    * @returns Lista de ad accounts
    */
-  getAdAccounts(userId: string): Promise<IFacebookAdAccount[]>;
+  getAdAccounts(userId: string): Promise<IFacebookAdAccount[]>
 
   /**
    * Buscar insights de uma conta de anúncios
@@ -255,7 +263,7 @@ export interface IFacebookAdsService {
   getAdAccountInsights(
     userId: string,
     params: FacebookInsightsParamsDTO
-  ): Promise<FacebookInsightsDTO>;
+  ): Promise<FacebookInsightsDTO>
 
   /**
    * Sincronizar insights e salvar no banco
@@ -267,10 +275,7 @@ export interface IFacebookAdsService {
    * @param forceFullSync - Forçar sync completo (ignora cache)
    * @returns Resultado da sincronização
    */
-  syncInsights(
-    empresaId: string,
-    forceFullSync?: boolean
-  ): Promise<FacebookSyncResultDTO>;
+  syncInsights(empresaId: string, forceFullSync?: boolean): Promise<FacebookSyncResultDTO>
 
   /**
    * Calcular ROAS (Return on Ad Spend)
@@ -283,11 +288,7 @@ export interface IFacebookAdsService {
    * @param endDate - Data final
    * @returns ROAS percentual ou undefined se não houver dados suficientes
    */
-  calculateROAS(
-    empresaId: string,
-    startDate: Date,
-    endDate: Date
-  ): Promise<number | undefined>;
+  calculateROAS(empresaId: string, startDate: Date, endDate: Date): Promise<number | undefined>
 
   /**
    * Obter status da integração
@@ -295,7 +296,7 @@ export interface IFacebookAdsService {
    * @param userId - ID do usuário
    * @returns Status da integração
    */
-  getStatus(userId: string): Promise<FacebookStatusDTO>;
+  getStatus(userId: string): Promise<FacebookStatusDTO>
 
   /**
    * Testar conexão com Facebook API
@@ -304,7 +305,7 @@ export interface IFacebookAdsService {
    * @param userId - ID do usuário
    * @returns Resultado do teste
    */
-  testConnection(userId: string): Promise<FacebookTestConnectionResponseDTO>;
+  testConnection(userId: string): Promise<FacebookTestConnectionResponseDTO>
 
   /**
    * Desconectar integração Facebook
@@ -312,7 +313,7 @@ export interface IFacebookAdsService {
    *
    * @param userId - ID do usuário
    */
-  disconnect(userId: string): Promise<void>;
+  disconnect(userId: string): Promise<void>
 
   /**
    * Criptografar access token
@@ -323,7 +324,7 @@ export interface IFacebookAdsService {
    * @param token - Token em plaintext
    * @returns Token criptografado (formato: {iv}:{encrypted})
    */
-  encryptToken(token: string): string;
+  encryptToken(token: string): string
 
   /**
    * Descriptografar access token
@@ -331,5 +332,5 @@ export interface IFacebookAdsService {
    * @param encryptedToken - Token criptografado
    * @returns Token em plaintext
    */
-  decryptToken(encryptedToken: string): string;
+  decryptToken(encryptedToken: string): string
 }

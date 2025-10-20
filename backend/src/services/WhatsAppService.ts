@@ -13,56 +13,56 @@
  * - whatsapp-implementation-plan.md: Templates e estrutura
  */
 
-import axios, { AxiosInstance } from 'axios';
-import { logger } from '../shared/utils/logger';
-import { IntegrationRepository } from '../repositories/IntegrationRepository';
+import axios, { type AxiosInstance } from 'axios'
+import { IntegrationRepository } from '../repositories/IntegrationRepository'
+import { logger } from '../shared/utils/logger'
 
 export interface WhatsAppConfig {
-  accessToken: string;
-  phoneNumberId: string;
-  businessAccountId: string;
-  apiVersion?: string;
+  accessToken: string
+  phoneNumberId: string
+  businessAccountId: string
+  apiVersion?: string
 }
 
 export interface TemplateMessage {
-  name: string;
-  language: string;
+  name: string
+  language: string
   components: Array<{
-    type: 'header' | 'body' | 'footer';
+    type: 'header' | 'body' | 'footer'
     parameters?: Array<{
-      type: 'text';
-      text: string;
-    }>;
-  }>;
+      type: 'text'
+      text: string
+    }>
+  }>
 }
 
 export interface SendMessageResult {
-  success: boolean;
-  messageId?: string;
-  error?: string;
+  success: boolean
+  messageId?: string
+  error?: string
 }
 
 export interface WebhookMessage {
-  id: string;
-  from: string;
-  timestamp: string;
-  type: 'text' | 'template' | 'interactive';
-  content: any;
+  id: string
+  from: string
+  timestamp: string
+  type: 'text' | 'template' | 'interactive'
+  content: any
 }
 
 export class WhatsAppService {
-  private httpClient: AxiosInstance;
-  private integrationRepo: IntegrationRepository;
-  private readonly apiVersion: string = 'v18.0'; // WhatsApp API version
-  private readonly baseUrl: string = 'https://graph.facebook.com';
+  private httpClient: AxiosInstance
+  private integrationRepo: IntegrationRepository
+  private readonly apiVersion: string = 'v18.0' // WhatsApp API version
+  private readonly baseUrl: string = 'https://graph.facebook.com'
 
   constructor() {
     this.httpClient = axios.create({
       baseURL: this.baseUrl,
       timeout: 30000, // 30 seconds
-    });
+    })
 
-    this.integrationRepo = new IntegrationRepository();
+    this.integrationRepo = new IntegrationRepository()
 
     // Add request/response interceptors for logging
     this.httpClient.interceptors.request.use(
@@ -71,32 +71,32 @@ export class WhatsAppService {
           method: config.method?.toUpperCase(),
           url: config.url,
           data: config.data,
-        });
-        return config;
+        })
+        return config
       },
       (error) => {
-        logger.error('WhatsApp API Request Error', { error: error.message });
-        return Promise.reject(error);
+        logger.error('WhatsApp API Request Error', { error: error.message })
+        return Promise.reject(error)
       }
-    );
+    )
 
     this.httpClient.interceptors.response.use(
       (response) => {
         logger.info('WhatsApp API Response', {
           status: response.status,
           url: response.config.url,
-        });
-        return response;
+        })
+        return response
       },
       (error) => {
         logger.error('WhatsApp API Response Error', {
           status: error.response?.status,
           url: error.config?.url,
           error: error.response?.data || error.message,
-        });
-        return Promise.reject(error);
+        })
+        return Promise.reject(error)
       }
-    );
+    )
   }
 
   /**
@@ -104,23 +104,23 @@ export class WhatsAppService {
    */
   private async getUserConfig(userId: string): Promise<WhatsAppConfig | null> {
     try {
-      const integration = await this.integrationRepo.findByUserAndProvider(
-        userId,
-        'WHATSAPP'
-      );
+      const integration = await this.integrationRepo.findByUserAndProvider(userId, 'WHATSAPP')
 
       if (!integration || integration.status !== 'CONNECTED') {
-        return null;
+        return null
       }
 
-      const config = integration.config as unknown as WhatsAppConfig;
+      const config = integration.config as unknown as WhatsAppConfig
       return {
         ...config,
         apiVersion: config.apiVersion || this.apiVersion,
-      };
+      }
     } catch (error: any) {
-      logger.error('Error getting WhatsApp config', { userId, error: error.message });
-      return null;
+      logger.error('Error getting WhatsApp config', {
+        userId,
+        error: error.message,
+      })
+      return null
     }
   }
 
@@ -134,16 +134,16 @@ export class WhatsAppService {
     variables: string[] = []
   ): Promise<SendMessageResult> {
     try {
-      const config = await this.getUserConfig(userId);
+      const config = await this.getUserConfig(userId)
       if (!config) {
         return {
           success: false,
           error: 'WhatsApp not configured for this user',
-        };
+        }
       }
 
       // Build template components with variables
-      const components = this.buildTemplateComponents(templateName, variables);
+      const components = this.buildTemplateComponents(templateName, variables)
 
       const messageData = {
         messaging_product: 'whatsapp',
@@ -154,53 +154,49 @@ export class WhatsAppService {
           language: { code: 'pt_BR' },
           components,
         },
-      };
+      }
 
       const response = await this.httpClient.post(
         `/${config.apiVersion}/${config.phoneNumberId}/messages`,
         messageData,
         {
           headers: {
-            'Authorization': `Bearer ${config.accessToken}`,
+            Authorization: `Bearer ${config.accessToken}`,
             'Content-Type': 'application/json',
           },
         }
-      );
+      )
 
       return {
         success: true,
         messageId: response.data.messages?.[0]?.id,
-      };
+      }
     } catch (error: any) {
       logger.error('Error sending WhatsApp template', {
         userId,
         templateName,
         to,
         error: error.response?.data || error.message,
-      });
+      })
 
       return {
         success: false,
         error: error.response?.data?.error?.message || error.message,
-      };
+      }
     }
   }
 
   /**
    * Send text message (for replies within 24h window)
    */
-  async sendText(
-    userId: string,
-    to: string,
-    message: string
-  ): Promise<SendMessageResult> {
+  async sendText(userId: string, to: string, message: string): Promise<SendMessageResult> {
     try {
-      const config = await this.getUserConfig(userId);
+      const config = await this.getUserConfig(userId)
       if (!config) {
         return {
           success: false,
           error: 'WhatsApp not configured for this user',
-        };
+        }
       }
 
       const messageData = {
@@ -208,34 +204,34 @@ export class WhatsAppService {
         to: this.formatPhoneNumber(to),
         type: 'text',
         text: { body: message },
-      };
+      }
 
       const response = await this.httpClient.post(
         `/${config.apiVersion}/${config.phoneNumberId}/messages`,
         messageData,
         {
           headers: {
-            'Authorization': `Bearer ${config.accessToken}`,
+            Authorization: `Bearer ${config.accessToken}`,
             'Content-Type': 'application/json',
           },
         }
-      );
+      )
 
       return {
         success: true,
         messageId: response.data.messages?.[0]?.id,
-      };
+      }
     } catch (error: any) {
       logger.error('Error sending WhatsApp text message', {
         userId,
         to,
         error: error.response?.data || error.message,
-      });
+      })
 
       return {
         success: false,
         error: error.response?.data?.error?.message || error.message,
-      };
+      }
     }
   }
 
@@ -244,27 +240,24 @@ export class WhatsAppService {
    */
   async getAccountStatus(userId: string): Promise<any> {
     try {
-      const config = await this.getUserConfig(userId);
+      const config = await this.getUserConfig(userId)
       if (!config) {
-        throw new Error('WhatsApp not configured for this user');
+        throw new Error('WhatsApp not configured for this user')
       }
 
-      const response = await this.httpClient.get(
-        `/${config.apiVersion}/${config.phoneNumberId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${config.accessToken}`,
-          },
-        }
-      );
+      const response = await this.httpClient.get(`/${config.apiVersion}/${config.phoneNumberId}`, {
+        headers: {
+          Authorization: `Bearer ${config.accessToken}`,
+        },
+      })
 
-      return response.data;
+      return response.data
     } catch (error: any) {
       logger.error('Error getting WhatsApp account status', {
         userId,
         error: error.response?.data || error.message,
-      });
-      throw error;
+      })
+      throw error
     }
   }
 
@@ -273,30 +266,30 @@ export class WhatsAppService {
    */
   async getApprovedTemplates(userId: string): Promise<any[]> {
     try {
-      const config = await this.getUserConfig(userId);
+      const config = await this.getUserConfig(userId)
       if (!config) {
-        throw new Error('WhatsApp not configured for this user');
+        throw new Error('WhatsApp not configured for this user')
       }
 
       const response = await this.httpClient.get(
         `/${config.apiVersion}/${config.businessAccountId}/message_templates`,
         {
           headers: {
-            'Authorization': `Bearer ${config.accessToken}`,
+            Authorization: `Bearer ${config.accessToken}`,
           },
           params: {
             status: 'APPROVED',
           },
         }
-      );
+      )
 
-      return response.data.data || [];
+      return response.data.data || []
     } catch (error: any) {
       logger.error('Error getting WhatsApp templates', {
         userId,
         error: error.response?.data || error.message,
-      });
-      throw error;
+      })
+      throw error
     }
   }
 
@@ -307,37 +300,37 @@ export class WhatsAppService {
     try {
       logger.info('Processing WhatsApp webhook', {
         payload: JSON.stringify(payload),
-      });
+      })
 
       // Verificar se é uma mensagem válida
       if (!payload.object || payload.object !== 'whatsapp_business_account') {
-        throw new Error('Invalid webhook payload');
+        throw new Error('Invalid webhook payload')
       }
 
       // Identificar o usuário baseado no business_account_id ou phone_number_id
-      let userId: string | null = null;
+      let userId: string | null = null
 
       if (payload.entry && payload.entry.length > 0) {
-        const entry = payload.entry[0];
+        const entry = payload.entry[0]
 
         // Tentar identificar por business_account_id
         if (entry.id) {
-          const integration = await this.integrationRepo.findByBusinessAccountId(entry.id);
+          const integration = await this.integrationRepo.findByBusinessAccountId(entry.id)
           if (integration) {
-            userId = integration.user_id;
+            userId = integration.user_id
           }
         }
 
         // Se não encontrou, tentar por phone_number_id nos changes
         if (!userId && entry.changes) {
           for (const change of entry.changes) {
-            if (change.value && change.value.metadata && change.value.metadata.phone_number_id) {
+            if (change.value?.metadata?.phone_number_id) {
               const integration = await this.integrationRepo.findByPhoneNumberId(
                 change.value.metadata.phone_number_id
-              );
+              )
               if (integration) {
-                userId = integration.user_id;
-                break;
+                userId = integration.user_id
+                break
               }
             }
           }
@@ -347,26 +340,26 @@ export class WhatsAppService {
       if (!userId) {
         logger.warn('Could not identify user for WhatsApp webhook', {
           payload: JSON.stringify(payload),
-        });
-        return;
+        })
+        return
       }
 
       // Process different webhook types
       if (payload.entry) {
         for (const entry of payload.entry) {
           if (entry.messaging) {
-            await this.processMessages(userId, entry.messaging);
+            await this.processMessages(userId, entry.messaging)
           }
           if (entry.statuses) {
-            await this.processStatuses(userId, entry.statuses);
+            await this.processStatuses(userId, entry.statuses)
           }
         }
       }
     } catch (error) {
       logger.error('Error processing WhatsApp webhook', {
         error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
+      })
+      throw error
     }
   }
 
@@ -383,26 +376,25 @@ export class WhatsAppService {
           timestamp: message.timestamp,
           type: message.type,
           content: message[message.type], // text, image, etc.
-        };
+        }
 
         logger.info('Received WhatsApp message', {
           userId,
           messageId: messageData.id,
           from: messageData.from,
           type: messageData.type,
-        });
+        })
 
         // TODO: Implement message processing logic
         // - Store in database
         // - Trigger automations
         // - Send responses if needed
-
       } catch (error) {
         logger.error('Error processing individual message', {
           userId,
           messageId: message.id,
           error: error instanceof Error ? error.message : String(error),
-        });
+        })
       }
     }
   }
@@ -418,17 +410,16 @@ export class WhatsAppService {
           messageId: status.id,
           status: status.status,
           timestamp: status.timestamp,
-        });
+        })
 
         // TODO: Update message status in database
         // - sent, delivered, read, failed
-
       } catch (error) {
         logger.error('Error processing message status', {
           userId,
           messageId: status.id,
           error: error instanceof Error ? error.message : String(error),
-        });
+        })
       }
     }
   }
@@ -436,15 +427,12 @@ export class WhatsAppService {
   /**
    * Build template components with variables
    */
-  private buildTemplateComponents(
-    templateName: string,
-    variables: string[]
-  ): any[] {
+  private buildTemplateComponents(templateName: string, variables: string[]): any[] {
     const templates: Record<string, any[]> = {
       entrega_confirmada: [
         {
           type: 'body',
-          parameters: variables.map((variable, index) => ({
+          parameters: variables.map((variable, _index) => ({
             type: 'text',
             text: variable,
           })),
@@ -453,7 +441,7 @@ export class WhatsAppService {
       pagamento_lembrete: [
         {
           type: 'body',
-          parameters: variables.map((variable, index) => ({
+          parameters: variables.map((variable, _index) => ({
             type: 'text',
             text: variable,
           })),
@@ -462,15 +450,15 @@ export class WhatsAppService {
       pagamento_confirmado: [
         {
           type: 'body',
-          parameters: variables.map((variable, index) => ({
+          parameters: variables.map((variable, _index) => ({
             type: 'text',
             text: variable,
           })),
         },
       ],
-    };
+    }
 
-    return templates[templateName] || [];
+    return templates[templateName] || []
   }
 
   /**
@@ -478,24 +466,24 @@ export class WhatsAppService {
    */
   private formatPhoneNumber(phone: string): string {
     // Remove all non-numeric characters
-    const cleaned = phone.replace(/\D/g, '');
+    const cleaned = phone.replace(/\D/g, '')
 
     // Add country code if not present (assuming Brazil)
     if (cleaned.length === 11 && cleaned.startsWith('9')) {
       // Mobile number without country code
-      return `55${cleaned}`;
+      return `55${cleaned}`
     } else if (cleaned.length === 10) {
       // Landline without country code
-      return `55${cleaned}`;
+      return `55${cleaned}`
     } else if (cleaned.length === 13 && cleaned.startsWith('55')) {
       // Already has country code
-      return cleaned;
+      return cleaned
     }
 
     // Return as-is if format is unclear
-    return cleaned;
+    return cleaned
   }
 }
 
 // Export singleton instance
-export const whatsAppService = new WhatsAppService();
+export const whatsAppService = new WhatsAppService()

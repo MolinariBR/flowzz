@@ -11,13 +11,13 @@
  * - openapi.yaml: /reports endpoints
  */
 
-import { Router } from 'express';
-import { ReportController } from '../controllers/ReportController';
-import { authenticate } from '../shared/middlewares/authenticate';
-import { reportsRateLimiter } from '../shared/middlewares/rateLimiter';
+import { Router } from 'express'
+import { ReportController } from '../controllers/ReportController'
+import { authenticate } from '../shared/middlewares/authenticate'
+import { reportsRateLimiter } from '../shared/middlewares/rateLimiter'
 
-const router = Router();
-const reportController = new ReportController();
+const router = Router()
+const reportController = new ReportController()
 
 /**
  * POST /api/v1/reports/generate
@@ -54,7 +54,7 @@ const reportController = new ReportController();
  *   }
  * }
  */
-router.post('/generate', authenticate, reportsRateLimiter, reportController.generateReport);
+router.post('/generate', authenticate, reportsRateLimiter, reportController.generateReport)
 
 /**
  * GET /api/v1/reports/:id/status
@@ -73,7 +73,7 @@ router.post('/generate', authenticate, reportsRateLimiter, reportController.gene
  *   }
  * }
  */
-router.get('/:id/status', authenticate, reportController.getReportStatus);
+router.get('/:id/status', authenticate, reportController.getReportStatus)
 
 /**
  * GET /api/v1/reports/:id/download
@@ -89,7 +89,7 @@ router.get('/:id/status', authenticate, reportController.getReportStatus);
  *   }
  * }
  */
-router.get('/:id/download', authenticate, reportController.getDownloadUrl);
+router.get('/:id/download', authenticate, reportController.getDownloadUrl)
 
 /**
  * GET /api/v1/reports
@@ -117,7 +117,7 @@ router.get('/:id/download', authenticate, reportController.getDownloadUrl);
  *   }
  * }
  */
-router.get('/', authenticate, reportController.listReports);
+router.get('/', authenticate, reportController.listReports)
 
 /**
  * DELETE /api/v1/reports/:id
@@ -127,7 +127,7 @@ router.get('/', authenticate, reportController.listReports);
  *
  * Response: 204 No Content
  */
-router.delete('/:id', authenticate, reportController.deleteReport);
+router.delete('/:id', authenticate, reportController.deleteReport)
 
 /**
  * GET /api/v1/reports/statistics
@@ -147,6 +147,6 @@ router.delete('/:id', authenticate, reportController.deleteReport);
  *   }
  * }
  */
-router.get('/statistics', authenticate, reportController.getStatistics);
+router.get('/statistics', authenticate, reportController.getStatistics)
 
-export { router as reportRoutes };
+export { router as reportRoutes }

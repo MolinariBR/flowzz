@@ -10,6 +10,11 @@
     "landing"
   ],
   "scripts": {
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe",
+    "format": "biome format . --write",
+    "check": "biome check . && pnpm -r run type-check",
+    "type-check": "pnpm -r run type-check",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
@@ -17,10 +22,22 @@
     "test:e2e:flow": "playwright test --project=flow",
     "test:e2e:admin": "playwright test --project=admin",
     "test:e2e:report": "playwright show-report",
-    "test:all": "pnpm -r run test && pnpm run test:e2e"
+    "test:all": "pnpm -r run test && pnpm run test:e2e",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "biome check --write --no-errors-on-unmatched --diagnostic-level=warn",
+      "biome format --write"
+    ],
+    "*.{json,md,css}": [
+      "biome format --write"
+    ]
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.1"
+    "@playwright/test": "^1.49.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2"
   },
   "engines": {
     "node": ">=18.0.0",

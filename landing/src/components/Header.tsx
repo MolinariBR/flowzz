@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import {Menu, X} from 'lucide-react'
+import { Menu, X } from 'lucide-react'
+import { useState } from 'react'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -9,11 +9,11 @@ const Header = () => {
     { label: 'Início', href: '#inicio' },
     { label: 'Funcionalidades', href: '#funcionalidades' },
     { label: 'Planos', href: '#planos' },
-    { label: 'Contato', href: '#contato' }
+    { label: 'Contato', href: '#contato' },
   ]
 
   return (
-    <motion.header 
+    <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-sm border-b border-gray-800"
@@ -21,13 +21,10 @@ const Header = () => {
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <motion.div 
-            whileHover={{ scale: 1.02 }}
-            className="flex items-center"
-          >
-            <img 
-              src="/api/placeholder/40/40" 
-              alt="Flowzz Logo" 
+          <motion.div whileHover={{ scale: 1.02 }} className="flex items-center">
+            <img
+              src="/api/placeholder/40/40"
+              alt="Flowzz Logo"
               className="w-10 h-10 rounded-full"
             />
           </motion.div>
@@ -58,6 +55,7 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden text-gray-400 hover:text-white"
           >
@@ -84,7 +82,7 @@ const Header = () => {
                   {item.label}
                 </a>
               ))}
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-semibold w-full mt-4 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-300 overflow-hidden group"

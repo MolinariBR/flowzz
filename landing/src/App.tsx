@@ -1,14 +1,12 @@
-
-import React from 'react'
-import Header from './components/Header'
-import Hero from './components/Hero'
-import PainPoint from './components/PainPoint'
 import Benefits from './components/Benefits'
 import Features from './components/Features'
-import WhyChoose from './components/WhyChoose'
-import Plans from './components/Plans'
-import Integrations from './components/Integrations'
 import Footer from './components/Footer'
+import Header from './components/Header'
+import Hero from './components/Hero'
+import Integrations from './components/Integrations'
+import PainPoint from './components/PainPoint'
+import Plans from './components/Plans'
+import WhyChoose from './components/WhyChoose'
 
 function App() {
   return (

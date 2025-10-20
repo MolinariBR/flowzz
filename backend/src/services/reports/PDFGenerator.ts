@@ -1,10 +1,15 @@
 // Referência: dev-stories.md Dev Story 4.2 - Geração PDF com Puppeteer
 // Atende tasks.md Task 10.1.1 - Implementar generatePDF() com Puppeteer
 
-import puppeteer from 'puppeteer';
-import { logger } from '../../shared/utils/logger';
-import type { SalesReportData, FinancialReportData, AdsReportData, ClientsReportData } from '../../interfaces/ReportService.interface';
-import { generateSalesReportTemplate } from './templates';
+import puppeteer from 'puppeteer'
+import type {
+  AdsReportData,
+  ClientsReportData,
+  FinancialReportData,
+  SalesReportData,
+} from '../../interfaces/ReportService.interface'
+import { logger } from '../../shared/utils/logger'
+import { generateSalesReportTemplate } from './templates'
 
 /**
  * PDFGenerator - Gera PDFs usando Puppeteer
@@ -23,10 +28,10 @@ export class PDFGenerator {
    */
   async generateSalesReportPDF(
     data: SalesReportData,
-    options: { title: string; includeLogo?: boolean },
+    options: { title: string; includeLogo?: boolean }
   ): Promise<Buffer> {
-    const html = generateSalesReportTemplate(data, options);
-    return this.generatePDFFromHTML(html);
+    const html = generateSalesReportTemplate(data, options)
+    return this.generatePDFFromHTML(html)
   }
 
   /**
@@ -34,11 +39,11 @@ export class PDFGenerator {
    */
   async generateFinancialReportPDF(
     data: FinancialReportData,
-    options: { title: string; includeLogo?: boolean },
+    options: { title: string; includeLogo?: boolean }
   ): Promise<Buffer> {
     // Template simplificado inline por agora
-    const html = this.generateFinancialTemplate(data, options);
-    return this.generatePDFFromHTML(html);
+    const html = this.generateFinancialTemplate(data, options)
+    return this.generatePDFFromHTML(html)
   }
 
   /**
@@ -46,10 +51,10 @@ export class PDFGenerator {
    */
   async generateAdsReportPDF(
     data: AdsReportData,
-    options: { title: string; includeLogo?: boolean },
+    options: { title: string; includeLogo?: boolean }
   ): Promise<Buffer> {
-    const html = this.generateAdsTemplate(data, options);
-    return this.generatePDFFromHTML(html);
+    const html = this.generateAdsTemplate(data, options)
+    return this.generatePDFFromHTML(html)
   }
 
   /**
@@ -57,10 +62,10 @@ export class PDFGenerator {
    */
   async generateClientsReportPDF(
     data: ClientsReportData,
-    options: { title: string; includeLogo?: boolean },
+    options: { title: string; includeLogo?: boolean }
   ): Promise<Buffer> {
-    const html = this.generateClientsTemplate(data, options);
-    return this.generatePDFFromHTML(html);
+    const html = this.generateClientsTemplate(data, options)
+    return this.generatePDFFromHTML(html)
   }
 
   /**
@@ -68,10 +73,10 @@ export class PDFGenerator {
    * Referência: dev-stories.md Dev Story 4.2 - Exemplo de código
    */
   private async generatePDFFromHTML(html: string): Promise<Buffer> {
-    let browser;
+    let browser
 
     try {
-      logger.info('Starting PDF generation with Puppeteer');
+      logger.info('Starting PDF generation with Puppeteer')
 
       // Lançar navegador em modo headless
       browser = await puppeteer.launch({
@@ -82,14 +87,14 @@ export class PDFGenerator {
           '--disable-dev-shm-usage',
           '--disable-gpu',
         ],
-      });
+      })
 
-      const page = await browser.newPage();
+      const page = await browser.newPage()
 
       // Setar conteúdo HTML
       await page.setContent(html, {
         waitUntil: 'networkidle0', // Esperar até carregar todos os recursos
-      });
+      })
 
       // Gerar PDF
       const pdfBuffer = await page.pdf({
@@ -101,33 +106,38 @@ export class PDFGenerator {
           bottom: '1cm',
           left: '1cm',
         },
-      });
+      })
 
       logger.info('PDF generated successfully', {
         size: pdfBuffer.length,
-      });
+      })
 
       // Converter Uint8Array para Buffer se necessário
-      return Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer);
+      return Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer)
     } catch (error) {
       logger.error('Error generating PDF', {
         error: error instanceof Error ? error.message : String(error),
-      });
-      throw new Error(`Failed to generate PDF: ${error instanceof Error ? error.message : String(error)}`);
+      })
+      throw new Error(
+        `Failed to generate PDF: ${error instanceof Error ? error.message : String(error)}`
+      )
     } finally {
       if (browser) {
-        await browser.close();
+        await browser.close()
       }
     }
   }
 
   // ==================== TEMPLATES INLINE SIMPLIFICADOS ====================
 
-  private generateFinancialTemplate(data: FinancialReportData, options: { title: string; includeLogo?: boolean }): string {
-    const { title, includeLogo } = options;
+  private generateFinancialTemplate(
+    data: FinancialReportData,
+    options: { title: string; includeLogo?: boolean }
+  ): string {
+    const { title, includeLogo } = options
     const logoSection = includeLogo
       ? '<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>'
-      : '';
+      : ''
 
     return `
 <!DOCTYPE html>
@@ -166,14 +176,17 @@ export class PDFGenerator {
   </footer>
 </body>
 </html>
-    `;
+    `
   }
 
-  private generateAdsTemplate(data: AdsReportData, options: { title: string; includeLogo?: boolean }): string {
-    const { title, includeLogo } = options;
+  private generateAdsTemplate(
+    data: AdsReportData,
+    options: { title: string; includeLogo?: boolean }
+  ): string {
+    const { title, includeLogo } = options
     const logoSection = includeLogo
       ? '<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>'
-      : '';
+      : ''
 
     return `
 <!DOCTYPE html>
@@ -216,13 +229,18 @@ export class PDFGenerator {
       </tr>
     </thead>
     <tbody>
-      ${data.topCampaigns.slice(0, 10).map(campaign => `
+      ${data.topCampaigns
+        .slice(0, 10)
+        .map(
+          (campaign) => `
         <tr>
           <td class="border px-4 py-2">${campaign.name}</td>
           <td class="border px-4 py-2 text-right">R$ ${campaign.spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
           <td class="border px-4 py-2 text-right">${campaign.conversions}</td>
         </tr>
-      `).join('')}
+      `
+        )
+        .join('')}
     </tbody>
   </table>
 
@@ -231,14 +249,17 @@ export class PDFGenerator {
   </footer>
 </body>
 </html>
-    `;
+    `
   }
 
-  private generateClientsTemplate(data: ClientsReportData, options: { title: string; includeLogo?: boolean }): string {
-    const { title, includeLogo } = options;
+  private generateClientsTemplate(
+    data: ClientsReportData,
+    options: { title: string; includeLogo?: boolean }
+  ): string {
+    const { title, includeLogo } = options
     const logoSection = includeLogo
       ? '<div class="text-center mb-8"><h1 class="text-4xl font-bold text-blue-600">Flowzz</h1></div>'
-      : '';
+      : ''
 
     return `
 <!DOCTYPE html>
@@ -277,13 +298,17 @@ export class PDFGenerator {
       </tr>
     </thead>
     <tbody>
-      ${data.topClients.map(client => `
+      ${data.topClients
+        .map(
+          (client) => `
         <tr>
           <td class="border px-4 py-2">${client.name}</td>
           <td class="border px-4 py-2 text-right">${client.orderCount}</td>
           <td class="border px-4 py-2 text-right">R$ ${client.totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
         </tr>
-      `).join('')}
+      `
+        )
+        .join('')}
     </tbody>
   </table>
 
@@ -292,6 +317,6 @@ export class PDFGenerator {
   </footer>
 </body>
 </html>
-    `;
+    `
   }
 }

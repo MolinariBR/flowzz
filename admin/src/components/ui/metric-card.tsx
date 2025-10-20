@@ -1,7 +1,7 @@
-import React from 'react'
-import {LucideIcon, TrendingUp, TrendingDown} from 'lucide-react'
-import { motion } from 'framer-motion'
 import { clsx } from 'clsx'
+import { motion } from 'framer-motion'
+import { type LucideIcon, TrendingDown, TrendingUp } from 'lucide-react'
+import type React from 'react'
 
 interface MetricCardProps {
   title: string
@@ -22,7 +22,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   icon: Icon,
   prefix = '',
   suffix = '',
-  className
+  className,
 }) => {
   const formatValue = (val: string | number) => {
     if (typeof val === 'number') {
@@ -78,12 +78,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           </div>
           <h3 className="text-sm font-medium text-gray-600">{title}</h3>
         </div>
-        
+
         {change !== undefined && TrendIcon && (
           <div className={clsx('flex items-center space-x-1', getTrendColor())}>
             <TrendIcon className="w-4 h-4" />
             <span className="text-sm font-medium">
-              {change > 0 ? '+' : ''}{change}%
+              {change > 0 ? '+' : ''}
+              {change}%
             </span>
           </div>
         )}
@@ -91,12 +92,15 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
       <div className="space-y-1">
         <div className="text-2xl font-bold text-gray-900">
-          {prefix}{formatValue(value)}{suffix}
+          {prefix}
+          {formatValue(value)}
+          {suffix}
         </div>
-        
+
         {change !== undefined && (
           <p className="text-sm text-gray-500">
-            {trend === 'up' ? 'Aumento' : trend === 'down' ? 'Redução' : 'Variação'} em relação ao mês anterior
+            {trend === 'up' ? 'Aumento' : trend === 'down' ? 'Redução' : 'Variação'} em relação ao
+            mês anterior
           </p>
         )}
       </div>

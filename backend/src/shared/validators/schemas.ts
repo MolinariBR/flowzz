@@ -1,18 +1,18 @@
 // src/shared/validators/schemas.ts
 // Referência: tasks.md Task 12.3.2, design.md - Zod Schemas
 
-import { z } from 'zod';
+import { z } from 'zod'
 import {
-  emailSchema,
-  phoneSchema,
   cpfSchema,
-  uuidSchema,
-  dateSchema,
   currencySchema,
-  paginationSchema,
-  urlSchema,
+  dateSchema,
+  emailSchema,
   enumSchema,
-} from '../middlewares/validateRequest';
+  paginationSchema,
+  phoneSchema,
+  urlSchema,
+  uuidSchema,
+} from '../middlewares/validateRequest'
 
 // ==================== USER SCHEMAS ====================
 
@@ -26,14 +26,14 @@ export const registerSchema = z.object({
       .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
     nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres').max(255),
   }),
-});
+})
 
 export const loginSchema = z.object({
   body: z.object({
     email: emailSchema,
     password: z.string().min(1, 'Senha é obrigatória'),
   }),
-});
+})
 
 export const updateProfileSchema = z.object({
   body: z.object({
@@ -41,7 +41,7 @@ export const updateProfileSchema = z.object({
     telefone: phoneSchema,
     avatar_url: urlSchema,
   }),
-});
+})
 
 // ==================== CLIENT SCHEMAS ====================
 
@@ -60,7 +60,7 @@ export const createClientSchema = z.object({
       .optional(),
     status: enumSchema(['ACTIVE', 'INACTIVE', 'BLOCKED'] as const).optional(),
   }),
-});
+})
 
 export const updateClientSchema = z.object({
   params: z.object({
@@ -74,10 +74,13 @@ export const updateClientSchema = z.object({
     address: z.string().max(500).optional(),
     city: z.string().max(100).optional(),
     state: z.string().length(2).optional(),
-    cep: z.string().regex(/^\d{5}-?\d{3}$/).optional(),
+    cep: z
+      .string()
+      .regex(/^\d{5}-?\d{3}$/)
+      .optional(),
     status: enumSchema(['ACTIVE', 'INACTIVE', 'BLOCKED'] as const).optional(),
   }),
-});
+})
 
 export const listClientsSchema = z.object({
   query: paginationSchema.extend({
@@ -86,7 +89,7 @@ export const listClientsSchema = z.object({
     sortBy: enumSchema(['name', 'created_at', 'total_spent'] as const).optional(),
     sortOrder: enumSchema(['asc', 'desc'] as const).optional(),
   }),
-});
+})
 
 // ==================== TAG SCHEMAS ====================
 
@@ -95,10 +98,13 @@ export const createTagSchema = z.object({
     nome: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres').max(50),
     cor: z
       .string()
-      .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Cor inválida. Use formato hexadecimal: #FF5733'),
+      .regex(
+        /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
+        'Cor inválida. Use formato hexadecimal: #FF5733'
+      ),
     descricao: z.string().max(255).optional(),
   }),
-});
+})
 
 export const updateTagSchema = z.object({
   params: z.object({
@@ -106,10 +112,13 @@ export const updateTagSchema = z.object({
   }),
   body: z.object({
     nome: z.string().min(2).max(50).optional(),
-    cor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
+    cor: z
+      .string()
+      .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+      .optional(),
     descricao: z.string().max(255).optional(),
   }),
-});
+})
 
 // ==================== SALE SCHEMAS ====================
 
@@ -125,7 +134,7 @@ export const createSaleSchema = z.object({
     observacoes: z.string().max(1000).optional(),
     external_id: z.string().max(255).optional(),
   }),
-});
+})
 
 export const updateSaleSchema = z.object({
   params: z.object({
@@ -136,7 +145,7 @@ export const updateSaleSchema = z.object({
     status: enumSchema(['PENDING', 'CONFIRMED', 'DELIVERED', 'CANCELLED'] as const).optional(),
     observacoes: z.string().max(1000).optional(),
   }),
-});
+})
 
 export const listSalesSchema = z.object({
   query: paginationSchema.extend({
@@ -147,7 +156,7 @@ export const listSalesSchema = z.object({
     sortBy: enumSchema(['data_venda', 'valor', 'created_at'] as const).optional(),
     sortOrder: enumSchema(['asc', 'desc'] as const).optional(),
   }),
-});
+})
 
 // ==================== AD SCHEMAS ====================
 
@@ -160,7 +169,7 @@ export const createAdSchema = z.object({
     end_date: dateSchema.optional(),
     status: enumSchema(['ACTIVE', 'PAUSED', 'COMPLETED'] as const).default('ACTIVE'),
   }),
-});
+})
 
 // ==================== INTEGRATION SCHEMAS ====================
 
@@ -171,7 +180,7 @@ export const connectIntegrationSchema = z.object({
     access_token: z.string().min(10).optional(),
     config: z.record(z.unknown()).optional(),
   }),
-});
+})
 
 export const syncIntegrationSchema = z.object({
   params: z.object({
@@ -180,7 +189,7 @@ export const syncIntegrationSchema = z.object({
   body: z.object({
     forceFullSync: z.boolean().optional().default(false),
   }),
-});
+})
 
 // ==================== REPORT SCHEMAS ====================
 
@@ -209,7 +218,7 @@ export const generateReportSchema = z.object({
     sendEmail: z.boolean().optional(),
     emailRecipients: z.array(emailSchema).max(10, 'Máximo de 10 destinatários').optional(),
   }),
-});
+})
 
 // ==================== GOAL SCHEMAS ====================
 
@@ -221,7 +230,7 @@ export const createGoalSchema = z.object({
     period: enumSchema(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'] as const),
     deadline: dateSchema.optional(),
   }),
-});
+})
 
 export const updateGoalSchema = z.object({
   params: z.object({
@@ -233,7 +242,7 @@ export const updateGoalSchema = z.object({
     deadline: dateSchema.optional(),
     status: enumSchema(['ACTIVE', 'COMPLETED', 'CANCELLED'] as const).optional(),
   }),
-});
+})
 
 // ==================== SUBSCRIPTION SCHEMAS ====================
 
@@ -243,7 +252,7 @@ export const upgradeSubscriptionSchema = z.object({
     payment_method: enumSchema(['CREDIT_CARD', 'PIX', 'BOLETO'] as const),
     card_token: z.string().optional(), // For PagBank tokenized card
   }),
-});
+})
 
 // ==================== ADMIN SCHEMAS ====================
 
@@ -254,7 +263,7 @@ export const listUsersSchema = z.object({
     status: enumSchema(['TRIAL', 'ACTIVE', 'CANCELLED', 'SUSPENDED'] as const).optional(),
     role: enumSchema(['USER', 'ADMIN', 'SUPER_ADMIN'] as const).optional(),
   }),
-});
+})
 
 export const updateUserSchema = z.object({
   params: z.object({
@@ -265,7 +274,7 @@ export const updateUserSchema = z.object({
     role: enumSchema(['USER', 'ADMIN', 'SUPER_ADMIN'] as const).optional(),
     is_active: z.boolean().optional(),
   }),
-});
+})
 
 export const suspendUserSchema = z.object({
   params: z.object({
@@ -274,7 +283,7 @@ export const suspendUserSchema = z.object({
   body: z.object({
     reason: z.string().min(10, 'Motivo deve ter no mínimo 10 caracteres').max(500),
   }),
-});
+})
 
 // ==================== COMMON SCHEMAS ====================
 
@@ -282,11 +291,11 @@ export const idParamSchema = z.object({
   params: z.object({
     id: uuidSchema,
   }),
-});
+})
 
 export const dateRangeQuerySchema = z.object({
   query: z.object({
     startDate: dateSchema,
     endDate: dateSchema,
   }),
-});
+})

@@ -1,5 +1,5 @@
-import { http, HttpResponse } from 'msw';
-import { setupServer } from 'msw/node';
+import { HttpResponse, http } from 'msw'
+import { setupServer } from 'msw/node'
 
 /**
  * Mock handlers para Facebook Marketing API
@@ -8,21 +8,21 @@ import { setupServer } from 'msw/node';
 export const facebookHandlers = [
   // GET /oauth/access_token - OAuth callback
   http.get('https://graph.facebook.com/v18.0/oauth/access_token', ({ request }) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get('code');
-    
+    const url = new URL(request.url)
+    const code = url.searchParams.get('code')
+
     if (!code) {
       return new HttpResponse(null, {
         status: 400,
         statusText: 'Bad Request',
-      });
+      })
     }
 
     return HttpResponse.json({
       access_token: 'mock_facebook_access_token_123456',
       token_type: 'bearer',
       expires_in: 5183999, // ~60 dias
-    });
+    })
   }),
 
   // GET /me/adaccounts - Listar ad accounts
@@ -43,7 +43,7 @@ export const facebookHandlers = [
           after: 'after_cursor',
         },
       },
-    });
+    })
   }),
 
   // GET /:ad_account_id/insights - Buscar insights
@@ -85,7 +85,7 @@ export const facebookHandlers = [
           after: 'after',
         },
       },
-    });
+    })
   }),
 
   // GET /:ad_account_id/campaigns - Listar campanhas
@@ -110,26 +110,26 @@ export const facebookHandlers = [
           created_time: '2024-09-15T14:30:00+0000',
         },
       ],
-    });
+    })
   }),
 
   // GET /me - Verificar token válido
   http.get('https://graph.facebook.com/v18.0/me', ({ request }) => {
-    const url = new URL(request.url);
-    const accessToken = url.searchParams.get('access_token');
+    const url = new URL(request.url)
+    const accessToken = url.searchParams.get('access_token')
 
     if (!accessToken) {
       return new HttpResponse(null, {
         status: 401,
         statusText: 'Unauthorized',
-      });
+      })
     }
 
     return HttpResponse.json({
       id: '123456789',
       name: 'Demo User Flowzz',
       email: 'demo@flowzz.com.br',
-    });
+    })
   }),
 
   // POST /debug_token - Validar token
@@ -145,9 +145,9 @@ export const facebookHandlers = [
         scopes: ['ads_read', 'ads_management'],
         user_id: '123456789',
       },
-    });
+    })
   }),
-];
+]
 
 /**
  * Handlers para simular erros da Facebook API
@@ -165,7 +165,7 @@ export const facebookErrorHandlers = [
         },
       },
       { status: 429 }
-    );
+    )
   }),
 
   // Simular token inválido (401)
@@ -180,7 +180,7 @@ export const facebookErrorHandlers = [
         },
       },
       { status: 401 }
-    );
+    )
   }),
 
   // Simular permissões insuficientes (403)
@@ -195,11 +195,11 @@ export const facebookErrorHandlers = [
         },
       },
       { status: 403 }
-    );
+    )
   }),
-];
+]
 
 /**
  * Servidor MSW para testes
  */
-export const facebookServer = setupServer(...facebookHandlers);
+export const facebookServer = setupServer(...facebookHandlers)
