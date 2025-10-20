@@ -68,7 +68,7 @@ tmp/
 
 # Lock files (manter apenas um tipo)
 package-lock.json
-pnpm-lock.yaml
+# pnpm-lock.yaml  # Descomentado para permitir envio ao repositório
 yarn.lock
 
 # Generated files
