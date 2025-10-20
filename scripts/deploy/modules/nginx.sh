@@ -29,12 +29,13 @@ upstream flowzz_api {
     server localhost:$BACKEND_PORT;
 }
 
+# Domínio principal - Frontend com login/dashboard integrado
 server {
     listen 80;
     server_name $DOMAIN www.$DOMAIN;
 
     location / {
-        proxy_pass http://localhost:$LANDING_PORT;
+        proxy_pass http://localhost:$FLOW_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -55,8 +56,21 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
+
+    location /landing {
+        proxy_pass http://localhost:$LANDING_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
 }
 
+# Admin Panel
 server {
     listen 80;
     server_name admin.$DOMAIN;
@@ -74,6 +88,7 @@ server {
     }
 }
 
+# API Backend
 server {
     listen 80;
     server_name api.$DOMAIN;
@@ -89,22 +104,9 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
-server {
-    listen 80;
-    server_name app.$DOMAIN;
+EOF
 
-    location / {
-        proxy_pass http://localhost:$FLOW_PORT;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-    }
-}
+# Habilitar site
 print_info "Habilitando site no Nginx..."
 sudo ln -sf "$NGINX_SITES_AVAILABLE/flowzz" "$NGINX_SITES_ENABLED/"
 sudo rm -f "$NGINX_SITES_ENABLED/default"

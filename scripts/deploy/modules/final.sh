@@ -85,8 +85,8 @@ if [ "$DOMAIN" = "localhost" ]; then
     echo -e "  API:      http://localhost:$BACKEND_PORT"
     echo -e "  Landing:  http://localhost:$LANDING_PORT"
 else
-    echo -e "  🌐 Site principal: https://$DOMAIN (Landing Page)"
-    echo -e "  🔐 Área do usuário: https://app.$DOMAIN (Login/Frontend)"
+    echo -e "  🌐 Site principal: https://$DOMAIN (Frontend com Login)"
+    echo -e "  📄 Landing page:  https://$DOMAIN/landing"
     echo -e "  👨‍💼 Admin:         https://admin.$DOMAIN"
     echo -e "  🔌 API:           https://api.$DOMAIN"
 fi
@@ -101,6 +101,5 @@ echo ""
 echo -e "${BLUE}📋 Registros DNS necessários:${NC}"
 echo -e "  $DOMAIN           → IP_DO_SERVIDOR"
 echo -e "  www.$DOMAIN       → IP_DO_SERVIDOR"
-echo -e "  app.$DOMAIN       → IP_DO_SERVIDOR"
 echo -e "  admin.$DOMAIN     → IP_DO_SERVIDOR"
 echo -e "  api.$DOMAIN       → IP_DO_SERVIDOR"
