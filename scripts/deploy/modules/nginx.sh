@@ -15,6 +15,13 @@ DOMAIN=${1:-$DEFAULT_DOMAIN}
 echo -e "${BLUE}🌐 Configurando Nginx...${NC}"
 echo -e "${BLUE}========================${NC}"
 
+# Validar domínio
+print_info "Validando domínio: $DOMAIN"
+if ! validate_domain "$DOMAIN"; then
+    print_error "Deploy interrompido devido a domínio inválido"
+    exit 1
+fi
+
 # Criar configuração do Nginx
 print_info "Criando configuração do Nginx..."
 sudo tee "$NGINX_SITES_AVAILABLE/flowzz" > /dev/null <<EOF

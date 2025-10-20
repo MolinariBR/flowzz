@@ -22,6 +22,14 @@ echo -e "${YELLOW}Domínio: $DOMAIN${NC}"
 echo -e "${YELLOW}Email: $EMAIL${NC}"
 echo ""
 
+# Validar domínio antes de continuar
+print_info "Validando domínio: $DOMAIN"
+if ! validate_domain "$DOMAIN"; then
+    print_error "Deploy interrompido devido a domínio inválido"
+    print_error "Use um domínio válido como: flowzzoficial.com"
+    exit 1
+fi
+
 # Verificar se está rodando como root
 if [[ $EUID -eq 0 ]]; then
    print_warning "AVISO: Você está executando como root."

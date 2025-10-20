@@ -22,6 +22,13 @@ if [ "$DOMAIN" = "localhost" ]; then
     exit 0
 fi
 
+# Validar domínio
+print_info "Validando domínio: $DOMAIN"
+if ! validate_domain "$DOMAIN"; then
+    print_error "Deploy interrompido devido a domínio inválido"
+    exit 1
+fi
+
 # Instalar Certbot
 print_info "Instalando Certbot..."
 sudo apt install -y certbot python3-certbot-nginx
