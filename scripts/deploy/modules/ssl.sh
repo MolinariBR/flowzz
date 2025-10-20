@@ -36,16 +36,20 @@ sudo apt install -y certbot python3-certbot-nginx
 # Obter certificados SSL
 print_info "Obtendo certificados SSL..."
 
-# Domínio principal
-print_info "Configurando SSL para $DOMAIN..."
+# Domínio principal (landing)
+print_info "Configurando SSL para $DOMAIN (Landing)..."
 sudo certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive
 
+# Subdomínio app (dashboard do usuário)
+print_info "Configurando SSL para app.$DOMAIN (Dashboard)..."
+sudo certbot --nginx -d "app.$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive
+
 # Subdomínio admin
-print_info "Configurando SSL para admin.$DOMAIN..."
+print_info "Configurando SSL para admin.$DOMAIN (Admin)..."
 sudo certbot --nginx -d "admin.$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive
 
 # Subdomínio API
-print_info "Configurando SSL para api.$DOMAIN..."
+print_info "Configurando SSL para api.$DOMAIN (API)..."
 sudo certbot --nginx -d "api.$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive
 
 print_status "SSL configurado"

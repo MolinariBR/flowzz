@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Flowzz Deploy - Nginx Setup Module
-# Configura o servidor web Nginx
+# Configura o servidor web Nginx conforme estrutura especificada
 
 set -e
 
@@ -22,20 +22,20 @@ if ! validate_domain "$DOMAIN"; then
     exit 1
 fi
 
-# Criar configuração do Nginx
+# Criar configuração do Nginx conforme estrutura especificada
 print_info "Criando configuração do Nginx..."
 sudo tee "$NGINX_SITES_AVAILABLE/flowzz" > /dev/null <<EOF
 upstream flowzz_api {
     server localhost:$BACKEND_PORT;
 }
 
-# Domínio principal - Frontend com login/dashboard integrado
+# Domínio principal - Landing Page (primeira página)
 server {
     listen 80;
     server_name $DOMAIN www.$DOMAIN;
 
     location / {
-        proxy_pass http://localhost:$FLOW_PORT;
+        proxy_pass http://localhost:$LANDING_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -56,9 +56,15 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
+}
 
-    location /landing {
-        proxy_pass http://localhost:$LANDING_PORT;
+# Dashboard do usuário - Frontend Flow
+server {
+    listen 80;
+    server_name app.$DOMAIN;
+
+    location / {
+        proxy_pass http://localhost:$FLOW_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
