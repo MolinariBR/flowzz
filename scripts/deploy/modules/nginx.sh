@@ -34,7 +34,7 @@ server {
     server_name $DOMAIN www.$DOMAIN;
 
     location / {
-        proxy_pass http://localhost:$FLOW_PORT;
+        proxy_pass http://localhost:$LANDING_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -89,9 +89,22 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
-EOF
+server {
+    listen 80;
+    server_name app.$DOMAIN;
 
-# Habilitar site
+    location / {
+        proxy_pass http://localhost:$FLOW_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
 print_info "Habilitando site no Nginx..."
 sudo ln -sf "$NGINX_SITES_AVAILABLE/flowzz" "$NGINX_SITES_ENABLED/"
 sudo rm -f "$NGINX_SITES_ENABLED/default"

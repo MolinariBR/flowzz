@@ -40,6 +40,10 @@ print_info "Obtendo certificados SSL..."
 print_info "Configurando SSL para $DOMAIN..."
 sudo certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive
 
+# Subdomínio app (frontend)
+print_info "Configurando SSL para app.$DOMAIN..."
+sudo certbot --nginx -d "app.$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive
+
 # Subdomínio admin
 print_info "Configurando SSL para admin.$DOMAIN..."
 sudo certbot --nginx -d "admin.$DOMAIN" --email "$EMAIL" --agree-tos --non-interactive
