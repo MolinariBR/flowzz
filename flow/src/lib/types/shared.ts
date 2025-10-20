@@ -1,6 +1,7 @@
 // src/lib/types/shared.ts
-// Tipos compartilhados para todo o frontend
+// Tipos compartilhados para o frontend
 
+// biome-ignore lint/suspicious/noExplicitAny: allow ApiResponse<T = any> for flexible response typing
 export interface ApiResponse<T = any> {
   success: boolean
   data?: T
