@@ -16,7 +16,7 @@ cd "$PROJECT_DIR/backend"
 
 # Instalar dependências
 print_info "Instalando dependências do backend..."
-npm install
+pnpm install --frozen-lockfile
 
 # Criar arquivo de ambiente de produção
 print_info "Criando arquivo de ambiente..."

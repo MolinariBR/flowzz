@@ -16,7 +16,7 @@ cd "$PROJECT_DIR/landing"
 
 # Instalar dependências
 print_info "Instalando dependências da landing..."
-npm install
+pnpm install --frozen-lockfile
 
 # Build da aplicação
 print_info "Compilando landing page..."

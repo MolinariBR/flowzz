@@ -41,25 +41,25 @@ git pull origin main
 
 # Update backend
 cd backend
-npm install
+pnpm install --frozen-lockfile
 npm run build
 pm2 restart flowzz-api
 
 # Update flow frontend
 cd ../flow
-npm install
+pnpm install --frozen-lockfile
 npm run build
 pm2 restart flow-frontend
 
 # Update admin panel
 cd ../admin
-npm install
+pnpm install --frozen-lockfile
 npm run build
 pm2 restart flowzz-admin
 
 # Update landing page
 cd ../landing
-npm install
+pnpm install --frozen-lockfile
 npm run build
 pm2 restart flowzz-landing
 

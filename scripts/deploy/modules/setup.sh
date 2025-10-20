@@ -50,6 +50,15 @@ else
     print_info "Node.js já está instalado"
 fi
 
+# Instalar pnpm
+print_info "Instalando pnpm..."
+if ! command_exists pnpm; then
+    npm install -g pnpm
+    print_status "pnpm instalado"
+else
+    print_info "pnpm já está instalado"
+fi
+
 # Instalar PM2
 print_info "Instalando PM2..."
 if ! command_exists pm2; then

@@ -23,7 +23,7 @@
     "test:e2e:admin": "playwright test --project=admin",
     "test:e2e:report": "playwright show-report",
     "test:all": "pnpm -r run test && pnpm run test:e2e",
-    "prepare": "husky install"
+    "prepare": "husky install || echo 'Husky hooks not installed - continuing...'"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

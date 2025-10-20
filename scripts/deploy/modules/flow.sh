@@ -16,7 +16,7 @@ cd "$PROJECT_DIR/flow"
 
 # Instalar dependências
 print_info "Instalando dependências do Flow..."
-npm install
+pnpm install --frozen-lockfile
 
 # Criar arquivo de ambiente
 print_info "Criando arquivo de ambiente..."
