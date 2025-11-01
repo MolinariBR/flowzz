@@ -16,10 +16,10 @@ export default defineConfig({
   },
   // Configuração específica para testes de integração
   optimizeDeps: {
-    include: ['ioredis', 'prisma', 'bcrypt', 'jsonwebtoken']
+    include: ['ioredis', 'prisma', 'bcrypt', 'jsonwebtoken'],
   },
   // Externalizar dependências problemáticas para testes de integração
   ssr: {
-    noExternal: ['ioredis', 'prisma', '@prisma/client']
-  }
+    noExternal: ['ioredis', 'prisma', '@prisma/client'],
+  },
 })

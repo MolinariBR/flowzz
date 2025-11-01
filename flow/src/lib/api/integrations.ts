@@ -52,7 +52,10 @@ export async function getUserIntegrations(): Promise<Integration[]> {
  * Conectar uma nova integração
  * Endpoint: POST /integrations/{provider}/connect
  */
-export async function connectIntegration(provider: string, config: Record<string, unknown>): Promise<Integration> {
+export async function connectIntegration(
+  provider: string,
+  config: Record<string, unknown>
+): Promise<Integration> {
   try {
     // Para Coinzz, extrair apiKey do config e enviar diretamente
     let body: Record<string, unknown>

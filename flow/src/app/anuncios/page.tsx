@@ -1,38 +1,38 @@
 'use client'
 
-import { useAuth } from '@/lib/contexts/AuthContext'
-import { useFacebookAds } from '@/lib/hooks/useFacebookAds'
-import type { FacebookInsightsResponse } from '@/lib/types/facebook'
 import { motion } from 'framer-motion'
 import {
-    AlertCircle,
-    ChevronDown,
-    ChevronRight,
-    DollarSign,
-    Download,
-    Eye,
-    Filter,
-    Link,
-    MoreHorizontal,
-    MousePointer,
-    Pause,
-    Play,
-    RefreshCw,
-    Settings,
-    Target,
-    TrendingDown,
-    TrendingUp,
+  AlertCircle,
+  ChevronDown,
+  ChevronRight,
+  DollarSign,
+  Download,
+  Eye,
+  Filter,
+  Link,
+  MoreHorizontal,
+  MousePointer,
+  Pause,
+  Play,
+  RefreshCw,
+  Settings,
+  Target,
+  TrendingDown,
+  TrendingUp,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import {
-    Area,
-    AreaChart,
-    CartesianGrid,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts'
+import { useAuth } from '@/lib/contexts/AuthContext'
+import { useFacebookAds } from '@/lib/hooks/useFacebookAds'
+import type { FacebookInsightsResponse } from '@/lib/types/facebook'
 
 interface MetricCardProps {
   title: string
@@ -80,7 +80,8 @@ export default function Anuncios() {
     }
   }, [isAuthenticated, authLoading])
 
-  const { isLoading, integrationStatus, connect, getInsights, syncData } = useFacebookAds(isAuthenticated)
+  const { isLoading, integrationStatus, connect, getInsights, syncData } =
+    useFacebookAds(isAuthenticated)
 
   // Carregar dados quando a integração estiver conectada
   const loadInsights = useCallback(async () => {

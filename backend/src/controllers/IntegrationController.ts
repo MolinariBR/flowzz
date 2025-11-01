@@ -11,26 +11,26 @@
  * @data 2025-10-31
  */
 
-import type { IntegrationProvider } from '@prisma/client';
-import type { Request, Response } from 'express';
-import { IntegrationRepository } from '../repositories/IntegrationRepository';
-import { CoinzzService } from '../services/CoinzzService';
-import logger from '../shared/utils/logger';
+import type { IntegrationProvider } from '@prisma/client'
+import type { Request, Response } from 'express'
+import type { IntegrationRepository } from '../repositories/IntegrationRepository'
+import type { CoinzzService } from '../services/CoinzzService'
+import logger from '../shared/utils/logger'
 
 /**
  * DTO para resposta de listagem de integrações
  */
 export interface IntegrationListDTO {
-  id: string;
-  provider: string;
-  status: string;
-  lastSync: Date | null;
-  createdAt: Date;
+  id: string
+  provider: string
+  status: string
+  lastSync: Date | null
+  createdAt: Date
   config: {
-    webhookUrl?: string;
-    syncEnabled?: boolean;
+    webhookUrl?: string
+    syncEnabled?: boolean
     // Outros campos públicos (não incluir apiKey criptografada)
-  };
+  }
 }
 
 /**
@@ -43,7 +43,7 @@ export interface IntegrationListDTO {
 export class IntegrationController {
   constructor(
     private integrationRepo: IntegrationRepository,
-    private coinzzService?: CoinzzService,
+    private coinzzService?: CoinzzService
   ) {}
 
   /**
@@ -55,22 +55,22 @@ export class IntegrationController {
    */
   async getUserIntegrations(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.userId
 
       if (!userId) {
         res.status(401).json({
           error: 'UNAUTHORIZED',
           message: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       // Buscar todas as integrações do usuário
-      const integrations = await this.integrationRepo.findByUserId(userId);
+      const integrations = await this.integrationRepo.findByUserId(userId)
 
       // Mapear para DTO (remover dados sensíveis)
       const integrationDTOs: IntegrationListDTO[] = integrations.map((integration) => {
-        const config = integration.config as unknown as Record<string, unknown>;
+        const config = integration.config as unknown as Record<string, unknown>
 
         return {
           id: integration.id,
@@ -83,26 +83,26 @@ export class IntegrationController {
             syncEnabled: config?.syncEnabled as boolean,
             // Não incluir apiKey ou outros dados sensíveis
           },
-        };
-      });
+        }
+      })
 
       logger.info('User integrations retrieved', {
         userId,
         count: integrationDTOs.length,
-      });
+      })
 
       res.status(200).json({
         success: true,
         data: integrationDTOs,
         message: 'Integrações encontradas com sucesso',
-      });
+      })
     } catch (error) {
-      logger.error('Error retrieving user integrations', { error });
+      logger.error('Error retrieving user integrations', { error })
 
       res.status(500).json({
         error: 'INTERNAL_ERROR',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 
@@ -124,77 +124,85 @@ export class IntegrationController {
    */
   async connectIntegration(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
-      const body = req.body as { provider: string; config: Record<string, unknown> };
-      const { provider, config } = body;
+      const userId = req.user?.userId
+      const body = req.body as { provider: string; config: Record<string, unknown> }
+      const { provider, config } = body
 
       if (!userId) {
         res.status(401).json({
           error: 'UNAUTHORIZED',
           message: 'Usuário não autenticado',
-        });
-        return;
+        })
+        return
       }
 
       if (!provider || !config) {
         res.status(400).json({
           error: 'INVALID_REQUEST',
           message: 'Provider e config são obrigatórios',
-        });
-        return;
+        })
+        return
       }
 
       // Validar se o provider é válido
-      const validProviders: IntegrationProvider[] = ['COINZZ', 'FACEBOOK_ADS', 'WHATSAPP', 'PAGBANK'];
+      const validProviders: IntegrationProvider[] = [
+        'COINZZ',
+        'FACEBOOK_ADS',
+        'WHATSAPP',
+        'PAGBANK',
+      ]
       if (!validProviders.includes(provider as IntegrationProvider)) {
         res.status(400).json({
           error: 'INVALID_PROVIDER',
           message: 'Provider inválido',
-        });
-        return;
+        })
+        return
       }
 
-      const typedProvider = provider as IntegrationProvider;
+      const typedProvider = provider as IntegrationProvider
 
       // Verificar se já existe uma integração deste provider para o usuário
-      const existingIntegration = await this.integrationRepo.findByUserAndProvider(userId, typedProvider);
+      const existingIntegration = await this.integrationRepo.findByUserAndProvider(
+        userId,
+        typedProvider
+      )
       if (existingIntegration) {
         res.status(409).json({
           error: 'INTEGRATION_EXISTS',
           message: 'Já existe uma integração deste tipo para o usuário',
-        });
-        return;
+        })
+        return
       }
 
-      let integrationStatus: 'PENDING' | 'CONNECTED' | 'ERROR' = 'PENDING';
-      const validatedConfig = config;
+      let integrationStatus: 'PENDING' | 'CONNECTED' | 'ERROR' = 'PENDING'
+      const validatedConfig = config
 
       // Validar e conectar dependendo do provider
       if (provider === 'COINZZ') {
         try {
           // Usar o CoinzzService para validar as credenciais
           if (this.coinzzService && typeof config.apiKey === 'string') {
-            const testResult = await this.coinzzService.testConnection(config.apiKey);
+            const testResult = await this.coinzzService.testConnection(config.apiKey)
             if (!testResult.connected) {
               res.status(400).json({
                 error: 'INVALID_CREDENTIALS',
                 message: 'Credenciais da Coinzz inválidas',
-              });
-              return;
+              })
+              return
             }
-            integrationStatus = 'CONNECTED';
+            integrationStatus = 'CONNECTED'
           }
         } catch (error) {
-          logger.error('Error validating Coinzz credentials', { error, userId });
+          logger.error('Error validating Coinzz credentials', { error, userId })
           res.status(400).json({
             error: 'VALIDATION_ERROR',
             message: 'Erro ao validar credenciais da Coinzz',
-          });
-          return;
+          })
+          return
         }
       } else {
         // Para outros providers, marcar como conectado por enquanto
-        integrationStatus = 'CONNECTED';
+        integrationStatus = 'CONNECTED'
       }
 
       // Criar a integração no banco
@@ -203,13 +211,13 @@ export class IntegrationController {
         provider: typedProvider,
         status: integrationStatus,
         config: validatedConfig,
-      });
+      })
 
       logger.info('Integration connected successfully', {
         userId,
         provider,
         integrationId: integration.id,
-      });
+      })
 
       res.status(201).json({
         success: true,
@@ -220,14 +228,14 @@ export class IntegrationController {
           createdAt: integration.created_at,
         },
         message: 'Integração conectada com sucesso',
-      });
+      })
     } catch (error) {
-      logger.error('Error connecting integration', { error });
+      logger.error('Error connecting integration', { error })
 
       res.status(500).json({
         error: 'INTERNAL_ERROR',
         message: 'Erro interno do servidor',
-      });
+      })
     }
   }
 }

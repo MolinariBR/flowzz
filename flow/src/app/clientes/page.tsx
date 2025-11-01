@@ -64,12 +64,7 @@ const TagModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Hook para operações de tags
-  const {
-    tags,
-    createNewTag,
-    updateExistingTag,
-    removeTag,
-  } = useClients(isAuthenticated)
+  const { tags, createNewTag, updateExistingTag, removeTag } = useClients(isAuthenticated)
 
   const colorOptions = [
     'bg-red-500',
@@ -258,7 +253,14 @@ const TagModal = ({
                       <div className="flex items-center space-x-2">
                         <button
                           type="button"
-                          onClick={() => handleEditTag({ id: tag.id, name: tag.name, color: tag.color, count: 0 })}
+                          onClick={() =>
+                            handleEditTag({
+                              id: tag.id,
+                              name: tag.name,
+                              color: tag.color,
+                              count: 0,
+                            })
+                          }
                           className="p-1 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded"
                           title="Editar"
                         >
@@ -325,7 +327,7 @@ const CreateClientModal = ({
         status: 'ACTIVE',
       })
       setShowCreateModal(false)
-    } catch (error) {
+    } catch (_error) {
       // Error is handled by the hook
     } finally {
       setIsSubmitting(false)
@@ -333,7 +335,7 @@ const CreateClientModal = ({
   }
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   return (
@@ -368,9 +370,7 @@ const CreateClientModal = ({
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Nome *
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nome *</label>
                   <input
                     type="text"
                     required
@@ -382,9 +382,7 @@ const CreateClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -398,9 +396,7 @@ const CreateClientModal = ({
               {/* Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Telefone
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
                   <input
                     type="text"
                     value={formData.phone}
@@ -411,9 +407,7 @@ const CreateClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    CPF
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">CPF</label>
                   <input
                     type="text"
                     value={formData.cpf}
@@ -426,9 +420,7 @@ const CreateClientModal = ({
 
               {/* Address Information */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Endereço
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Endereço</label>
                 <input
                   type="text"
                   value={formData.address}
@@ -440,9 +432,7 @@ const CreateClientModal = ({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Cidade
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Cidade</label>
                   <input
                     type="text"
                     value={formData.city}
@@ -453,9 +443,7 @@ const CreateClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Estado
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Estado</label>
                   <input
                     type="text"
                     value={formData.state}
@@ -467,9 +455,7 @@ const CreateClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    CEP
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">CEP</label>
                   <input
                     type="text"
                     value={formData.cep}
@@ -482,9 +468,7 @@ const CreateClientModal = ({
 
               {/* Status */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Status
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
                 <select
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value)}
@@ -579,7 +563,7 @@ const EditClientModal = ({
     try {
       await onUpdateClient(editingClient.id, formData)
       setShowEditModal(false)
-    } catch (error) {
+    } catch (_error) {
       // Error is handled by the hook
     } finally {
       setIsSubmitting(false)
@@ -587,7 +571,7 @@ const EditClientModal = ({
   }
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   return (
@@ -622,9 +606,7 @@ const EditClientModal = ({
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Nome *
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nome *</label>
                   <input
                     type="text"
                     required
@@ -636,9 +618,7 @@ const EditClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -652,9 +632,7 @@ const EditClientModal = ({
               {/* Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Telefone
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
                   <input
                     type="text"
                     value={formData.phone}
@@ -665,9 +643,7 @@ const EditClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    CPF
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">CPF</label>
                   <input
                     type="text"
                     value={formData.cpf}
@@ -680,9 +656,7 @@ const EditClientModal = ({
 
               {/* Address Information */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Endereço
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Endereço</label>
                 <input
                   type="text"
                   value={formData.address}
@@ -694,9 +668,7 @@ const EditClientModal = ({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Cidade
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Cidade</label>
                   <input
                     type="text"
                     value={formData.city}
@@ -707,9 +679,7 @@ const EditClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Estado
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Estado</label>
                   <input
                     type="text"
                     value={formData.state}
@@ -721,9 +691,7 @@ const EditClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    CEP
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">CEP</label>
                   <input
                     type="text"
                     value={formData.cep}
@@ -736,9 +704,7 @@ const EditClientModal = ({
 
               {/* Status */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Status
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
                 <select
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value)}
@@ -840,9 +806,7 @@ const DeleteClientModal = ({
                   <p className="text-sm font-medium text-red-800">
                     Tem certeza que deseja excluir este cliente?
                   </p>
-                  <p className="text-sm text-red-600 mt-1">
-                    Esta ação não pode ser desfeita.
-                  </p>
+                  <p className="text-sm text-red-600 mt-1">Esta ação não pode ser desfeita.</p>
                 </div>
               </div>
 
@@ -914,7 +878,7 @@ export default function Clientes() {
 
   // Verificar autenticação
   const { isAuthenticated, isLoading: authLoading } = useAuth()
-  const router = useRouter()
+  const _router = useRouter()
 
   // Redirecionar para login se não estiver autenticado
   useEffect(() => {
@@ -942,7 +906,7 @@ export default function Clientes() {
   } = useClients(isAuthenticated)
 
   // Converter tags do backend para formato da UI
-  const uiTags: UITag[] = tags.map(tag => ({
+  const uiTags: UITag[] = tags.map((tag) => ({
     id: tag.id,
     name: tag.name,
     color: tag.color,
@@ -950,10 +914,10 @@ export default function Clientes() {
   }))
 
   // Função para aplicar filtros
-  const applyFilters = useCallback(() => {
+  const _applyFilters = useCallback(() => {
     const filters = {
       search: searchTerm || undefined,
-      status: selectedFilter !== 'todos' ? selectedFilter.toUpperCase() as any : undefined,
+      status: selectedFilter !== 'todos' ? (selectedFilter.toUpperCase() as any) : undefined,
     }
     updateFilters(filters)
   }, [searchTerm, selectedFilter, updateFilters])
@@ -998,7 +962,7 @@ export default function Clientes() {
     const tagName = prompt('Digite o nome da tag para adicionar:')
     if (!tagName?.trim()) return
 
-    const tag = uiTags.find(t => t.name.toLowerCase() === tagName.trim().toLowerCase())
+    const tag = uiTags.find((t) => t.name.toLowerCase() === tagName.trim().toLowerCase())
     if (!tag) {
       alert('Tag não encontrada. Crie a tag primeiro no modal de gerenciamento.')
       return
@@ -1033,8 +997,10 @@ export default function Clientes() {
     email: client.email || '',
     value: Number(client.total_spent) || 0,
     status: client.status.toLowerCase(), // Converter ACTIVE -> active, etc.
-    deliveryDate: client.last_order_at ? new Date(client.last_order_at).toISOString().split('T')[0] : '',
-    tags: client.tags.map(ct => ct.tag_id), // IDs das tags
+    deliveryDate: client.last_order_at
+      ? new Date(client.last_order_at).toISOString().split('T')[0]
+      : '',
+    tags: client.tags.map((ct) => ct.tag_id), // IDs das tags
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${client.name}`,
     lastContact: client.last_order_at
       ? `${Math.floor((Date.now() - new Date(client.last_order_at).getTime()) / (1000 * 60 * 60 * 24))} dias atrás`
@@ -1096,400 +1062,414 @@ export default function Clientes() {
         </div>
       ) : (
         <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Clientes</h1>
-          <p className="text-slate-600 mt-1">Gerencie seus clientes com inteligência</p>
-        </div>
-        <div className="flex items-center space-x-3 mt-4 lg:mt-0">
-          <button
-            type="button"
-            className="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
-          >
-            <Download className="h-4 w-4" />
-            <span>Exportar</span>
-          </button>
-          <button
-            type="button"
-            className="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
-          >
-            <Upload className="h-4 w-4" />
-            <span>Importar</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Novo Cliente</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Filters and Search */}
-      <div className="bg-white rounded-xl p-6 shadow-card">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Buscar clientes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-64"
-              />
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Clientes</h1>
+              <p className="text-slate-600 mt-1">Gerencie seus clientes com inteligência</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50"
-            >
-              <Filter className="h-4 w-4" />
-              <span>Filtros</span>
-            </button>
+            <div className="flex items-center space-x-3 mt-4 lg:mt-0">
+              <button
+                type="button"
+                className="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+              >
+                <Download className="h-4 w-4" />
+                <span>Exportar</span>
+              </button>
+              <button
+                type="button"
+                className="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+              >
+                <Upload className="h-4 w-4" />
+                <span>Importar</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Novo Cliente</span>
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <button
-              type="button"
-              onClick={() => setShowTagModal(true)}
-              className="flex items-center space-x-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50"
-            >
-              <Tag className="h-4 w-4" />
-              <span>Gerenciar Etiquetas</span>
-            </button>
-            {selectedClients.length > 0 && (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-600">
-                  {selectedClients.length} selecionados
-                </span>
+          {/* Filters and Search */}
+          <div className="bg-white rounded-xl p-6 shadow-card">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar clientes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-64"
+                  />
+                </div>
                 <button
                   type="button"
-                  className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center space-x-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50"
                 >
-                  Ações em lote
+                  <Filter className="h-4 w-4" />
+                  <span>Filtros</span>
                 </button>
               </div>
-            )}
+
+              <div className="flex items-center space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setShowTagModal(true)}
+                  className="flex items-center space-x-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50"
+                >
+                  <Tag className="h-4 w-4" />
+                  <span>Gerenciar Etiquetas</span>
+                </button>
+                {selectedClients.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-slate-600">
+                      {selectedClients.length} selecionados
+                    </span>
+                    <button
+                      type="button"
+                      className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200"
+                    >
+                      Ações em lote
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Tags Filter */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => setSelectedFilter('todos')}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                  selectedFilter === 'todos'
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                Todos ({clients.length})
+              </button>
+              {uiTags.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => setSelectedFilter(tag.name.toLowerCase())}
+                  className={`px-3 py-1 rounded-full text-sm font-medium text-white transition-colors ${tag.color} hover:opacity-80`}
+                >
+                  {tag.name} ({tag.count})
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Tags Filter */}
-        <div className="flex flex-wrap gap-2 mt-4">
-          <button
-            type="button"
-            onClick={() => setSelectedFilter('todos')}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-              selectedFilter === 'todos'
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
+          {/* Clients Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-xl shadow-card overflow-hidden"
           >
-            Todos ({clients.length})
-          </button>
-          {uiTags.map((tag) => (
-            <button
-              key={tag.id}
-              type="button"
-              onClick={() => setSelectedFilter(tag.name.toLowerCase())}
-              className={`px-3 py-1 rounded-full text-sm font-medium text-white transition-colors ${tag.color} hover:opacity-80`}
-            >
-              {tag.name} ({tag.count})
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Clients Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-xl shadow-card overflow-hidden"
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-4 text-left">
-                  <input
-                    type="checkbox"
-                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">Cliente</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">Contato</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">
-                  Valor Pedido
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">
-                  Etiquetas
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {isLoading ? (
-                // Skeleton loading rows
-                Array.from({ length: 5 }).map((_, index) => (
-                  <tr key={index} className="animate-pulse">
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-4 bg-slate-200 rounded"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="h-10 w-10 bg-slate-200 rounded-full"></div>
-                        <div className="space-y-2">
-                          <div className="h-4 w-32 bg-slate-200 rounded"></div>
-                          <div className="h-3 w-20 bg-slate-200 rounded"></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        <div className="h-4 w-40 bg-slate-200 rounded"></div>
-                        <div className="h-3 w-32 bg-slate-200 rounded"></div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-20 bg-slate-200 rounded"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="h-4 w-4 bg-slate-200 rounded"></div>
-                        <div className="h-5 w-16 bg-slate-200 rounded-full"></div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex space-x-1">
-                        <div className="h-5 w-12 bg-slate-200 rounded-full"></div>
-                        <div className="h-5 w-16 bg-slate-200 rounded-full"></div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex space-x-2">
-                        <div className="h-8 w-8 bg-slate-200 rounded"></div>
-                        <div className="h-8 w-8 bg-slate-200 rounded"></div>
-                        <div className="h-8 w-8 bg-slate-200 rounded"></div>
-                        <div className="h-8 w-8 bg-slate-200 rounded"></div>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : clients.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <div className="text-slate-500">
-                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium">Nenhum cliente encontrado</p>
-                      <p className="text-sm">Comece adicionando seu primeiro cliente.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                clients.map((client) => (
-                  <motion.tr
-                    key={client.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="hover:bg-slate-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left">
                       <input
                         type="checkbox"
-                        checked={selectedClients.includes(client.id)}
-                        onChange={() => handleSelectClient(client.id)}
                         className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                       />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        <Image
-                          src={client.avatar}
-                          alt={client.name}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-slate-900">{client.name}</p>
-                          <p className="text-sm text-slate-600">{client.orders} pedidos</p>
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">
+                      Cliente
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">
+                      Contato
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">
+                      Valor Pedido
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">
+                      Etiquetas
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-slate-900">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {isLoading ? (
+                    // Skeleton loading rows
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <tr key={index} className="animate-pulse">
+                        <td className="px-6 py-4">
+                          <div className="h-4 w-4 bg-slate-200 rounded"></div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="h-10 w-10 bg-slate-200 rounded-full"></div>
+                            <div className="space-y-2">
+                              <div className="h-4 w-32 bg-slate-200 rounded"></div>
+                              <div className="h-3 w-20 bg-slate-200 rounded"></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-1">
+                            <div className="h-4 w-40 bg-slate-200 rounded"></div>
+                            <div className="h-3 w-32 bg-slate-200 rounded"></div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="h-4 w-20 bg-slate-200 rounded"></div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center space-x-2">
+                            <div className="h-4 w-4 bg-slate-200 rounded"></div>
+                            <div className="h-5 w-16 bg-slate-200 rounded-full"></div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex space-x-1">
+                            <div className="h-5 w-12 bg-slate-200 rounded-full"></div>
+                            <div className="h-5 w-16 bg-slate-200 rounded-full"></div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex space-x-2">
+                            <div className="h-8 w-8 bg-slate-200 rounded"></div>
+                            <div className="h-8 w-8 bg-slate-200 rounded"></div>
+                            <div className="h-8 w-8 bg-slate-200 rounded"></div>
+                            <div className="h-8 w-8 bg-slate-200 rounded"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : clients.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center">
+                        <div className="text-slate-500">
+                          <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p className="text-lg font-medium">Nenhum cliente encontrado</p>
+                          <p className="text-sm">Comece adicionando seu primeiro cliente.</p>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        <p className="text-sm text-slate-900">{client.phone}</p>
-                        <p className="text-sm text-slate-600">{client.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="font-mono font-semibold text-slate-900">R$ {(client.value || 0).toFixed(2)}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        {getStatusIcon(client.status)}
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(client.status)}`}
-                        >
-                          {client.status}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 items-center">
-                        {client.tags.map((tagId) => {
-                          const tag = uiTags.find((t) => t.id === tagId)
-                          return tag ? (
-                            <button
-                              key={tagId}
-                              onClick={() => handleRemoveTagFromClient(client.id, tagId)}
-                              className={`px-2 py-1 rounded-full text-xs font-medium text-white ${tag.color} hover:opacity-80 transition-opacity flex items-center space-x-1`}
-                              title={`Remover tag ${tag.name}`}
+                      </td>
+                    </tr>
+                  ) : (
+                    clients.map((client) => (
+                      <motion.tr
+                        key={client.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="hover:bg-slate-50 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedClients.includes(client.id)}
+                            onChange={() => handleSelectClient(client.id)}
+                            className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center space-x-3">
+                            <Image
+                              src={client.avatar}
+                              alt={client.name}
+                              width={40}
+                              height={40}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                            <div>
+                              <p className="font-medium text-slate-900">{client.name}</p>
+                              <p className="text-sm text-slate-600">{client.orders} pedidos</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-1">
+                            <p className="text-sm text-slate-900">{client.phone}</p>
+                            <p className="text-sm text-slate-600">{client.email}</p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="font-mono font-semibold text-slate-900">
+                            R$ {(client.value || 0).toFixed(2)}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center space-x-2">
+                            {getStatusIcon(client.status)}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(client.status)}`}
                             >
-                              <span>{tag.name}</span>
-                              <X className="h-3 w-3" />
+                              {client.status}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-1 items-center">
+                            {client.tags.map((tagId) => {
+                              const tag = uiTags.find((t) => t.id === tagId)
+                              return tag ? (
+                                <button
+                                  key={tagId}
+                                  onClick={() => handleRemoveTagFromClient(client.id, tagId)}
+                                  className={`px-2 py-1 rounded-full text-xs font-medium text-white ${tag.color} hover:opacity-80 transition-opacity flex items-center space-x-1`}
+                                  title={`Remover tag ${tag.name}`}
+                                >
+                                  <span>{tag.name}</span>
+                                  <X className="h-3 w-3" />
+                                </button>
+                              ) : null
+                            })}
+                            <button
+                              type="button"
+                              onClick={() => handleAddTagToClient(client.id)}
+                              className="px-2 py-1 rounded-full text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1"
+                              title="Adicionar tag"
+                            >
+                              <Plus className="h-3 w-3" />
+                              <span>Tag</span>
                             </button>
-                          ) : null
-                        })}
-                        <button
-                          type="button"
-                          onClick={() => handleAddTagToClient(client.id)}
-                          className="px-2 py-1 rounded-full text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1"
-                          title="Adicionar tag"
-                        >
-                          <Plus className="h-3 w-3" />
-                          <span>Tag</span>
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          type="button"
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          title="WhatsApp"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Ligar"
-                        >
-                          <Phone className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                          title="Agendar"
-                        >
-                          <Calendar className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Editar"
-                          onClick={() => handleEditClient(client)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Excluir"
-                          onClick={() => handleDeleteClient(client)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {pagination && (
-          <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-            <div className="text-sm text-slate-600">
-              Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
-              {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
-              {pagination.total} clientes
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                              title="WhatsApp"
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Ligar"
+                            >
+                              <Phone className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                              title="Agendar"
+                            >
+                              <Calendar className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Editar"
+                              onClick={() => handleEditClient(client)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Excluir"
+                              onClick={() => handleDeleteClient(client)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page <= 1}
-                className="px-3 py-1 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Anterior
-              </button>
 
-              {/* Renderizar páginas */}
-              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                const pageNum = Math.max(1, pagination.page - 2) + i
-                if (pageNum > pagination.totalPages) return null
-
-                return (
+            {/* Pagination */}
+            {pagination && (
+              <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+                <div className="text-sm text-slate-600">
+                  Mostrando {(pagination.page - 1) * pagination.limit + 1} a{' '}
+                  {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
+                  {pagination.total} clientes
+                </div>
+                <div className="flex items-center space-x-2">
                   <button
-                    key={pageNum}
                     type="button"
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-3 py-1 rounded-lg text-sm ${
-                      pageNum === pagination.page
-                        ? 'bg-indigo-600 text-white'
-                        : 'border border-slate-300 hover:bg-slate-50'
-                    }`}
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page <= 1}
+                    className="px-3 py-1 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {pageNum}
+                    Anterior
                   </button>
-                )
-              })}
 
-              <button
-                type="button"
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page >= pagination.totalPages}
-                className="px-3 py-1 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Próximo
-              </button>
-            </div>
-          </div>
-        )}
-      </motion.div>
+                  {/* Renderizar páginas */}
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const pageNum = Math.max(1, pagination.page - 2) + i
+                    if (pageNum > pagination.totalPages) return null
 
-      <TagModal showTagModal={showTagModal} setShowTagModal={setShowTagModal} isAuthenticated={isAuthenticated} />
-      <CreateClientModal
-        showCreateModal={showCreateModal}
-        setShowCreateModal={setShowCreateModal}
-        onCreateClient={handleCreateClient}
-      />
-      <EditClientModal
-        showEditModal={showEditModal}
-        setShowEditModal={setShowEditModal}
-        editingClient={editingClient}
-        onUpdateClient={handleUpdateClient}
-      />
-      <DeleteClientModal
-        showDeleteModal={showDeleteModal}
-        setShowDeleteModal={setShowDeleteModal}
-        deletingClient={deletingClient}
-        onConfirmDelete={handleConfirmDelete}
-      />
+                    return (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-3 py-1 rounded-lg text-sm ${
+                          pageNum === pagination.page
+                            ? 'bg-indigo-600 text-white'
+                            : 'border border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  })}
+
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page >= pagination.totalPages}
+                    className="px-3 py-1 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Próximo
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+
+          <TagModal
+            showTagModal={showTagModal}
+            setShowTagModal={setShowTagModal}
+            isAuthenticated={isAuthenticated}
+          />
+          <CreateClientModal
+            showCreateModal={showCreateModal}
+            setShowCreateModal={setShowCreateModal}
+            onCreateClient={handleCreateClient}
+          />
+          <EditClientModal
+            showEditModal={showEditModal}
+            setShowEditModal={setShowEditModal}
+            editingClient={editingClient}
+            onUpdateClient={handleUpdateClient}
+          />
+          <DeleteClientModal
+            showDeleteModal={showDeleteModal}
+            setShowDeleteModal={setShowDeleteModal}
+            deletingClient={deletingClient}
+            onConfirmDelete={handleConfirmDelete}
+          />
         </div>
       )}
     </>

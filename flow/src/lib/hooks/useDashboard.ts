@@ -4,13 +4,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import {
-    getDashboardActivities,
-    getDashboardChart,
-    getDashboardMetrics,
-    getTopClients,
-    type ChartDataPoint,
-    type DashboardActivity,
-    type DashboardMetricsWithComparisons,
+  type ChartDataPoint,
+  type DashboardActivity,
+  type DashboardMetricsWithComparisons,
+  getDashboardActivities,
+  getDashboardChart,
+  getDashboardMetrics,
+  getTopClients,
 } from '../api/dashboard'
 
 export const useDashboard = (isAuthenticated: boolean = false) => {

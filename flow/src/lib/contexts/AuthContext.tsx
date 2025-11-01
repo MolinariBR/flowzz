@@ -4,10 +4,23 @@
 'use client'
 
 import { jwtDecode } from 'jwt-decode'
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
+import type React from 'react'
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { login as apiLogin, logout as apiLogout, refreshToken as apiRefreshToken, register as apiRegister } from '../api/auth'
-import type { AuthContextType, AuthState, LoginCredentials, RegisterData, Tokens, User } from '../types/auth'
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  refreshToken as apiRefreshToken,
+  register as apiRegister,
+} from '../api/auth'
+import type {
+  AuthContextType,
+  AuthState,
+  LoginCredentials,
+  RegisterData,
+  Tokens,
+  User,
+} from '../types/auth'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -26,7 +39,7 @@ interface JWTPayload {
 // Função para verificar se um token JWT é válido e não expirou
 const isTokenValid = (token: string): boolean => {
   try {
-    console.log('AuthContext: Validating token (first 50 chars):', token.substring(0, 50) + '...')
+    console.log('AuthContext: Validating token (first 50 chars):', `${token.substring(0, 50)}...`)
 
     if (!token || typeof token !== 'string' || token.split('.').length !== 3) {
       console.log('AuthContext: Token is not a valid JWT format')
@@ -48,7 +61,7 @@ const isTokenValid = (token: string): boolean => {
       isValid,
       exp: decoded.exp,
       current: currentTime,
-      timeUntilExpiry: decoded.exp - currentTime
+      timeUntilExpiry: decoded.exp - currentTime,
     })
 
     return isValid
@@ -88,7 +101,6 @@ const validateStoredTokens = (): { user: User; tokens: Tokens } | null => {
 
     console.log('AuthContext: Stored tokens are valid for user:', user.email)
     return { user, tokens }
-
   } catch (error) {
     console.error('Error validating stored tokens:', error)
     // Limpar dados corrompidos
@@ -115,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Timeout de emergência - se demorar mais de 5 segundos, forçar conclusão
       const emergencyTimeout = setTimeout(() => {
         console.warn('AuthContext: Emergency timeout triggered - forcing unauthenticated state')
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           isAuthenticated: false,
@@ -137,7 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           })
         } else {
           console.log('AuthContext: No valid authentication found')
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             isLoading: false,
             isAuthenticated: false,
@@ -171,7 +183,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Função de login
   const login = async (credentials: LoginCredentials): Promise<void> => {
     try {
-      setState(prev => ({ ...prev, isLoading: true }))
+      setState((prev) => ({ ...prev, isLoading: true }))
 
       const response = await apiLogin(credentials)
 
@@ -192,7 +204,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       toast.success('Login realizado com sucesso!')
     } catch (error) {
-      setState(prev => ({ ...prev, isLoading: false }))
+      setState((prev) => ({ ...prev, isLoading: false }))
       toast.error('Erro ao fazer login. Verifique suas credenciais.')
       throw error
     }
@@ -201,7 +213,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Função de registro
   const register = async (data: RegisterData): Promise<void> => {
     try {
-      setState(prev => ({ ...prev, isLoading: true }))
+      setState((prev) => ({ ...prev, isLoading: true }))
 
       const response = await apiRegister(data)
 
@@ -222,7 +234,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       toast.success('Conta criada com sucesso!')
     } catch (error) {
-      setState(prev => ({ ...prev, isLoading: false }))
+      setState((prev) => ({ ...prev, isLoading: false }))
       toast.error('Erro ao criar conta. Tente novamente.')
       throw error
     }
@@ -281,7 +293,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('refreshToken', tokens.refreshToken)
 
       // Atualizar estado
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         user,
         tokens,
@@ -308,11 +320,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     clearAuth,
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 // Hook para usar o contexto de autenticação

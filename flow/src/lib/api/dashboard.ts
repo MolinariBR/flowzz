@@ -110,7 +110,7 @@ export async function getDashboardChart(period: '7d' | '30d' | '90d' | '1y' = '3
   const response = await apiClient.get<DashboardChartResponse>(`/dashboard/chart?period=${period}`)
   return {
     data: response.data,
-    meta: response.meta
+    meta: response.meta,
   }
 }
 
@@ -122,10 +122,12 @@ export async function getDashboardActivities(limit: number = 10): Promise<{
   data: DashboardActivity[]
   meta: { total: number; limit: number }
 }> {
-  const response = await apiClient.get<DashboardActivitiesResponse>(`/dashboard/activities?limit=${limit}`)
+  const response = await apiClient.get<DashboardActivitiesResponse>(
+    `/dashboard/activities?limit=${limit}`
+  )
   return {
     data: response.data,
-    meta: response.meta
+    meta: response.meta,
   }
 }
 
@@ -133,7 +135,11 @@ export async function getDashboardActivities(limit: number = 10): Promise<{
  * Obtém top clientes por gasto
  * Endpoint: GET /dashboard/top-clients
  */
-export async function getTopClients(limit: number = 10): Promise<DashboardTopClientsResponse['data']> {
-  const response = await apiClient.get<DashboardTopClientsResponse>(`/dashboard/top-clients?limit=${limit}`)
+export async function getTopClients(
+  limit: number = 10
+): Promise<DashboardTopClientsResponse['data']> {
+  const response = await apiClient.get<DashboardTopClientsResponse>(
+    `/dashboard/top-clients?limit=${limit}`
+  )
   return response.data
 }

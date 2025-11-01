@@ -1,29 +1,29 @@
 'use client'
 
-import { useAuth } from '@/lib/contexts/AuthContext'
 import {
-    Bell,
-    ChevronRight,
-    CreditCard,
-    Crown,
-    FileText,
-    HelpCircle,
-    LayoutDashboard,
-    LogOut,
-    Menu,
-    Moon,
-    PieChart,
-    Search,
-    Settings,
-    TrendingUp,
-    User,
-    Users,
-    X,
-    Zap,
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Crown,
+  FileText,
+  HelpCircle,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Moon,
+  PieChart,
+  Search,
+  Settings,
+  TrendingUp,
+  User,
+  Users,
+  X,
+  Zap,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useAuth } from '@/lib/contexts/AuthContext'
 
 interface LayoutProps {
   children: React.ReactNode

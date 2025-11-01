@@ -19,7 +19,7 @@ app.use(cors())
 app.use(express.json())
 
 // Rota de health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Test server running' })
 })
 
@@ -29,7 +29,7 @@ app.post('/api/v1/auth/login', (req, res) => {
   if (email === 'admin@flowzz.com' && password === 'admin123') {
     res.json({
       accessToken: 'mock-jwt-token-for-testing',
-      user: { id: 'test-user-id', email: 'admin@flowzz.com' }
+      user: { id: 'test-user-id', email: 'admin@flowzz.com' },
     })
   } else {
     res.status(401).json({ error: 'Invalid credentials' })
@@ -48,7 +48,7 @@ const mockAuth = (req: any, res: any, next: any) => {
 }
 
 // Rotas de integração mockadas que simulam o comportamento real
-app.get('/api/v1/integrations', mockAuth, (req, res) => {
+app.get('/api/v1/integrations', mockAuth, (_req, res) => {
   res.json([]) // Retorna lista vazia para teste
 })
 
@@ -67,31 +67,31 @@ app.post('/api/v1/integrations/coinzz/connect', mockAuth, (req, res) => {
   // Simular resposta de sucesso
   res.json({
     status: 'connected',
-    apiKey: apiKey.substring(0, 10) + '***', // Token mascarado
+    apiKey: `${apiKey.substring(0, 10)}***`, // Token mascarado
     webhookUrl,
-    connectedAt: new Date().toISOString()
+    connectedAt: new Date().toISOString(),
   })
 })
 
-app.get('/api/v1/integrations/coinzz/status', mockAuth, (req, res) => {
+app.get('/api/v1/integrations/coinzz/status', mockAuth, (_req, res) => {
   res.json({
     connected: true,
     lastSync: new Date().toISOString(),
-    apiKeyMasked: '8702|***'
+    apiKeyMasked: '8702|***',
   })
 })
 
-app.post('/api/v1/integrations/coinzz/sync', mockAuth, (req, res) => {
+app.post('/api/v1/integrations/coinzz/sync', mockAuth, (_req, res) => {
   // Simular sincronização
   console.log('🔄 Simulando sincronização com Coinzz...')
   res.json({
     syncedRecords: 5,
     lastSync: new Date().toISOString(),
-    status: 'success'
+    status: 'success',
   })
 })
 
-app.post('/api/v1/integrations/coinzz/disconnect', mockAuth, (req, res) => {
+app.post('/api/v1/integrations/coinzz/disconnect', mockAuth, (_req, res) => {
   res.json({ success: true })
 })
 
@@ -114,7 +114,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
     })
 
     // Aguardar servidor iniciar
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
   })
 
   describe('Authentication', () => {
@@ -124,8 +124,8 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'admin@flowzz.com',
-          password: 'admin123'
-        })
+          password: 'admin123',
+        }),
       })
 
       expect(response.status).toBe(200)
@@ -142,7 +142,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
   describe('Backend Integration Routes', () => {
     it('deve listar integrações do usuário (GET /api/v1/integrations)', async () => {
       const response = await fetch('http://localhost:3001/api/v1/integrations', {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` },
       })
 
       expect(response.status).toBe(200)
@@ -154,16 +154,16 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
     it('deve conectar integração Coinzz (POST /api/v1/integrations/coinzz/connect)', async () => {
       const connectData = {
         apiKey: COINZZ_API_KEY,
-        webhookUrl: 'http://localhost:3000/webhooks/coinzz'
+        webhookUrl: 'http://localhost:3000/webhooks/coinzz',
       }
 
       const response = await fetch('http://localhost:3001/api/v1/integrations/coinzz/connect', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(connectData)
+        body: JSON.stringify(connectData),
       })
 
       expect(response.status).toBe(200)
@@ -178,7 +178,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
 
     it('deve obter status da integração Coinzz (GET /api/v1/integrations/coinzz/status)', async () => {
       const response = await fetch('http://localhost:3001/api/v1/integrations/coinzz/status', {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` },
       })
 
       expect(response.status).toBe(200)
@@ -194,10 +194,10 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
       const response = await fetch('http://localhost:3001/api/v1/integrations/coinzz/sync', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ forceFullSync: false })
+        body: JSON.stringify({ forceFullSync: false }),
       })
 
       expect(response.status).toBe(200)
@@ -212,7 +212,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
     it('deve desconectar integração Coinzz (POST /api/v1/integrations/coinzz/disconnect)', async () => {
       const response = await fetch('http://localhost:3001/api/v1/integrations/coinzz/disconnect', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` },
       })
 
       expect(response.status).toBe(200)
@@ -227,16 +227,16 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
     it('não deve aceitar token Coinzz inválido', async () => {
       const invalidData = {
         apiKey: 'invalid-token-format',
-        webhookUrl: 'http://localhost:3000/webhooks/coinzz'
+        webhookUrl: 'http://localhost:3000/webhooks/coinzz',
       }
 
       const response = await fetch('http://localhost:3001/api/v1/integrations/coinzz/connect', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(invalidData)
+        body: JSON.stringify(invalidData),
       })
 
       expect(response.status).toBe(400)
@@ -266,7 +266,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
       expect(parts[0]).toMatch(/^\d+$/)
       expect(parts[1]).toBeTruthy()
 
-      console.log('✅ Formato do token validado:', token.substring(0, 10) + '...')
+      console.log('✅ Formato do token validado:', `${token.substring(0, 10)}...`)
     })
   })
 
@@ -284,7 +284,7 @@ import app from '../../backend/src/app'
 
 describe('Coinzz Integration - REAL End-to-End Tests', () => {
   let accessToken: string
-  let userId: string
+  let _userId: string
 
   // Token real do Coinzz fornecido
   const COINZZ_API_KEY = '8702|UvT47jCaWk14daWUYgMadfxMXAGVasGDUrCkdqGH99d93ffb'
@@ -293,16 +293,14 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
     console.log('🚀 Iniciando testes de integração Coinzz...')
 
     // Autenticação para obter token de acesso
-    const loginResponse = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'admin@flowzz.com',
-        password: 'admin123'
-      })
+    const loginResponse = await request(app).post('/api/v1/auth/login').send({
+      email: 'admin@flowzz.com',
+      password: 'admin123',
+    })
 
     expect(loginResponse.status).toBe(200)
     accessToken = loginResponse.body.accessToken
-    userId = loginResponse.body.user.id
+    _userId = loginResponse.body.user.id
 
     console.log('✅ Autenticação realizada com sucesso')
   })
@@ -326,7 +324,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
     it('deve conectar integração Coinzz (POST /api/v1/integrations/coinzz/connect)', async () => {
       const connectData = {
         apiKey: COINZZ_API_KEY,
-        webhookUrl: 'http://localhost:3000/webhooks/coinzz'
+        webhookUrl: 'http://localhost:3000/webhooks/coinzz',
       }
 
       const response = await request(app)
@@ -405,7 +403,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
       // Primeiro conectar
       const connectData = {
         apiKey: COINZZ_API_KEY,
-        webhookUrl: 'http://localhost:3000/webhooks/coinzz'
+        webhookUrl: 'http://localhost:3000/webhooks/coinzz',
       }
 
       const connectResponse = await request(app)
@@ -442,8 +440,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
 
   describe('Error Handling', () => {
     it('deve rejeitar requisições sem autenticação', async () => {
-      const response = await request(app)
-        .get('/api/v1/integrations')
+      const response = await request(app).get('/api/v1/integrations')
 
       expect(response.status).toBe(401)
       console.log('✅ Autenticação obrigatória validada')
@@ -452,7 +449,7 @@ describe('Coinzz Integration - REAL End-to-End Tests', () => {
     it('deve rejeitar token Coinzz inválido', async () => {
       const invalidData = {
         apiKey: 'invalid-token-format',
-        webhookUrl: 'http://localhost:3000/webhooks/coinzz'
+        webhookUrl: 'http://localhost:3000/webhooks/coinzz',
       }
 
       const response = await request(app)

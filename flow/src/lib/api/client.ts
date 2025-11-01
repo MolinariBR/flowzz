@@ -60,7 +60,11 @@ const attemptTokenRefresh = async (): Promise<boolean> => {
 }
 
 export const apiClient = {
-  async request<T>(endpoint: string, options?: RequestInit, retryOn401: boolean = true): Promise<T> {
+  async request<T>(
+    endpoint: string,
+    options?: RequestInit,
+    retryOn401: boolean = true
+  ): Promise<T> {
     const token = getAccessToken()
     console.log('API Client: Making request to', endpoint, 'with token:', !!token)
 

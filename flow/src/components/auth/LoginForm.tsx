@@ -24,7 +24,7 @@ export const LoginForm: React.FC = () => {
     try {
       await login(credentials)
       router.push('/dashboard')
-    } catch (error) {
+    } catch (_error) {
       // Erro já tratado no contexto
     } finally {
       setIsLoading(false)
@@ -33,7 +33,7 @@ export const LoginForm: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setCredentials(prev => ({
+    setCredentials((prev) => ({
       ...prev,
       [name]: value,
     }))

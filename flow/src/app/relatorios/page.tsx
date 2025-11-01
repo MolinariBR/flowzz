@@ -1,13 +1,13 @@
 'use client'
 
+import { motion } from 'framer-motion'
+import { BarChart3, Clock, DollarSign, Download, FileText, Target, TrendingUp } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { ChartContainer } from '@/components/shared/ChartContainer'
 import { FilterBar } from '@/components/shared/FilterBar'
 import { MetricCard } from '@/components/shared/MetricCard'
 import { useAuth } from '@/lib/contexts/AuthContext'
 import { useReports } from '@/lib/hooks/useReports'
-import { motion } from 'framer-motion'
-import { BarChart3, Clock, DollarSign, Download, FileText, Target, TrendingUp } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 export default function Relatorios() {
   const [searchQuery, setSearchQuery] = useState('')

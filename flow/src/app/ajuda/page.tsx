@@ -94,8 +94,9 @@ export default function Ajuda() {
 
   const filteredFaq = faqData.filter((faq) => {
     const matchesCategory = activeCategory === 'geral' || faq.category === activeCategory
-    const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch =
+      faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
   })
 
@@ -196,7 +197,8 @@ export default function Ajuda() {
               <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
                 <h3 className="text-lg font-semibold mb-4">Não encontrou o que procurava?</h3>
                 <p className="text-slate-600 mb-4">
-                  Nossa equipe de suporte está pronta para ajudar. Entre em contato conosco através dos canais abaixo.
+                  Nossa equipe de suporte está pronta para ajudar. Entre em contato conosco através
+                  dos canais abaixo.
                 </p>
 
                 <div className="space-y-3">
@@ -233,7 +235,9 @@ export default function Ajuda() {
                     <Play className="h-6 w-6 text-red-600" />
                     <div>
                       <p className="font-medium text-slate-900">Vídeos Tutoriais</p>
-                      <p className="text-slate-600 text-sm">Assista aos nossos tutoriais em vídeo</p>
+                      <p className="text-slate-600 text-sm">
+                        Assista aos nossos tutoriais em vídeo
+                      </p>
                     </div>
                     <ExternalLink className="h-4 w-4 text-slate-400" />
                   </div>
@@ -241,7 +245,9 @@ export default function Ajuda() {
                     <FileText className="h-6 w-6 text-blue-600" />
                     <div>
                       <p className="font-medium text-slate-900">Documentação Técnica</p>
-                      <p className="text-slate-600 text-sm">Documentação completa da API e integrações</p>
+                      <p className="text-slate-600 text-sm">
+                        Documentação completa da API e integrações
+                      </p>
                     </div>
                     <ExternalLink className="h-4 w-4 text-slate-400" />
                   </div>

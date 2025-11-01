@@ -2,21 +2,25 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    Activity,
-    AlertCircle,
-    CheckCircle,
-    Database,
-    Play,
-    Plus,
-    RefreshCw,
-    Search,
-    Settings,
-    Unlink,
-    X,
-    XCircle,
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Database,
+  Play,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
+  Unlink,
+  X,
+  XCircle,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { connectIntegration, getIntegrationHealth, getUserIntegrations } from '../../lib/api/integrations'
+import {
+  connectIntegration,
+  getIntegrationHealth,
+  getUserIntegrations,
+} from '../../lib/api/integrations'
 import { useAuth } from '../../lib/contexts/AuthContext'
 
 interface Integration {
@@ -322,24 +326,28 @@ const SetupModal = ({
                             />
                           )}
                         </div>
-                        {selectedIntegration.id !== 'banco' && selectedIntegration.id !== 'facebook' && selectedIntegration.id !== 'coinzz' && (
-                          <div>
-                            <label
-                              htmlFor={`${selectedIntegration.id}-password`}
-                              className="block text-sm font-medium text-slate-700 mb-2"
-                            >
-                              {selectedIntegration.id === 'hotmart' ? 'API Secret' : 'Senha/API Secret'}
-                            </label>
-                            <input
-                              id={`${selectedIntegration.id}-password`}
-                              type="password"
-                              value={passwordValue}
-                              onChange={(e) => setPasswordValue(e.target.value)}
-                              placeholder="••••••••"
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                          </div>
-                        )}
+                        {selectedIntegration.id !== 'banco' &&
+                          selectedIntegration.id !== 'facebook' &&
+                          selectedIntegration.id !== 'coinzz' && (
+                            <div>
+                              <label
+                                htmlFor={`${selectedIntegration.id}-password`}
+                                className="block text-sm font-medium text-slate-700 mb-2"
+                              >
+                                {selectedIntegration.id === 'hotmart'
+                                  ? 'API Secret'
+                                  : 'Senha/API Secret'}
+                              </label>
+                              <input
+                                id={`${selectedIntegration.id}-password`}
+                                type="password"
+                                value={passwordValue}
+                                onChange={(e) => setPasswordValue(e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              />
+                            </div>
+                          )}
                         {connectionError && (
                           <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
                             <div className="flex items-center space-x-2">
@@ -475,9 +483,9 @@ export default function Integracoes() {
   const [setupStep, setSetupStep] = useState(1)
   const [filterCategory, setFilterCategory] = useState('todas')
   const [integrations, setIntegrations] = useState<Integration[]>(AVAILABLE_INTEGRATIONS)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  
+  const [_loading, setLoading] = useState(true)
+  const [_error, setError] = useState<string | null>(null)
+
   const [connecting, setConnecting] = useState(false)
   const [connectionError, setConnectionError] = useState<string | null>(null)
 
@@ -511,26 +519,35 @@ export default function Integracoes() {
       })
 
       // Mesclar integrações disponíveis com dados conectados
-      const mergedIntegrations: Integration[] = AVAILABLE_INTEGRATIONS.map((availableIntegration) => {
-        const connectedIntegration = connectedIntegrationsMap.get(availableIntegration.id)
+      const mergedIntegrations: Integration[] = AVAILABLE_INTEGRATIONS.map(
+        (availableIntegration) => {
+          const connectedIntegration = connectedIntegrationsMap.get(availableIntegration.id)
 
-        if (connectedIntegration) {
-          // Integração está conectada, usar dados da API
-          return {
-            ...availableIntegration,
-            status: connectedIntegration.status === 'CONNECTED' ? 'connected' :
-                    connectedIntegration.status === 'ERROR' ? 'error' :
-                    connectedIntegration.status === 'PENDING' ? 'warning' : 'disconnected',
-            lastSync: connectedIntegration.lastSync ? new Date(connectedIntegration.lastSync).toLocaleString('pt-BR') : 'Nunca',
-            syncFrequency: connectedIntegration.config.syncEnabled ? 'Ativo' : 'Inativo',
-            health: getIntegrationHealth(connectedIntegration.status),
-            monthlyData: connectedIntegration.status === 'CONNECTED' ? 'Ativo' : 'Inativo',
+          if (connectedIntegration) {
+            // Integração está conectada, usar dados da API
+            return {
+              ...availableIntegration,
+              status:
+                connectedIntegration.status === 'CONNECTED'
+                  ? 'connected'
+                  : connectedIntegration.status === 'ERROR'
+                    ? 'error'
+                    : connectedIntegration.status === 'PENDING'
+                      ? 'warning'
+                      : 'disconnected',
+              lastSync: connectedIntegration.lastSync
+                ? new Date(connectedIntegration.lastSync).toLocaleString('pt-BR')
+                : 'Nunca',
+              syncFrequency: connectedIntegration.config.syncEnabled ? 'Ativo' : 'Inativo',
+              health: getIntegrationHealth(connectedIntegration.status),
+              monthlyData: connectedIntegration.status === 'CONNECTED' ? 'Ativo' : 'Inativo',
+            }
+          } else {
+            // Integração não está conectada, usar dados padrão
+            return availableIntegration
           }
-        } else {
-          // Integração não está conectada, usar dados padrão
-          return availableIntegration
         }
-      })
+      )
 
       setIntegrations(mergedIntegrations)
       setError(null)
@@ -552,7 +569,7 @@ export default function Integracoes() {
   }, [isAuthenticated, loadIntegrations])
 
   // Função auxiliar para mapear provider para categoria
-  const getCategoryFromProvider = (provider: string): string => {
+  const _getCategoryFromProvider = (provider: string): string => {
     const categories: Record<string, string> = {
       COINZZ: 'Afiliados',
       FACEBOOK_ADS: 'Marketing',
@@ -649,7 +666,7 @@ export default function Integracoes() {
           whatsapp: 'WHATSAPP',
           banco: 'PAGBANK',
           google: 'GOOGLE_ANALYTICS',
-          hotmart: 'HOTMART'
+          hotmart: 'HOTMART',
         }
 
         const provider = providerMap[selectedIntegration.id] || selectedIntegration.id.toUpperCase()
@@ -840,8 +857,8 @@ export default function Integracoes() {
               </div>
               <div className="flex items-center space-x-2">
                 {getStatusIcon(integration.status)}
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="p-1 hover:bg-slate-100 rounded"
                   onClick={() => {
                     setSelectedIntegration(integration)

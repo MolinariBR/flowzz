@@ -2,14 +2,14 @@
 // Integração com backend /api/v1/clients
 
 import type {
-    Client,
-    ClientFilters,
-    ClientsResponse,
-    CreateClientInput,
-    CreateTagInput,
-    Tag,
-    UpdateClientInput,
-    UpdateTagInput
+  Client,
+  ClientFilters,
+  ClientsResponse,
+  CreateClientInput,
+  CreateTagInput,
+  Tag,
+  UpdateClientInput,
+  UpdateTagInput,
 } from '../types/client'
 import { apiClient } from './client'
 
@@ -57,7 +57,7 @@ export async function getClients(filters?: ClientFilters): Promise<ClientsRespon
   if (filters?.search) params.append('search', filters.search)
   if (filters?.status) params.append('status', filters.status)
   if (filters?.tags?.length) {
-    filters.tags.forEach(tag => params.append('tags', tag))
+    filters.tags.forEach((tag) => params.append('tags', tag))
   }
   if (filters?.page) params.append('page', filters.page.toString())
   if (filters?.limit) params.append('limit', filters.limit.toString())
@@ -91,7 +91,10 @@ export async function createClient(data: CreateClientInput): Promise<ClientSingl
  * Atualiza cliente existente
  * Endpoint: PUT /clients/:id
  */
-export async function updateClient(id: string, data: UpdateClientInput): Promise<ClientSingleResponse> {
+export async function updateClient(
+  id: string,
+  data: UpdateClientInput
+): Promise<ClientSingleResponse> {
   const response = await apiClient.put<ClientSingleResponse>(`/clients/${id}`, data)
   return response
 }
@@ -153,8 +156,14 @@ export async function deleteTag(id: string): Promise<{ success: boolean; message
  * Adiciona tag a cliente
  * Endpoint: POST /clients/:clientId/tags
  */
-export async function addTagToClient(clientId: string, tagId: string): Promise<{ success: boolean; message: string }> {
-  const response = await apiClient.post<{ success: boolean; message: string }>(`/clients/${clientId}/tags`, { tagId })
+export async function addTagToClient(
+  clientId: string,
+  tagId: string
+): Promise<{ success: boolean; message: string }> {
+  const response = await apiClient.post<{ success: boolean; message: string }>(
+    `/clients/${clientId}/tags`,
+    { tagId }
+  )
   return response
 }
 
@@ -162,7 +171,12 @@ export async function addTagToClient(clientId: string, tagId: string): Promise<{
  * Remove tag de cliente
  * Endpoint: DELETE /clients/:clientId/tags/:tagId
  */
-export async function removeTagFromClient(clientId: string, tagId: string): Promise<{ success: boolean; message: string }> {
-  const response = await apiClient.delete<{ success: boolean; message: string }>(`/clients/${clientId}/tags/${tagId}`)
+export async function removeTagFromClient(
+  clientId: string,
+  tagId: string
+): Promise<{ success: boolean; message: string }> {
+  const response = await apiClient.delete<{ success: boolean; message: string }>(
+    `/clients/${clientId}/tags/${tagId}`
+  )
   return response
 }

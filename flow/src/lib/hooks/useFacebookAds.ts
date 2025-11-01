@@ -6,11 +6,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { facebookApi } from '../api/facebook'
 import type {
-    FacebookCallbackResponse,
-    FacebookInsightsParams,
-    FacebookInsightsResponse,
-    FacebookIntegrationStatus,
-    FacebookSyncResponse,
+  FacebookCallbackResponse,
+  FacebookInsightsParams,
+  FacebookInsightsResponse,
+  FacebookIntegrationStatus,
+  FacebookSyncResponse,
 } from '../types/facebook'
 
 export const useFacebookAds = (isAuthenticated: boolean = false) => {

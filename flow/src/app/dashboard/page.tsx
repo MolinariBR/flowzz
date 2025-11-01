@@ -8,7 +8,7 @@ import {
   DollarSign,
   FileText,
   MessageCircle,
-  Users
+  Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -217,7 +217,12 @@ export default function Dashboard() {
                     dataKey="date"
                     stroke="#64748b"
                     fontSize={12}
-                    tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' })}
+                    tickFormatter={(value) =>
+                      new Date(value).toLocaleDateString('pt-BR', {
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    }
                   />
                   <YAxis stroke="#64748b" fontSize={12} />
                   <Tooltip
@@ -230,7 +235,7 @@ export default function Dashboard() {
                     labelFormatter={(value) => new Date(value).toLocaleDateString('pt-BR')}
                     formatter={(value: number, name: string) => [
                       formatCurrency(value),
-                      name === 'vendas' ? 'Vendas' : name === 'gastos' ? 'Gastos' : 'Lucro'
+                      name === 'vendas' ? 'Vendas' : name === 'gastos' ? 'Gastos' : 'Lucro',
                     ]}
                   />
                   <Area
@@ -372,7 +377,8 @@ export default function Dashboard() {
                     <div className="flex-1">
                       <p className="text-sm font-medium text-slate-900">{activity.title}</p>
                       <p className="text-xs text-slate-600">
-                        {activity.description} • {new Date(activity.timestamp).toLocaleString('pt-BR')}
+                        {activity.description} •{' '}
+                        {new Date(activity.timestamp).toLocaleString('pt-BR')}
                       </p>
                     </div>
                     <div className="text-right">

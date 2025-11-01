@@ -1,21 +1,21 @@
 'use client'
 
+import { motion } from 'framer-motion'
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  PiggyBank,
+  Target,
+  TrendingUp,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { ChartContainer } from '@/components/shared/ChartContainer'
 import { FilterBar } from '@/components/shared/FilterBar'
 import { MetricCard } from '@/components/shared/MetricCard'
 import { useAuth } from '@/lib/contexts/AuthContext'
 import { useProjections } from '@/lib/hooks/useProjections'
-import { motion } from 'framer-motion'
-import {
-    AlertTriangle,
-    CheckCircle,
-    Clock,
-    DollarSign,
-    PiggyBank,
-    Target,
-    TrendingUp,
-} from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 export default function Projecoes() {
   const [searchQuery, setSearchQuery] = useState('')
