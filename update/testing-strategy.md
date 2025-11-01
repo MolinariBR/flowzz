@@ -2,10 +2,18 @@
 
 ## 🎯 **Objetivo**
 
-Implementar uma suíte de testes abrangente que garanta:
+Expandir a suíte de testes existente que garanta:
 - **Qualidade**: Código confiável e sem regressões
 - **Velocidade**: Deploy seguro e frequente
 - **Confiabilidade**: Sistema estável em produção
+
+## 📊 **Status Atual dos Testes**
+- ✅ Estrutura de testes implementada (Vitest + estrutura de pastas)
+- ✅ Testes unitários para DashboardService e SaleService
+- ✅ Mocks e helpers configurados
+- ⚠️ Cobertura parcial (~30%)
+- ❌ Testes E2E não implementados
+- ❌ Testes de integração limitados
 
 ## 📊 **Pirâmide de Testes**
 

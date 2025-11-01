@@ -128,6 +128,7 @@ export interface TestConnectionResponseDTO {
   message: string
   lastSyncAt?: Date
   totalSales?: number
+  producerEmail?: string // 🔧 SAAS: Email do produtor para identificar webhooks
 }
 
 /**
@@ -170,6 +171,7 @@ export interface ICoinzzIntegrationConfig {
   lastSyncAt: Date | null
   syncEnabled: boolean
   syncFrequency: string // Cron expression: '0 * * * *'
+  producerEmail?: string // 🔧 SAAS: Email do produtor para identificar webhooks
 }
 
 /**

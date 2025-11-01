@@ -2,20 +2,21 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Activity,
-  AlertCircle,
-  CheckCircle,
-  Database,
-  Play,
-  Plus,
-  RefreshCw,
-  Search,
-  Settings,
-  Unlink,
-  X,
-  XCircle,
+    Activity,
+    AlertCircle,
+    CheckCircle,
+    Database,
+    Play,
+    Plus,
+    RefreshCw,
+    Search,
+    Settings,
+    Unlink,
+    X,
+    XCircle,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getIntegrationDisplayName, getIntegrationEmoji, getIntegrationHealth, getUserIntegrations } from '../../lib/api/integrations'
 
 interface Integration {
   id: string
@@ -308,8 +309,259 @@ export default function Integracoes() {
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
   const [setupStep, setSetupStep] = useState(1)
   const [filterCategory, setFilterCategory] = useState('todas')
+  const [integrations, setIntegrations] = useState<Integration[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const integrations: Integration[] = [
+  // Carregar integrações do backend
+  useEffect(() => {
+    const loadIntegrations = async () => {
+      try {
+        setLoading(true)
+        const data = await getUserIntegrations()
+
+        // Mapear dados da API para o formato esperado pelo componente
+        const mappedIntegrations: Integration[] = data.map((integration) => ({
+          id: integration.id,
+          name: getIntegrationDisplayName(integration.provider),
+          description: `Integração com ${getIntegrationDisplayName(integration.provider)}`,
+          logo: getIntegrationEmoji(integration.provider),
+          status: integration.status === 'CONNECTED' ? 'connected' :
+                  integration.status === 'ERROR' ? 'error' :
+                  integration.status === 'PENDING' ? 'warning' : 'disconnected',
+          lastSync: integration.lastSync ? new Date(integration.lastSync).toLocaleString('pt-BR') : 'Nunca',
+          syncFrequency: integration.config.syncEnabled ? 'Ativo' : 'Inativo',
+          features: ['Sincronização automática', 'Dados em tempo real', 'Relatórios'],
+          health: getIntegrationHealth(integration.status),
+          category: getCategoryFromProvider(integration.provider),
+          monthlyData: integration.status === 'CONNECTED' ? 'Ativo' : 'Inativo',
+          setupSteps: [
+            {
+              id: 1,
+              title: 'Conectar conta',
+              description: `Entre com suas credenciais do ${getIntegrationDisplayName(integration.provider)}`,
+            },
+            {
+              id: 2,
+              title: 'Configurar webhook',
+              description: 'Configure URL de notificação automática',
+            },
+            {
+              id: 3,
+              title: 'Testar conexão',
+              description: 'Validar sincronização de dados',
+            },
+          ],
+        }))
+
+        setIntegrations(mappedIntegrations)
+        setError(null)
+      } catch (err) {
+        console.error('Erro ao carregar integrações:', err)
+        setError('Erro ao carregar integrações')
+        // Fallback para dados mockados em caso de erro
+        setIntegrations(getMockIntegrations())
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadIntegrations()
+  }, [])
+
+  // Função auxiliar para mapear provider para categoria
+  const getCategoryFromProvider = (provider: string): string => {
+    const categories: Record<string, string> = {
+      COINZZ: 'Afiliados',
+      FACEBOOK_ADS: 'Marketing',
+      WHATSAPP: 'Comunicação',
+      PAGBANK: 'Financeiro',
+    }
+    return categories[provider] || 'Outros'
+  }
+
+  // Dados mockados como fallback
+  const getMockIntegrations = (): Integration[] => [
+    {
+      id: 'coinzz',
+      name: 'Coinzz',
+      description: 'Plataforma de afiliados',
+      logo: '🪙',
+      status: 'connected',
+      lastSync: '2 min atrás',
+      syncFrequency: 'Tempo real',
+      features: ['Vendas automáticas', 'Comissões', 'Relatórios'],
+      health: 100,
+      category: 'Afiliados',
+      monthlyData: 'R$ 12.450',
+      setupSteps: [
+        {
+          id: 1,
+          title: 'Conectar conta',
+          description: 'Entre com suas credenciais da Coinzz',
+        },
+        {
+          id: 2,
+          title: 'Configurar webhook',
+          description: 'Configure URL de notificação automática',
+        },
+        {
+          id: 3,
+          title: 'Testar conexão',
+          description: 'Validar sincronização de dados',
+        },
+      ],
+    },
+    {
+      id: 'facebook',
+      name: 'Facebook Ads',
+      description: 'Gestão de anúncios',
+      logo: '📘',
+      status: 'connected',
+      lastSync: '5 min atrás',
+      syncFrequency: '15 min',
+      features: ['Métricas de campanha', 'Gastos', 'Performance'],
+      health: 95,
+      category: 'Marketing',
+      monthlyData: 'R$ 3.280 gastos',
+      setupSteps: [
+        {
+          id: 1,
+          title: 'Autorizar acesso',
+          description: 'Permitir acesso às suas contas de anúncio',
+        },
+        {
+          id: 2,
+          title: 'Selecionar contas',
+          description: 'Escolher contas de anúncio para sincronizar',
+        },
+        {
+          id: 3,
+          title: 'Configurar métricas',
+          description: 'Definir métricas importantes',
+        },
+      ],
+    },
+    {
+      id: 'whatsapp',
+      name: 'WhatsApp Business',
+      description: 'Automação de mensagens',
+      logo: '💬',
+      status: 'disconnected',
+      lastSync: 'Nunca',
+      syncFrequency: 'Manual',
+      features: ['Cobrança automática', 'Notificações', 'Templates'],
+      health: 0,
+      category: 'Comunicação',
+      monthlyData: '0 mensagens',
+      setupSteps: [
+        {
+          id: 1,
+          title: 'Conectar WhatsApp',
+          description: 'Vincular sua conta WhatsApp Business',
+        },
+        {
+          id: 2,
+          title: 'Configurar templates',
+          description: 'Criar templates de mensagem',
+        },
+        {
+          id: 3,
+          title: 'Testar envio',
+          description: 'Validar envio de mensagens',
+        },
+      ],
+    },
+    {
+      id: 'banco',
+      name: 'Open Banking',
+      description: 'Conexão bancária',
+      logo: '🏦',
+      status: 'error',
+      lastSync: '2 horas atrás',
+      syncFrequency: '1 hora',
+      features: ['Saldo em tempo real', 'Extratos', 'Conciliação'],
+      health: 25,
+      category: 'Financeiro',
+      monthlyData: 'Erro de conexão',
+      setupSteps: [
+        {
+          id: 1,
+          title: 'Autorizar banco',
+          description: 'Conectar com seu banco via Open Banking',
+        },
+        {
+          id: 2,
+          title: 'Selecionar contas',
+          description: 'Escolher contas para monitoramento',
+        },
+        {
+          id: 3,
+          title: 'Configurar alertas',
+          description: 'Definir notificações de movimentação',
+        },
+      ],
+    },
+    {
+      id: 'google',
+      name: 'Google Analytics',
+      description: 'Analytics do site',
+      logo: '📊',
+      status: 'disconnected',
+      lastSync: 'Nunca',
+      syncFrequency: '30 min',
+      features: ['Tráfego do site', 'Conversões', 'Audiência'],
+      health: 0,
+      category: 'Analytics',
+      monthlyData: '0 visitantes',
+      setupSteps: [
+        {
+          id: 1,
+          title: 'Conectar Google',
+          description: 'Autorizar acesso ao Google Analytics',
+        },
+        {
+          id: 2,
+          title: 'Selecionar propriedade',
+          description: 'Escolher site para monitorar',
+        },
+        {
+          id: 3,
+          title: 'Configurar metas',
+          description: 'Definir eventos de conversão',
+        },
+      ],
+    },
+    {
+      id: 'hotmart',
+      name: 'Hotmart',
+      description: 'Plataforma de produtos digitais',
+      logo: '🔥',
+      status: 'disconnected',
+      lastSync: 'Nunca',
+      syncFrequency: 'Tempo real',
+      features: ['Vendas de produtos', 'Comissões', 'Afiliados'],
+      health: 0,
+      category: 'Afiliados',
+      monthlyData: '0 vendas',
+      setupSteps: [
+        {
+          id: 1,
+          title: 'API Key',
+          description: 'Inserir chave de API da Hotmart',
+        },
+        {
+          id: 2,
+          title: 'Configurar webhook',
+          description: 'URL para notificações automáticas',
+        },
+        {
+          id: 3,
+          title: 'Testar integração',
+          description: 'Validar recebimento de dados',
+        },
+      ],
+    },
     {
       id: 'coinzz',
       name: 'Coinzz',

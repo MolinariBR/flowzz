@@ -2,12 +2,13 @@
 
 ## 🚨 **Problema Identificado**
 
-O sistema de pagamentos está **completamente ausente**:
+O sistema de pagamentos está **parcialmente implementado**:
 
-- ❌ Assinaturas não implementadas
-- ❌ Webhooks PagBank não existem
-- ❌ Gestão de planos não funcional
-- ❌ Modelos existem mas não são usados
+- ✅ PagBank service criado (`src/services/PagBankService.ts`)
+- ✅ Controller de assinaturas implementado (`src/controllers/PagBankController.ts`)
+- ❌ Webhooks PagBank não processam eventos
+- ❌ Gestão completa de planos não funcional
+- ❌ Modelos existem mas alguns campos faltam
 
 ## ✅ **Arquitetura Proposta**
 

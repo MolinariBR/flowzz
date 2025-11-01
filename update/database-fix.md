@@ -2,9 +2,9 @@
 
 ## 🚨 **Problema Identificado**
 
-O backend está tentando conectar ao PostgreSQL na **porta 5433**, mas o banco está rodando na **porta 5432** (padrão).
+O backend estava tentando conectar ao PostgreSQL na **porta 5433**, mas o banco está rodando na **porta 5432** (padrão).
 
-### **Logs de Erro**
+### **Logs de Erro (Resolvido)**
 ```
 prisma:error
 Invalid `prisma.$queryRaw()` invocation:
@@ -12,7 +12,10 @@ Can't reach database server at `localhost:5433`
 Please make sure your database server is running at `localhost:5432`.
 ```
 
-## ✅ **Solução**
+## ✅ **Solução Implementada**
+
+### **Status Atual: ✅ RESOLVIDO**
+A configuração do banco foi corrigida e está funcionando corretamente.
 
 ### **Passo 1: Verificar Configuração Atual**
 ```bash

@@ -2,14 +2,14 @@
 
 ## 🚨 **Problema Identificado**
 
-O Flow App (Next.js) tem uma interface bonita mas **todos os dados são mockados**. Não há integração real com o backend, autenticação, ou APIs funcionais.
+O Flow App (Next.js) tem uma interface bonita mas **dados parcialmente mockados**. Há API client implementado e autenticação funcionando, mas muitas operações ainda usam dados mockados.
 
 ### **Situação Atual**
 - ✅ Layout profissional e responsivo
-- ✅ Páginas estruturadas (dashboard, clientes, etc.)
-- ❌ Dados mockados em todos os componentes
-- ❌ Falta autenticação
-- ❌ APIs não conectadas
+- ✅ API client implementado (`src/lib/api/client.ts`)
+- ✅ Autenticação JWT integrada (`src/lib/api/auth.ts`)
+- ⚠️ Dados parcialmente mockados em algumas páginas
+- ⚠️ Falta conectar operações CRUD completas
 
 ## ✅ **Solução Proposta**
 
