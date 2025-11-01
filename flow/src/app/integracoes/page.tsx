@@ -139,9 +139,9 @@ const SetupModal = ({
                             className="block text-sm font-medium text-slate-700 mb-2"
                           >
                             {selectedIntegration.id === 'coinzz'
-                              ? 'Email'
+                              ? 'Email do Produtor'
                               : selectedIntegration.id === 'facebook'
-                                ? 'Conta Facebook'
+                                ? 'Access Token'
                                 : selectedIntegration.id === 'whatsapp'
                                   ? 'Número WhatsApp'
                                   : selectedIntegration.id === 'banco'
@@ -170,7 +170,7 @@ const SetupModal = ({
                                 selectedIntegration.id === 'coinzz'
                                   ? 'seu-email@coinzz.com'
                                   : selectedIntegration.id === 'facebook'
-                                    ? 'Autorizar via Facebook'
+                                    ? 'Seu access token do Facebook'
                                     : selectedIntegration.id === 'whatsapp'
                                       ? '+55 11 99999-9999'
                                       : selectedIntegration.id === 'google'
@@ -181,13 +181,13 @@ const SetupModal = ({
                             />
                           )}
                         </div>
-                        {selectedIntegration.id !== 'banco' && (
+                        {selectedIntegration.id !== 'banco' && selectedIntegration.id !== 'facebook' && (
                           <div>
                             <label
                               htmlFor={`${selectedIntegration.id}-password`}
                               className="block text-sm font-medium text-slate-700 mb-2"
                             >
-                              {selectedIntegration.id === 'hotmart' ? 'API Secret' : 'Senha'}
+                              {selectedIntegration.id === 'hotmart' ? 'API Secret' : 'Senha/API Secret'}
                             </label>
                             <input
                               id={`${selectedIntegration.id}-password`}
@@ -197,6 +197,12 @@ const SetupModal = ({
                             />
                           </div>
                         )}
+                        <button
+                          onClick={nextStep}
+                          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+                        >
+                          Próximo
+                        </button>
                       </div>
                     )}
 
@@ -312,6 +318,8 @@ export default function Integracoes() {
   const [integrations, setIntegrations] = useState<Integration[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  const [connecting, setConnecting] = useState(false)
 
   // Carregar integrações do backend
   useEffect(() => {
@@ -382,186 +390,6 @@ export default function Integracoes() {
 
   // Dados mockados como fallback
   const getMockIntegrations = (): Integration[] => [
-    {
-      id: 'coinzz',
-      name: 'Coinzz',
-      description: 'Plataforma de afiliados',
-      logo: '🪙',
-      status: 'connected',
-      lastSync: '2 min atrás',
-      syncFrequency: 'Tempo real',
-      features: ['Vendas automáticas', 'Comissões', 'Relatórios'],
-      health: 100,
-      category: 'Afiliados',
-      monthlyData: 'R$ 12.450',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Conectar conta',
-          description: 'Entre com suas credenciais da Coinzz',
-        },
-        {
-          id: 2,
-          title: 'Configurar webhook',
-          description: 'Configure URL de notificação automática',
-        },
-        {
-          id: 3,
-          title: 'Testar conexão',
-          description: 'Validar sincronização de dados',
-        },
-      ],
-    },
-    {
-      id: 'facebook',
-      name: 'Facebook Ads',
-      description: 'Gestão de anúncios',
-      logo: '📘',
-      status: 'connected',
-      lastSync: '5 min atrás',
-      syncFrequency: '15 min',
-      features: ['Métricas de campanha', 'Gastos', 'Performance'],
-      health: 95,
-      category: 'Marketing',
-      monthlyData: 'R$ 3.280 gastos',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Autorizar acesso',
-          description: 'Permitir acesso às suas contas de anúncio',
-        },
-        {
-          id: 2,
-          title: 'Selecionar contas',
-          description: 'Escolher contas de anúncio para sincronizar',
-        },
-        {
-          id: 3,
-          title: 'Configurar métricas',
-          description: 'Definir métricas importantes',
-        },
-      ],
-    },
-    {
-      id: 'whatsapp',
-      name: 'WhatsApp Business',
-      description: 'Automação de mensagens',
-      logo: '💬',
-      status: 'disconnected',
-      lastSync: 'Nunca',
-      syncFrequency: 'Manual',
-      features: ['Cobrança automática', 'Notificações', 'Templates'],
-      health: 0,
-      category: 'Comunicação',
-      monthlyData: '0 mensagens',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Conectar WhatsApp',
-          description: 'Vincular sua conta WhatsApp Business',
-        },
-        {
-          id: 2,
-          title: 'Configurar templates',
-          description: 'Criar templates de mensagem',
-        },
-        {
-          id: 3,
-          title: 'Testar envio',
-          description: 'Validar envio de mensagens',
-        },
-      ],
-    },
-    {
-      id: 'banco',
-      name: 'Open Banking',
-      description: 'Conexão bancária',
-      logo: '🏦',
-      status: 'error',
-      lastSync: '2 horas atrás',
-      syncFrequency: '1 hora',
-      features: ['Saldo em tempo real', 'Extratos', 'Conciliação'],
-      health: 25,
-      category: 'Financeiro',
-      monthlyData: 'Erro de conexão',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Autorizar banco',
-          description: 'Conectar com seu banco via Open Banking',
-        },
-        {
-          id: 2,
-          title: 'Selecionar contas',
-          description: 'Escolher contas para monitoramento',
-        },
-        {
-          id: 3,
-          title: 'Configurar alertas',
-          description: 'Definir notificações de movimentação',
-        },
-      ],
-    },
-    {
-      id: 'google',
-      name: 'Google Analytics',
-      description: 'Analytics do site',
-      logo: '📊',
-      status: 'disconnected',
-      lastSync: 'Nunca',
-      syncFrequency: '30 min',
-      features: ['Tráfego do site', 'Conversões', 'Audiência'],
-      health: 0,
-      category: 'Analytics',
-      monthlyData: '0 visitantes',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Conectar Google',
-          description: 'Autorizar acesso ao Google Analytics',
-        },
-        {
-          id: 2,
-          title: 'Selecionar propriedade',
-          description: 'Escolher site para monitorar',
-        },
-        {
-          id: 3,
-          title: 'Configurar metas',
-          description: 'Definir eventos de conversão',
-        },
-      ],
-    },
-    {
-      id: 'hotmart',
-      name: 'Hotmart',
-      description: 'Plataforma de produtos digitais',
-      logo: '🔥',
-      status: 'disconnected',
-      lastSync: 'Nunca',
-      syncFrequency: 'Tempo real',
-      features: ['Vendas de produtos', 'Comissões', 'Afiliados'],
-      health: 0,
-      category: 'Afiliados',
-      monthlyData: '0 vendas',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'API Key',
-          description: 'Inserir chave de API da Hotmart',
-        },
-        {
-          id: 2,
-          title: 'Configurar webhook',
-          description: 'URL para notificações automáticas',
-        },
-        {
-          id: 3,
-          title: 'Testar integração',
-          description: 'Validar recebimento de dados',
-        },
-      ],
-    },
     {
       id: 'coinzz',
       name: 'Coinzz',
@@ -951,7 +779,15 @@ export default function Integracoes() {
               </div>
               <div className="flex items-center space-x-2">
                 {getStatusIcon(integration.status)}
-                <button type="button" className="p-1 hover:bg-slate-100 rounded">
+                <button 
+                  type="button" 
+                  className="p-1 hover:bg-slate-100 rounded"
+                  onClick={() => {
+                    setSelectedIntegration(integration)
+                    setShowSetupModal(true)
+                    setSetupStep(1)
+                  }}
+                >
                   <Settings className="h-4 w-4 text-slate-400" />
                 </button>
               </div>
