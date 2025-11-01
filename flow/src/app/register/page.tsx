@@ -8,10 +8,11 @@ import { Check, Eye, EyeOff, Lock, Mail, User, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useId, useState } from 'react'
 import toast from 'react-hot-toast'
-import { register } from '@/lib/api/auth'
+import { useAuth } from '@/lib/contexts/AuthContext'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { register } = useAuth()
   const nomeId = useId()
   const emailId = useId()
   const passwordId = useId()

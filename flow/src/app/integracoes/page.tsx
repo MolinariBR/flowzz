@@ -15,8 +15,9 @@ import {
     X,
     XCircle,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { getIntegrationDisplayName, getIntegrationEmoji, getIntegrationHealth, getUserIntegrations } from '../../lib/api/integrations'
+import { useCallback, useEffect, useState } from 'react'
+import { connectIntegration, getIntegrationHealth, getUserIntegrations } from '../../lib/api/integrations'
+import { useAuth } from '../../lib/contexts/AuthContext'
 
 interface Integration {
   id: string
@@ -44,7 +45,137 @@ interface SetupModalProps {
   setShowSetupModal: (show: boolean) => void
   nextStep: () => void
   prevStep: () => void
+  connecting?: boolean
+  connectionError?: string | null
+  inputValue: string
+  setInputValue: (value: string) => void
+  passwordValue: string
+  setPasswordValue: (value: string) => void
 }
+
+// Lista hardcoded de integrações disponíveis
+const AVAILABLE_INTEGRATIONS: Integration[] = [
+  {
+    id: 'coinzz',
+    name: 'Coinzz',
+    description: 'Integração com Coinzz para sincronização de vendas e comissões',
+    logo: '🪙',
+    status: 'disconnected',
+    lastSync: 'Nunca',
+    syncFrequency: 'Inativo',
+    features: ['Sincronização automática', 'Dados em tempo real', 'Relatórios de vendas'],
+    health: 0,
+    category: 'Afiliados',
+    monthlyData: 'Inativo',
+    setupSteps: [
+      {
+        id: 1,
+        title: 'Conectar conta',
+        description: 'Entre com suas credenciais do Coinzz',
+      },
+      {
+        id: 2,
+        title: 'Configurar webhook',
+        description: 'Configure URL de notificação automática',
+      },
+      {
+        id: 3,
+        title: 'Testar conexão',
+        description: 'Validar sincronização de dados',
+      },
+    ],
+  },
+  {
+    id: 'facebook',
+    name: 'Facebook Ads',
+    description: 'Integração com Facebook Ads para análise de campanhas',
+    logo: '📘',
+    status: 'disconnected',
+    lastSync: 'Nunca',
+    syncFrequency: 'Inativo',
+    features: ['Relatórios de campanhas', 'Dados de conversão', 'Análise de performance'],
+    health: 0,
+    category: 'Marketing',
+    monthlyData: 'Inativo',
+    setupSteps: [
+      {
+        id: 1,
+        title: 'Conectar conta',
+        description: 'Entre com suas credenciais do Facebook Ads',
+      },
+      {
+        id: 2,
+        title: 'Configurar webhook',
+        description: 'Configure URL de notificação automática',
+      },
+      {
+        id: 3,
+        title: 'Testar conexão',
+        description: 'Validar sincronização de dados',
+      },
+    ],
+  },
+  {
+    id: 'whatsapp',
+    name: 'WhatsApp Business',
+    description: 'Integração com WhatsApp Business para comunicação automatizada',
+    logo: '💬',
+    status: 'disconnected',
+    lastSync: 'Nunca',
+    syncFrequency: 'Inativo',
+    features: ['Mensagens automatizadas', 'Relatórios de conversas', 'Integração com chatbots'],
+    health: 0,
+    category: 'Comunicação',
+    monthlyData: 'Inativo',
+    setupSteps: [
+      {
+        id: 1,
+        title: 'Conectar conta',
+        description: 'Entre com suas credenciais do WhatsApp Business',
+      },
+      {
+        id: 2,
+        title: 'Configurar webhook',
+        description: 'Configure URL de notificação automática',
+      },
+      {
+        id: 3,
+        title: 'Testar conexão',
+        description: 'Validar sincronização de dados',
+      },
+    ],
+  },
+  {
+    id: 'banco',
+    name: 'PagBank',
+    description: 'Integração com PagBank para sincronização de transações bancárias',
+    logo: '💳',
+    status: 'disconnected',
+    lastSync: 'Nunca',
+    syncFrequency: 'Inativo',
+    features: ['Sincronização de transações', 'Relatórios financeiros', 'Conciliação bancária'],
+    health: 0,
+    category: 'Financeiro',
+    monthlyData: 'Inativo',
+    setupSteps: [
+      {
+        id: 1,
+        title: 'Conectar conta',
+        description: 'Entre com suas credenciais do PagBank',
+      },
+      {
+        id: 2,
+        title: 'Configurar webhook',
+        description: 'Configure URL de notificação automática',
+      },
+      {
+        id: 3,
+        title: 'Testar conexão',
+        description: 'Validar sincronização de dados',
+      },
+    ],
+  },
+]
 
 const SetupModal = ({
   showSetupModal,
@@ -53,6 +184,12 @@ const SetupModal = ({
   setShowSetupModal,
   nextStep,
   prevStep,
+  connecting = false,
+  connectionError = null,
+  inputValue,
+  setInputValue,
+  passwordValue,
+  setPasswordValue,
 }: SetupModalProps) => (
   <AnimatePresence>
     {showSetupModal && selectedIntegration && (
@@ -139,7 +276,7 @@ const SetupModal = ({
                             className="block text-sm font-medium text-slate-700 mb-2"
                           >
                             {selectedIntegration.id === 'coinzz'
-                              ? 'Email do Produtor'
+                              ? 'API Key da Coinzz'
                               : selectedIntegration.id === 'facebook'
                                 ? 'Access Token'
                                 : selectedIntegration.id === 'whatsapp'
@@ -153,6 +290,8 @@ const SetupModal = ({
                           {selectedIntegration.id === 'banco' ? (
                             <select
                               id={`${selectedIntegration.id}-input`}
+                              value={inputValue}
+                              onChange={(e) => setInputValue(e.target.value)}
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             >
                               <option>Selecione seu banco</option>
@@ -166,9 +305,11 @@ const SetupModal = ({
                             <input
                               id={`${selectedIntegration.id}-input`}
                               type={selectedIntegration.id === 'hotmart' ? 'password' : 'text'}
+                              value={inputValue}
+                              onChange={(e) => setInputValue(e.target.value)}
                               placeholder={
                                 selectedIntegration.id === 'coinzz'
-                                  ? 'seu-email@coinzz.com'
+                                  ? 'Cole sua API Key da Coinzz'
                                   : selectedIntegration.id === 'facebook'
                                     ? 'Seu access token do Facebook'
                                     : selectedIntegration.id === 'whatsapp'
@@ -181,7 +322,7 @@ const SetupModal = ({
                             />
                           )}
                         </div>
-                        {selectedIntegration.id !== 'banco' && selectedIntegration.id !== 'facebook' && (
+                        {selectedIntegration.id !== 'banco' && selectedIntegration.id !== 'facebook' && selectedIntegration.id !== 'coinzz' && (
                           <div>
                             <label
                               htmlFor={`${selectedIntegration.id}-password`}
@@ -192,16 +333,34 @@ const SetupModal = ({
                             <input
                               id={`${selectedIntegration.id}-password`}
                               type="password"
+                              value={passwordValue}
+                              onChange={(e) => setPasswordValue(e.target.value)}
                               placeholder="••••••••"
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             />
                           </div>
                         )}
+                        {connectionError && (
+                          <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              <span className="text-sm text-red-800">{connectionError}</span>
+                            </div>
+                          </div>
+                        )}
                         <button
                           onClick={nextStep}
-                          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+                          disabled={connecting}
+                          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
-                          Próximo
+                          {connecting ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                              Conectando...
+                            </>
+                          ) : (
+                            'Próximo'
+                          )}
                         </button>
                       </div>
                     )}
@@ -315,67 +474,82 @@ export default function Integracoes() {
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
   const [setupStep, setSetupStep] = useState(1)
   const [filterCategory, setFilterCategory] = useState('todas')
-  const [integrations, setIntegrations] = useState<Integration[]>([])
+  const [integrations, setIntegrations] = useState<Integration[]>(AVAILABLE_INTEGRATIONS)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
   const [connecting, setConnecting] = useState(false)
+  const [connectionError, setConnectionError] = useState<string | null>(null)
 
-  // Carregar integrações do backend
+  // Estados para os valores dos inputs do modal
+  const [inputValue, setInputValue] = useState('')
+  const [passwordValue, setPasswordValue] = useState('')
+
+  // Verificar autenticação
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
+
+  // Redirecionar para login se não estiver autenticado
   useEffect(() => {
-    const loadIntegrations = async () => {
-      try {
-        setLoading(true)
-        const data = await getUserIntegrations()
-
-        // Mapear dados da API para o formato esperado pelo componente
-        const mappedIntegrations: Integration[] = data.map((integration) => ({
-          id: integration.id,
-          name: getIntegrationDisplayName(integration.provider),
-          description: `Integração com ${getIntegrationDisplayName(integration.provider)}`,
-          logo: getIntegrationEmoji(integration.provider),
-          status: integration.status === 'CONNECTED' ? 'connected' :
-                  integration.status === 'ERROR' ? 'error' :
-                  integration.status === 'PENDING' ? 'warning' : 'disconnected',
-          lastSync: integration.lastSync ? new Date(integration.lastSync).toLocaleString('pt-BR') : 'Nunca',
-          syncFrequency: integration.config.syncEnabled ? 'Ativo' : 'Inativo',
-          features: ['Sincronização automática', 'Dados em tempo real', 'Relatórios'],
-          health: getIntegrationHealth(integration.status),
-          category: getCategoryFromProvider(integration.provider),
-          monthlyData: integration.status === 'CONNECTED' ? 'Ativo' : 'Inativo',
-          setupSteps: [
-            {
-              id: 1,
-              title: 'Conectar conta',
-              description: `Entre com suas credenciais do ${getIntegrationDisplayName(integration.provider)}`,
-            },
-            {
-              id: 2,
-              title: 'Configurar webhook',
-              description: 'Configure URL de notificação automática',
-            },
-            {
-              id: 3,
-              title: 'Testar conexão',
-              description: 'Validar sincronização de dados',
-            },
-          ],
-        }))
-
-        setIntegrations(mappedIntegrations)
-        setError(null)
-      } catch (err) {
-        console.error('Erro ao carregar integrações:', err)
-        setError('Erro ao carregar integrações')
-        // Fallback para dados mockados em caso de erro
-        setIntegrations(getMockIntegrations())
-      } finally {
-        setLoading(false)
-      }
+    console.log('Integracoes auth check:', { isAuthenticated, authLoading })
+    if (!authLoading && !isAuthenticated) {
+      console.log('Redirecting to login from integracoes...')
+      window.location.href = '/login'
     }
+  }, [isAuthenticated, authLoading])
 
-    loadIntegrations()
+  // Função para carregar integrações
+  const loadIntegrations = useCallback(async () => {
+    try {
+      setLoading(true)
+      const data = await getUserIntegrations()
+
+      // Criar mapa de integrações conectadas por provider
+      const connectedIntegrationsMap = new Map()
+      data.forEach((integration) => {
+        const providerKey = integration.provider.toLowerCase()
+        connectedIntegrationsMap.set(providerKey, integration)
+      })
+
+      // Mesclar integrações disponíveis com dados conectados
+      const mergedIntegrations: Integration[] = AVAILABLE_INTEGRATIONS.map((availableIntegration) => {
+        const connectedIntegration = connectedIntegrationsMap.get(availableIntegration.id)
+
+        if (connectedIntegration) {
+          // Integração está conectada, usar dados da API
+          return {
+            ...availableIntegration,
+            status: connectedIntegration.status === 'CONNECTED' ? 'connected' :
+                    connectedIntegration.status === 'ERROR' ? 'error' :
+                    connectedIntegration.status === 'PENDING' ? 'warning' : 'disconnected',
+            lastSync: connectedIntegration.lastSync ? new Date(connectedIntegration.lastSync).toLocaleString('pt-BR') : 'Nunca',
+            syncFrequency: connectedIntegration.config.syncEnabled ? 'Ativo' : 'Inativo',
+            health: getIntegrationHealth(connectedIntegration.status),
+            monthlyData: connectedIntegration.status === 'CONNECTED' ? 'Ativo' : 'Inativo',
+          }
+        } else {
+          // Integração não está conectada, usar dados padrão
+          return availableIntegration
+        }
+      })
+
+      setIntegrations(mergedIntegrations)
+      setError(null)
+    } catch (err) {
+      console.error('Erro ao carregar integrações:', err)
+      setError('Erro ao carregar integrações')
+      // Em caso de erro, mostrar integrações disponíveis com status desconectado
+      setIntegrations(AVAILABLE_INTEGRATIONS)
+    } finally {
+      setLoading(false)
+    }
   }, [])
+
+  // Carregar integrações do backend apenas quando autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadIntegrations()
+    }
+  }, [isAuthenticated, loadIntegrations])
 
   // Função auxiliar para mapear provider para categoria
   const getCategoryFromProvider = (provider: string): string => {
@@ -387,190 +561,6 @@ export default function Integracoes() {
     }
     return categories[provider] || 'Outros'
   }
-
-  // Dados mockados como fallback
-  const getMockIntegrations = (): Integration[] => [
-    {
-      id: 'coinzz',
-      name: 'Coinzz',
-      description: 'Plataforma de afiliados',
-      logo: '🪙',
-      status: 'connected',
-      lastSync: '2 min atrás',
-      syncFrequency: 'Tempo real',
-      features: ['Vendas automáticas', 'Comissões', 'Relatórios'],
-      health: 100,
-      category: 'Afiliados',
-      monthlyData: 'R$ 12.450',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Conectar conta',
-          description: 'Entre com suas credenciais da Coinzz',
-        },
-        {
-          id: 2,
-          title: 'Configurar webhook',
-          description: 'Configure URL de notificação automática',
-        },
-        {
-          id: 3,
-          title: 'Testar conexão',
-          description: 'Validar sincronização de dados',
-        },
-      ],
-    },
-    {
-      id: 'facebook',
-      name: 'Facebook Ads',
-      description: 'Gestão de anúncios',
-      logo: '📘',
-      status: 'connected',
-      lastSync: '5 min atrás',
-      syncFrequency: '15 min',
-      features: ['Métricas de campanha', 'Gastos', 'Performance'],
-      health: 95,
-      category: 'Marketing',
-      monthlyData: 'R$ 3.280 gastos',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Autorizar acesso',
-          description: 'Permitir acesso às suas contas de anúncio',
-        },
-        {
-          id: 2,
-          title: 'Selecionar contas',
-          description: 'Escolher contas de anúncio para sincronizar',
-        },
-        {
-          id: 3,
-          title: 'Configurar métricas',
-          description: 'Definir métricas importantes',
-        },
-      ],
-    },
-    {
-      id: 'whatsapp',
-      name: 'WhatsApp Business',
-      description: 'Automação de mensagens',
-      logo: '💬',
-      status: 'disconnected',
-      lastSync: 'Nunca',
-      syncFrequency: 'Manual',
-      features: ['Cobrança automática', 'Notificações', 'Templates'],
-      health: 0,
-      category: 'Comunicação',
-      monthlyData: '0 mensagens',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Conectar WhatsApp',
-          description: 'Vincular sua conta WhatsApp Business',
-        },
-        {
-          id: 2,
-          title: 'Configurar templates',
-          description: 'Criar templates de mensagem',
-        },
-        {
-          id: 3,
-          title: 'Testar envio',
-          description: 'Validar envio de mensagens',
-        },
-      ],
-    },
-    {
-      id: 'banco',
-      name: 'Open Banking',
-      description: 'Conexão bancária',
-      logo: '🏦',
-      status: 'error',
-      lastSync: '2 horas atrás',
-      syncFrequency: '1 hora',
-      features: ['Saldo em tempo real', 'Extratos', 'Conciliação'],
-      health: 25,
-      category: 'Financeiro',
-      monthlyData: 'Erro de conexão',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Autorizar banco',
-          description: 'Conectar com seu banco via Open Banking',
-        },
-        {
-          id: 2,
-          title: 'Selecionar contas',
-          description: 'Escolher contas para monitoramento',
-        },
-        {
-          id: 3,
-          title: 'Configurar alertas',
-          description: 'Definir notificações de movimentação',
-        },
-      ],
-    },
-    {
-      id: 'google',
-      name: 'Google Analytics',
-      description: 'Analytics do site',
-      logo: '📊',
-      status: 'disconnected',
-      lastSync: 'Nunca',
-      syncFrequency: '30 min',
-      features: ['Tráfego do site', 'Conversões', 'Audiência'],
-      health: 0,
-      category: 'Analytics',
-      monthlyData: '0 visitantes',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'Conectar Google',
-          description: 'Autorizar acesso ao Google Analytics',
-        },
-        {
-          id: 2,
-          title: 'Selecionar propriedade',
-          description: 'Escolher site para monitorar',
-        },
-        {
-          id: 3,
-          title: 'Configurar metas',
-          description: 'Definir eventos de conversão',
-        },
-      ],
-    },
-    {
-      id: 'hotmart',
-      name: 'Hotmart',
-      description: 'Plataforma de produtos digitais',
-      logo: '🔥',
-      status: 'disconnected',
-      lastSync: 'Nunca',
-      syncFrequency: 'Tempo real',
-      features: ['Vendas de produtos', 'Comissões', 'Afiliados'],
-      health: 0,
-      category: 'Afiliados',
-      monthlyData: '0 vendas',
-      setupSteps: [
-        {
-          id: 1,
-          title: 'API Key',
-          description: 'Inserir chave de API da Hotmart',
-        },
-        {
-          id: 2,
-          title: 'Configurar webhook',
-          description: 'URL para notificações automáticas',
-        },
-        {
-          id: 3,
-          title: 'Testar integração',
-          description: 'Validar recebimento de dados',
-        },
-      ],
-    },
-  ]
 
   const categories = ['todas', 'Afiliados', 'Marketing', 'Comunicação', 'Financeiro', 'Analytics']
 
@@ -615,10 +605,81 @@ export default function Integracoes() {
     setSelectedIntegration(integration)
     setSetupStep(1)
     setShowSetupModal(true)
+    setConnectionError(null) // Limpar erro anterior
+    setInputValue('') // Limpar valores dos inputs
+    setPasswordValue('')
   }
 
-  const nextStep = () => {
-    if (selectedIntegration && setupStep < selectedIntegration.setupSteps.length) {
+  const nextStep = async () => {
+    if (!selectedIntegration || setupStep >= selectedIntegration.setupSteps.length) return
+
+    if (setupStep === 1) {
+      // Coletar dados dos inputs e conectar integração
+      try {
+        setConnecting(true)
+        setConnectionError(null)
+
+        // Coletar valores dos inputs baseado no provider
+        const config: Record<string, unknown> = {}
+
+        if (selectedIntegration.id === 'coinzz') {
+          if (inputValue) config.apiKey = inputValue
+        } else if (selectedIntegration.id === 'facebook') {
+          if (inputValue) config.accessToken = inputValue
+        } else if (selectedIntegration.id === 'whatsapp') {
+          if (inputValue) config.phoneNumber = inputValue
+        } else if (selectedIntegration.id === 'banco') {
+          if (inputValue && inputValue !== 'Selecione seu banco') config.bankName = inputValue
+        } else {
+          // Para outros providers, usar campos genéricos
+          if (inputValue) config.apiKey = inputValue
+          if (passwordValue) config.apiSecret = passwordValue
+        }
+
+        // Validar se os campos obrigatórios foram preenchidos
+        if (selectedIntegration.id === 'coinzz' && !config.apiKey) {
+          setConnectionError('API Key da Coinzz é obrigatória')
+          return
+        }
+
+        // Mapear ID do frontend para provider do backend
+        const providerMap: Record<string, string> = {
+          coinzz: 'COINZZ',
+          facebook: 'FACEBOOK_ADS',
+          whatsapp: 'WHATSAPP',
+          banco: 'PAGBANK',
+          google: 'GOOGLE_ANALYTICS',
+          hotmart: 'HOTMART'
+        }
+
+        const provider = providerMap[selectedIntegration.id] || selectedIntegration.id.toUpperCase()
+
+        // Chamar API para conectar
+        await connectIntegration(provider, config)
+
+        // Recarregar integrações após conexão bem-sucedida
+        await loadIntegrations()
+
+        // Avançar para próximo passo se conexão bem-sucedida
+        setSetupStep(setupStep + 1)
+      } catch (error: any) {
+        console.error('Erro ao conectar integração:', error)
+
+        // Definir mensagem de erro específica baseada no tipo de erro
+        if (error.message?.includes('INVALID_CREDENTIALS')) {
+          setConnectionError('Credenciais inválidas. Verifique seus dados e tente novamente.')
+        } else if (error.message?.includes('INTEGRATION_EXISTS')) {
+          setConnectionError('Esta integração já está conectada para sua conta.')
+        } else if (error.message?.includes('INVALID_PROVIDER')) {
+          setConnectionError('Tipo de integração não suportado.')
+        } else {
+          setConnectionError('Erro ao conectar integração. Tente novamente mais tarde.')
+        }
+      } finally {
+        setConnecting(false)
+      }
+    } else {
+      // Para outros passos, apenas avançar
       setSetupStep(setupStep + 1)
     }
   }
@@ -878,6 +939,12 @@ export default function Integracoes() {
         setShowSetupModal={setShowSetupModal}
         nextStep={nextStep}
         prevStep={prevStep}
+        connecting={connecting}
+        connectionError={connectionError}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        passwordValue={passwordValue}
+        setPasswordValue={setPasswordValue}
       />
     </div>
   )

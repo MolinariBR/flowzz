@@ -1,25 +1,38 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import {
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  PiggyBank,
-  Target,
-  TrendingUp,
-} from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { ChartContainer } from '@/components/shared/ChartContainer'
 import { FilterBar } from '@/components/shared/FilterBar'
 import { MetricCard } from '@/components/shared/MetricCard'
+import { useAuth } from '@/lib/contexts/AuthContext'
 import { useProjections } from '@/lib/hooks/useProjections'
+import { motion } from 'framer-motion'
+import {
+    AlertTriangle,
+    CheckCircle,
+    Clock,
+    DollarSign,
+    PiggyBank,
+    Target,
+    TrendingUp,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export default function Projecoes() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('todos')
   const [selectedPeriod, setSelectedPeriod] = useState('3m')
+
+  // Verificar autenticação
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
+
+  // Redirecionar para login se não estiver autenticado
+  useEffect(() => {
+    console.log('Projecoes auth check:', { isAuthenticated, authLoading })
+    if (!authLoading && !isAuthenticated) {
+      console.log('Redirecting to login from projecoes...')
+      window.location.href = '/login'
+    }
+  }, [isAuthenticated, authLoading])
 
   const { projections, goals, isLoading, fetchProjections } = useProjections()
 
@@ -38,8 +51,10 @@ export default function Projecoes() {
   ]
 
   useEffect(() => {
-    fetchProjections(selectedPeriod)
-  }, [selectedPeriod, fetchProjections])
+    if (isAuthenticated) {
+      fetchProjections(selectedPeriod)
+    }
+  }, [selectedPeriod, fetchProjections, isAuthenticated])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {

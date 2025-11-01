@@ -1,17 +1,30 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { BarChart3, Clock, DollarSign, Download, FileText, Target, TrendingUp } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { ChartContainer } from '@/components/shared/ChartContainer'
 import { FilterBar } from '@/components/shared/FilterBar'
 import { MetricCard } from '@/components/shared/MetricCard'
+import { useAuth } from '@/lib/contexts/AuthContext'
 import { useReports } from '@/lib/hooks/useReports'
+import { motion } from 'framer-motion'
+import { BarChart3, Clock, DollarSign, Download, FileText, Target, TrendingUp } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export default function Relatorios() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('todos')
   const [selectedPeriod, setSelectedPeriod] = useState('30d')
+
+  // Verificar autenticação
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
+
+  // Redirecionar para login se não estiver autenticado
+  useEffect(() => {
+    console.log('Relatorios auth check:', { isAuthenticated, authLoading })
+    if (!authLoading && !isAuthenticated) {
+      console.log('Redirecting to login from relatorios...')
+      window.location.href = '/login'
+    }
+  }, [isAuthenticated, authLoading])
 
   const { reports, isLoading, fetchReports, exportReport } = useReports()
 
@@ -32,11 +45,13 @@ export default function Relatorios() {
   ]
 
   useEffect(() => {
-    fetchReports({
-      period: selectedPeriod,
-      category: selectedCategory !== 'todos' ? selectedCategory : undefined,
-    })
-  }, [selectedPeriod, selectedCategory, fetchReports])
+    if (isAuthenticated) {
+      fetchReports({
+        period: selectedPeriod,
+        category: selectedCategory !== 'todos' ? selectedCategory : undefined,
+      })
+    }
+  }, [selectedPeriod, selectedCategory, fetchReports, isAuthenticated])
 
   const filteredReports = reports.filter(
     (report) =>

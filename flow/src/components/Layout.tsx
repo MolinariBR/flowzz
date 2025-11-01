@@ -1,30 +1,29 @@
 'use client'
 
+import { useAuth } from '@/lib/contexts/AuthContext'
 import {
-  Bell,
-  ChevronRight,
-  CreditCard,
-  Crown,
-  FileText,
-  HelpCircle,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Moon,
-  PieChart,
-  Search,
-  Settings,
-  TrendingUp,
-  User,
-  Users,
-  X,
-  Zap,
+    Bell,
+    ChevronRight,
+    CreditCard,
+    Crown,
+    FileText,
+    HelpCircle,
+    LayoutDashboard,
+    LogOut,
+    Menu,
+    Moon,
+    PieChart,
+    Search,
+    Settings,
+    TrendingUp,
+    User,
+    Users,
+    X,
+    Zap,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import toast from 'react-hot-toast'
-import { logout } from '@/lib/api/auth'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -34,23 +33,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const pathname = usePathname()
-  const _router = useRouter()
+  const router = useRouter()
+  const { logout, user } = useAuth()
 
   // Páginas de autenticação não devem ter sidebar/menu
-  const isAuthPage = pathname === '/login' || pathname === '/register'
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/'
 
   if (isAuthPage) {
     return <>{children}</>
   }
 
   const handleLogout = async () => {
-    // Limpar localStorage
     logout()
-
-    toast.success('Logout realizado com sucesso!')
-
-    // Redirecionar para login (forçar reload)
-    window.location.href = '/login'
+    router.push('/login')
   }
 
   const navigation = [
@@ -255,8 +250,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <User className="h-5 w-5 text-white" />
                 </div>
                 <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold text-slate-900">João Silva</p>
-                  <p className="text-xs text-slate-500">joao@flowzz.com</p>
+                  <p className="text-sm font-semibold text-slate-900">{user?.nome || 'Usuário'}</p>
+                  <p className="text-xs text-slate-500">{user?.email || 'email@exemplo.com'}</p>
                 </div>
                 <ChevronRight
                   className={`h-4 w-4 text-slate-400 transform transition-transform ${profileOpen ? 'rotate-90' : ''}`}

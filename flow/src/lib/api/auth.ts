@@ -113,9 +113,10 @@ export function getCurrentUser(): User | null {
 }
 
 /**
- * Verificar se usuário está autenticado
+ * Refresh access token
+ * Endpoint: POST /auth/refresh
  */
-export function isAuthenticated(): boolean {
-  if (typeof window === 'undefined') return false
-  return !!localStorage.getItem('accessToken')
+export async function refreshToken(refreshToken: string): Promise<AuthResponse> {
+  const response = await apiClient.post<AuthResponse>('/auth/refresh', { refreshToken })
+  return response
 }

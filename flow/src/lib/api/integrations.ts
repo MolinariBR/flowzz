@@ -31,11 +31,11 @@ interface IntegrationsResponse {
 
 /**
  * Buscar todas as integrações do usuário
- * Endpoint: GET /integrations
+ * Endpoint: GET /api/v1/integrations
  */
 export async function getUserIntegrations(): Promise<Integration[]> {
   try {
-    const response = await apiClient.get<IntegrationsResponse>('/integrations')
+    const response = await apiClient.get<IntegrationsResponse>('/api/v1/integrations')
 
     if (response.success) {
       return response.data
@@ -44,6 +44,42 @@ export async function getUserIntegrations(): Promise<Integration[]> {
     }
   } catch (error) {
     console.error('Erro ao buscar integrações:', error)
+    throw error
+  }
+}
+
+/**
+ * Conectar uma nova integração
+ * Endpoint: POST /integrations/{provider}/connect
+ */
+export async function connectIntegration(provider: string, config: Record<string, unknown>): Promise<Integration> {
+  try {
+    // Para Coinzz, extrair apiKey do config e enviar diretamente
+    let body: Record<string, unknown>
+    if (provider.toLowerCase() === 'coinzz') {
+      body = {
+        apiKey: config.apiKey,
+      }
+      if (typeof config.webhookUrl === 'string') {
+        body.webhookUrl = config.webhookUrl
+      }
+    } else {
+      body = config
+    }
+
+    const response = await apiClient.post<{
+      success: boolean
+      data: Integration
+      message: string
+    }>(`/integrations/${provider.toLowerCase()}/connect`, body)
+
+    if (response.success) {
+      return response.data
+    } else {
+      throw new Error(response.message || 'Erro ao conectar integração')
+    }
+  } catch (error) {
+    console.error('Erro ao conectar integração:', error)
     throw error
   }
 }

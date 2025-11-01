@@ -14,12 +14,15 @@
 import { Router } from 'express';
 import { IntegrationController } from '../controllers/IntegrationController';
 import { IntegrationRepository } from '../repositories/IntegrationRepository';
+import { CoinzzService } from '../services/CoinzzService';
+import { prisma } from '../shared/config/database';
 import { authenticate } from '../shared/middlewares/authenticate';
 import logger from '../shared/utils/logger';
 
 // Criar instâncias
 const integrationRepo = new IntegrationRepository();
-const integrationController = new IntegrationController(integrationRepo);
+const coinzzService = new CoinzzService(prisma);
+const integrationController = new IntegrationController(integrationRepo, coinzzService);
 
 // Criar router
 const router = Router();
@@ -42,6 +45,22 @@ router.get('/', async (req, res) => {
   });
 
   await integrationController.getUserIntegrations(req, res);
+});
+
+/**
+ * POST /api/v1/integrations/connect
+ *
+ * Conecta uma nova integração para o usuário autenticado
+ *
+ * Request: ConnectIntegrationDTO
+ * Response: IntegrationDTO
+ */
+router.post('/connect', async (req, res) => {
+  logger.info('POST /integrations/connect', {
+    userId: req.user?.userId,
+  });
+
+  await integrationController.connectIntegration(req, res);
 });
 
 export default router;

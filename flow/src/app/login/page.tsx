@@ -3,15 +3,16 @@
 
 'use client'
 
+import { useAuth } from '@/lib/contexts/AuthContext'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Lock, Mail, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useId, useState } from 'react'
 import toast from 'react-hot-toast'
-import { login } from '@/lib/api/auth'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const emailId = useId()
   const passwordId = useId()
   const [email, setEmail] = useState('')

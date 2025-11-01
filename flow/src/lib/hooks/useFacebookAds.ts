@@ -6,20 +6,26 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { facebookApi } from '../api/facebook'
 import type {
-  FacebookCallbackResponse,
-  FacebookInsightsParams,
-  FacebookInsightsResponse,
-  FacebookIntegrationStatus,
-  FacebookSyncResponse,
+    FacebookCallbackResponse,
+    FacebookInsightsParams,
+    FacebookInsightsResponse,
+    FacebookIntegrationStatus,
+    FacebookSyncResponse,
 } from '../types/facebook'
 
-export const useFacebookAds = () => {
+export const useFacebookAds = (isAuthenticated: boolean = false) => {
   const [isLoading, setIsLoading] = useState(false)
   const [integrationStatus, setIntegrationStatus] = useState<FacebookIntegrationStatus | null>(null)
   const router = useRouter()
 
   // Verificar status da integração
   const checkStatus = useCallback(async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
+    if (!token) {
+      console.log('useFacebookAds: No access token, skipping status check')
+      return null
+    }
+
     try {
       setIsLoading(true)
       const data = await facebookApi.getStatus()
@@ -128,8 +134,10 @@ export const useFacebookAds = () => {
 
   // Carregar status inicial
   useEffect(() => {
-    checkStatus()
-  }, [checkStatus])
+    if (isAuthenticated) {
+      checkStatus()
+    }
+  }, [checkStatus, isAuthenticated])
 
   return {
     isLoading,

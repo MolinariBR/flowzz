@@ -17,8 +17,8 @@ Este é um monorepo que contém:
 
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
-- PostgreSQL
-- Redis
+- **Docker** (para PostgreSQL e Redis)
+- docker-compose
 
 ### Instalação
 
@@ -39,16 +39,24 @@ pnpm run db:seed
 ### Desenvolvimento
 
 ```bash
-# Backend
+# 🚀 Iniciar TODOS os serviços (Docker + Aplicações)
+./start-services.sh
+
+# Ou iniciar manualmente:
+
+# 1. Iniciar serviços Docker (PostgreSQL + Redis)
+cd backend && docker-compose up -d
+
+# 2. Backend (em outro terminal)
 cd backend && pnpm run dev
 
-# Flow (em outro terminal)
+# 3. Flow (em outro terminal)
 cd flow && pnpm run dev
 
-# Admin (em outro terminal)
+# 4. Admin (em outro terminal)
 cd admin && pnpm run dev
 
-# Landing (em outro terminal)
+# 5. Landing (em outro terminal)
 cd landing && pnpm run dev
 ```
 
