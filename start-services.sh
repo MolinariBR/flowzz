@@ -82,22 +82,22 @@ echo ""
 
 # Backend
 echo "Iniciando backend..."
-cd backend && pnpm run dev &
+(cd backend && pnpm run dev) &
 BACKEND_PID=$!
 
 # Flow App
 echo "Iniciando Flow App..."
-cd flow && pnpm run dev &
+(cd flow && pnpm run dev) &
 FLOW_PID=$!
 
-# Admin Panel (servir build)
-echo "Iniciando Admin Panel..."
-cd admin && pnpm run preview &
+# Admin Panel (modo desenvolvimento com hot reload)
+echo "Iniciando Admin Panel em modo dev..."
+(cd admin && pnpm run dev) &
 ADMIN_PID=$!
 
-# Landing Page (servir build)
-echo "Iniciando Landing Page..."
-cd landing && pnpm run preview &
+# Landing Page (modo desenvolvimento com hot reload)
+echo "Iniciando Landing Page em modo dev..."
+(cd landing && pnpm run dev) &
 LANDING_PID=$!
 
 echo ""
@@ -105,8 +105,8 @@ echo "✅ Todos os serviços iniciados!"
 echo "📊 URLs de acesso:"
 echo "  - Backend API: http://localhost:4000"
 echo "  - Flow App:    http://localhost:3000"
-echo "  - Admin:       http://localhost:4173"
-echo "  - Landing:     http://localhost:4174"
+echo "  - Landing:       http://localhost:4173"
+echo "  - Admin:     http://localhost:4174"
 echo ""
 echo "🛑 Para parar todos os serviços: kill $BACKEND_PID $FLOW_PID $ADMIN_PID $LANDING_PID"
 echo "🛑 Para parar serviços Docker: docker stop flowzz_postgres flowzz_redis flowzz_redis_commander"

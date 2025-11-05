@@ -41,6 +41,40 @@ interface AuthResponse {
   message: string
 }
 
+interface ProfileData {
+  nome?: string
+  email?: string
+  telefone?: string
+  documento?: string
+  endereco?: string
+  cidade?: string
+  cep?: string
+  avatar_url?: string
+}
+
+interface SystemSettings {
+  dark_mode?: boolean
+  language?: string
+  timezone?: string
+  date_format?: string
+  currency?: string
+}
+
+interface ChangePasswordRequest {
+  current_password: string
+  new_password: string
+  confirm_password: string
+}
+
+interface Session {
+  id: string
+  user_agent: string
+  ip_address: string
+  device_info: string
+  created_at: string
+  expires_at: string
+}
+
 // ============================================
 // AUTH FUNCTIONS
 // ============================================
@@ -118,5 +152,80 @@ export function getCurrentUser(): User | null {
  */
 export async function refreshToken(refreshToken: string): Promise<AuthResponse> {
   const response = await apiClient.post<AuthResponse>('/auth/refresh', { refreshToken })
+  return response
+}
+
+/**
+ * Get user profile
+ * Endpoint: GET /auth/profile
+ */
+export async function getProfile(): Promise<{ data: ProfileData; message: string }> {
+  const response = await apiClient.get<{ data: ProfileData; message: string }>('/auth/profile')
+  return response
+}
+
+/**
+ * Update user profile
+ * Endpoint: PUT /auth/profile
+ */
+export async function updateProfile(
+  data: ProfileData
+): Promise<{ data: ProfileData; message: string }> {
+  const response = await apiClient.put<{ data: ProfileData; message: string }>(
+    '/auth/profile',
+    data
+  )
+  return response
+}
+
+/**
+ * Get system settings
+ * Endpoint: GET /auth/system-settings
+ */
+export async function getSystemSettings(): Promise<{ data: SystemSettings; message: string }> {
+  const response = await apiClient.get<{ data: SystemSettings; message: string }>(
+    '/auth/system-settings'
+  )
+  return response
+}
+
+/**
+ * Update system settings
+ * Endpoint: PUT /auth/system-settings
+ */
+export async function updateSystemSettings(
+  data: SystemSettings
+): Promise<{ data: SystemSettings; message: string }> {
+  const response = await apiClient.put<{ data: SystemSettings; message: string }>(
+    '/auth/system-settings',
+    data
+  )
+  return response
+}
+
+/**
+ * Change password
+ * Endpoint: PUT /auth/security
+ */
+export async function changePassword(data: ChangePasswordRequest): Promise<{ message: string }> {
+  const response = await apiClient.put<{ message: string }>('/auth/security', data)
+  return response
+}
+
+/**
+ * Get active sessions
+ * Endpoint: GET /auth/sessions
+ */
+export async function getSessions(): Promise<{ data: Session[]; message: string }> {
+  const response = await apiClient.get<{ data: Session[]; message: string }>('/auth/sessions')
+  return response
+}
+
+/**
+ * Revoke session
+ * Endpoint: DELETE /auth/sessions/:id
+ */
+export async function revokeSession(sessionId: string): Promise<{ message: string }> {
+  const response = await apiClient.delete<{ message: string }>(`/auth/sessions/${sessionId}`)
   return response
 }

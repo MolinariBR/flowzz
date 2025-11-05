@@ -120,6 +120,7 @@ export const connectCoinzzSchema = z.object({
     .string()
     .min(20, 'API Key deve ter no mínimo 20 caracteres')
     .max(500, 'API Key inválida'),
+  producerEmail: z.string().email().optional(), // Email do produtor (opcional, usa email do usuário se não informado)
   webhookUrl: z.string().url().optional(),
 })
 

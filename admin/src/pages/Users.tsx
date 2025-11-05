@@ -12,9 +12,11 @@ import {
   useSuspendUser,
   useUsers,
 } from '../lib/hooks/use-admin-data'
+import { useAuthStore } from '../lib/stores/auth-store'
 import type { User } from '../types/admin'
 
 export const Users: React.FC = () => {
+  const { hydrated, isAuthenticated, token } = useAuthStore()
   const [filters, setFilters] = useState({
     search: '',
     plan: '',
@@ -25,10 +27,43 @@ export const Users: React.FC = () => {
   const planId = useId()
   const statusId = useId()
 
-  const { data: usersData, isLoading } = useUsers(filters)
+  const { data: usersData, isLoading, error } = useUsers(filters)
   const suspendUser = useSuspendUser()
   const reactivateUser = useReactivateUser()
   const impersonateUser = useImpersonateUser()
+
+  // Debug logs completos
+  console.log('🔍 Users component debug:', {
+    hydrated,
+    isAuthenticated,
+    hasToken: !!token,
+    usersData: usersData ? { total: usersData.total, dataLength: usersData.data?.length } : null,
+    isLoading,
+    error: error?.message
+  })
+
+  // Remover detecção de ambiente de teste - não é mais necessário
+  if (!hydrated || !isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Gestão de Usuários</h1>
+            <p className="text-gray-500 mt-1">Carregando...</p>
+          </div>
+        </motion.div>
+
+        <div className="bg-admin-surface rounded-lg border border-gray-200 p-8 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="text-gray-500 mt-2">Aguardando autenticação...</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleSuspend = (userId: string) => {
     if (globalThis.confirm('Tem certeza que deseja suspender este usuário?')) {
@@ -336,9 +371,17 @@ export const Users: React.FC = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
             <p className="text-gray-500 mt-2">Carregando usuários...</p>
           </div>
+        ) : error ? (
+          <div className="bg-red-50 rounded-lg border border-red-200 p-8 text-center">
+            <p className="text-red-600">Erro ao carregar usuários: {error.message}</p>
+          </div>
+        ) : !usersData?.data || usersData.data.length === 0 ? (
+          <div className="bg-admin-surface rounded-lg border border-gray-200 p-8 text-center">
+            <p className="text-gray-500">Nenhum usuário encontrado</p>
+          </div>
         ) : (
           <DataTable
-            data={usersData?.data || []}
+            data={usersData.data}
             columns={columns}
             searchPlaceholder="Buscar usuários..."
             filters={['plan', 'status']}

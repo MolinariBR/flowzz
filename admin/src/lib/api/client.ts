@@ -51,11 +51,21 @@ apiClient.interceptors.request.use(
 
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
+      console.log('🔑 Token adicionado à requisição:', config.url)
+    } else {
+      console.log('⚠️ Nenhum token encontrado para requisição:', config.url)
+    }
+
+    // Desabilitar cache para GET requests durante desenvolvimento
+    if (config.method === 'get' && config.headers) {
+      config.headers['Cache-Control'] = 'no-cache'
+      config.headers['Pragma'] = 'no-cache'
     }
 
     return config
   },
   (error) => {
+    console.error('❌ Erro no request interceptor:', error)
     return Promise.reject(error)
   }
 )
@@ -63,7 +73,15 @@ apiClient.interceptors.request.use(
 // Response Interceptor - Tratar erros e refresh token
 apiClient.interceptors.response.use(
   (response) => {
-    // Retornar dados diretamente
+    console.log('🔄 Response interceptor - response.data:', response.data)
+    
+    // Se a resposta tem um wrapper {success: true, data: ...}, desembrulhar
+    if (response.data?.success && response.data?.data !== undefined) {
+      console.log('📦 Desembrulhando response.data.data:', response.data.data)
+      return response.data.data
+    }
+    // Caso contrário, retornar dados diretamente
+    console.log('📦 Retornando response.data diretamente')
     return response.data
   },
   async (error: AxiosError<ApiError>) => {

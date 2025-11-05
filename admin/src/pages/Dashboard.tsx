@@ -5,9 +5,24 @@ import { RevenueChart } from '../components/charts/revenue-chart'
 import { UserGrowthChart } from '../components/charts/user-growth-chart'
 import { MetricCard } from '../components/ui/metric-card'
 import { useAdminMetrics } from '../lib/hooks/use-admin-data'
+import { useAuthStore } from '../lib/stores/auth-store'
 
 export const Dashboard: React.FC = () => {
+  const { hydrated, isAuthenticated } = useAuthStore()
   const { data: metrics, isLoading } = useAdminMetrics()
+
+  // Aguardar hidratação e autenticação
+  if (!hydrated || !isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 7 }, (_, i) => (
+            <div key={`skeleton-${i + 1}`} className="h-32 bg-gray-200 animate-pulse rounded-lg" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (

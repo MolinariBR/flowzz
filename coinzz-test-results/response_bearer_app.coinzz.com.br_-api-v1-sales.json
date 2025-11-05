@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>
+        Not Found | Coinzz
+    </title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/images/favicon.png" />
+
+    <!-- Estilos principais -->
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/assets/css/icons.min.css" rel="stylesheet" />
+    <link href="/assets/css/app.min.css" rel="stylesheet" />
+    <link href="/assets/libs/select2/select2.min.css" rel="stylesheet" />
+
+    <meta name="viewport" content="width=device-width">
+    <style type="text/css">
+        @import url('https://fonts.googleapis.com/css?family=Montserrat:400,600,700');
+        @import url('https://fonts.googleapis.com/css?family=Catamaran:400,800');
+
+        body {
+            background-color: #D8B4FF !important;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 120px);
+            width: 800px;
+        }
+
+        .align-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .background {
+            width: 213%;
+            height: 200%;
+            position: fixed;
+            z-index: -1;
+            opacity: 0.1;
+            transform: rotate(337deg);
+            background-size: contain;
+        }
+
+        .error-container {
+            text-align: center;
+            font-size: 106px;
+            font-family: 'Catamaran', sans-serif;
+            font-weight: 800;
+            margin: 70px 15px;
+        }
+
+        .error-container>span {
+            display: inline-block;
+            position: relative;
+        }
+
+        .error-container>span.four {
+            width: 136px;
+            height: 43px;
+            border-radius: 999px;
+            background:
+                linear-gradient(140deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 43%, transparent 44%, transparent 100%),
+                linear-gradient(105deg, transparent 0%, transparent 40%, rgba(0, 0, 0, 0.06) 41%, rgba(0, 0, 0, 0.07) 76%, transparent 77%, transparent 100%),
+                linear-gradient(to right, #6D04A8, #8C06D8);
+        }
+
+        .error-container>span.four:before,
+        .error-container>span.four:after {
+            content: '';
+            display: block;
+            position: absolute;
+            border-radius: 999px;
+        }
+
+        .error-container>span.four:before {
+            width: 43px;
+            height: 156px;
+            left: 60px;
+            bottom: -43px;
+            background:
+                linear-gradient(128deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 40%, transparent 41%, transparent 100%),
+                linear-gradient(116deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.07) 50%, transparent 51%, transparent 100%),
+                linear-gradient(to right, #A64EFF, #8C06D8);
+        }
+
+        .error-container>span.four:after {
+            width: 137px;
+            height: 43px;
+            transform: rotate(-49.5deg);
+            left: -18px;
+            bottom: 36px;
+            background: linear-gradient(to top right, #A64EFF, #8C06D8);
+        }
+
+        .error-container>span.zero {
+            vertical-align: text-top;
+            width: 156px;
+            height: 156px;
+            border-radius: 999px;
+            background: linear-gradient(-45deg, transparent 0%, rgba(0, 0, 0, 0.06) 50%, transparent 51%, transparent 100%),
+                linear-gradient(to top right, #A64EFF, #8C06D8);
+            overflow: hidden;
+            animation: bgshadow 5s infinite;
+        }
+
+
+        .error-container>span.zero:before {
+            content: '';
+            display: block;
+            position: absolute;
+            transform: rotate(45deg);
+            width: 90px;
+            height: 90px;
+            background-color: transparent;
+            left: 0px;
+            bottom: 0px;
+            background:
+                linear-gradient(95deg, transparent 0%, transparent 8%, rgba(0, 0, 0, 0.07) 9%, transparent 50%, transparent 100%),
+                linear-gradient(85deg, transparent 0%, transparent 19%, rgba(0, 0, 0, 0.05) 20%, rgba(0, 0, 0, 0.07) 91%, transparent 92%, transparent 100%);
+        }
+
+        .error-container>span.zero:after {
+            content: '';
+            display: block;
+            position: absolute;
+            border-radius: 999px;
+            width: 70px;
+            height: 70px;
+            left: 43px;
+            bottom: 43px;
+            background: #D8B4FF;
+            box-shadow: -2px 2px 2px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .screen-reader-text {
+            position: absolute;
+            top: -9999em;
+            left: -9999em;
+        }
+
+        @keyframes bgshadow {
+            0% {
+                box-shadow: inset -160px 160px 0px 5px rgba(0, 0, 0, 0.4);
+            }
+
+            45% {
+                box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+            }
+
+            55% {
+                box-shadow: inset 0px 0px 0px 0px rgba(0, 0, 0, 0.1);
+            }
+
+            100% {
+                box-shadow: inset 160px -160px 0px 5px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        /* demo stuff */
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #FDFAF5;
+            margin-bottom: 50px;
+        }
+
+        html,
+        button,
+        input,
+        select,
+        textarea {
+            font-family: 'Montserrat', Helvetica, sans-serif;
+            color: #bbb;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 30px 15px;
+        }
+
+        .zoom-area {
+            max-width: 490px;
+            margin: 30px auto 30px;
+            font-size: 19px;
+            text-align: center;
+        }
+
+        .link-container {
+            text-align: center;
+        }
+
+        a.more-link {
+            text-transform: uppercase;
+            font-size: 13px;
+            background-color: #A64EFF;
+            padding: 10px 15px;
+            border-radius: 0;
+            color: #fff;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            line-height: 1.5;
+            text-decoration: none;
+            margin-top: 50px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="row justify-content-center h-100 align-items-center">
+
+        <div class="background" style="background-image: url(https://app.coinzz.com.br/assets/images/logo.png)"></div>
+        <div class="container">
+            <div class="align-center">
+                <div class="align-center" style="flex-direction: column;">
+                    <section class="error-container">
+                        <span class="four"><span class="screen-reader-text">4</span></span>
+                        <span class="zero"><span class="screen-reader-text">0</span></span>
+                        <span class="four"><span class="screen-reader-text">4</span></span>
+                    </section>
+
+
+                    <h1 class="mt-0 mb-2">Ops! Página não encontrada</h1>
+                                            <p class="mb-4">A página que você está tentando acessar não foi encontrada ou não existe mais.</p>
+                    
+                    <button onclick="if (!window.__cfRLUnblockHandlers) return false; window.history.back()" class="btn btn-primary btn-rounded px-4 py-2" style="background-color: #A64EFF; color: white; border: none;" data-cf-modified-1e36fa26bef211df0e16d722-="">
+                        Retornar à página anterior
+                    </button>
+                </div>
+            </div>
+        </div>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="1e36fa26bef211df0e16d722-|49" defer></script></body>
+
+</html>

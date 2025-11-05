@@ -4,14 +4,17 @@
 import type { Request, Response } from 'express'
 import { prisma } from '../shared/config/database'
 import {
+  changePasswordSchema,
   type LoginData,
-  type LogoutData,
   loginSchema,
+  type LogoutData,
   logoutSchema,
   type RefreshTokenData,
-  type RegisterData,
   refreshTokenSchema,
+  type RegisterData,
   registerSchema,
+  updateProfileSchema,
+  updateSystemSettingsSchema,
 } from '../shared/schemas/auth'
 import { AuthService } from '../shared/services/AuthService'
 import { SubscriptionService } from '../shared/services/SubscriptionService'
@@ -385,6 +388,379 @@ export class AuthController {
         userId: req.user?.userId,
       })
 
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  /**
+   * GET /auth/profile
+   * Get user profile
+   */
+  async getProfile(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          nome: true,
+          email: true,
+          telefone: true,
+          documento: true,
+          endereco: true,
+          avatar_url: true,
+        },
+      })
+
+      if (!user) {
+        res.status(404).json({ error: 'User not found' })
+        return
+      }
+
+      res.json({
+        data: user,
+        message: 'Perfil obtido com sucesso',
+      })
+    } catch (error) {
+      logger.error('Failed to get profile', { error, userId: req.user?.userId })
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  /**
+   * PUT /auth/profile
+   * Update user profile
+   */
+  async updateProfile(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      // Validate request body
+      const validationResult = updateProfileSchema.safeParse(req.body)
+      if (!validationResult.success) {
+        res.status(400).json({
+          error: 'Validation failed',
+          message: 'Dados inválidos',
+          details: validationResult.error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        })
+        return
+      }
+
+      const updateData = validationResult.data
+
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: {
+          id: true,
+          nome: true,
+          email: true,
+          telefone: true,
+          documento: true,
+          endereco: true,
+          avatar_url: true,
+        },
+      })
+
+      res.json({
+        data: updatedUser,
+        message: 'Perfil atualizado com sucesso',
+      })
+    } catch (error) {
+      logger.error('Failed to update profile', { error, userId: req.user?.userId })
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  /**
+   * GET /auth/system-settings
+   * Get user system settings
+   */
+  async getSystemSettings(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      // Get or create user settings
+      let userSettings = await prisma.userSettings.findUnique({
+        where: { user_id: userId },
+      })
+
+      if (!userSettings) {
+        userSettings = await prisma.userSettings.create({
+          data: {
+            user_id: userId,
+            dark_mode: false,
+            language: 'pt-BR',
+            timezone: 'America/Sao_Paulo',
+            date_format: 'DD/MM/YYYY',
+            currency: 'BRL',
+          },
+        })
+      }
+
+      res.json({
+        data: {
+          dark_mode: userSettings.dark_mode,
+          language: userSettings.language,
+          timezone: userSettings.timezone,
+          date_format: userSettings.date_format,
+          currency: userSettings.currency,
+        },
+        message: 'Configurações obtidas com sucesso',
+      })
+    } catch (error) {
+      logger.error('Failed to get system settings', { error, userId: req.user?.userId })
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  /**
+   * PUT /auth/system-settings
+   * Update user system settings
+   */
+  async updateSystemSettings(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      // Validate request body
+      const validationResult = updateSystemSettingsSchema.safeParse(req.body)
+      if (!validationResult.success) {
+        res.status(400).json({
+          error: 'Validation failed',
+          message: 'Dados inválidos',
+          details: validationResult.error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        })
+        return
+      }
+
+      const updateData = validationResult.data
+
+      // Upsert user settings (create if not exists, update if exists)
+      const userSettings = await prisma.userSettings.upsert({
+        where: { user_id: userId },
+        update: updateData,
+        create: {
+          user_id: userId,
+          dark_mode: updateData.dark_mode ?? false,
+          language: updateData.language ?? 'pt-BR',
+          timezone: updateData.timezone ?? 'America/Sao_Paulo',
+          date_format: updateData.date_format ?? 'DD/MM/YYYY',
+          currency: updateData.currency ?? 'BRL',
+        },
+      })
+
+      res.json({
+        data: {
+          dark_mode: userSettings.dark_mode,
+          language: userSettings.language,
+          timezone: userSettings.timezone,
+          date_format: userSettings.date_format,
+          currency: userSettings.currency,
+        },
+        message: 'Configurações atualizadas com sucesso',
+      })
+    } catch (error) {
+      logger.error('Failed to update system settings', { error, userId: req.user?.userId })
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  /**
+   * PUT /auth/security
+   * Change user password
+   */
+  async changePassword(req: Request, res: Response): Promise<void> {
+    try {
+      // Validate request body
+      const validationResult = changePasswordSchema.safeParse(req.body)
+
+      if (!validationResult.success) {
+        res.status(400).json({
+          error: 'Validation failed',
+          message: 'Dados inválidos',
+          details: validationResult.error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        })
+        return
+      }
+
+      const userId = req.user?.userId
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      const { current_password, new_password } = req.body
+
+      // Get current user to verify password
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { password_hash: true },
+      })
+
+      if (!user) {
+        res.status(404).json({ error: 'User not found' })
+        return
+      }
+
+      // Verify current password
+      const bcrypt = await import('bcrypt')
+      const isValidPassword = await bcrypt.compare(current_password, user.password_hash)
+      if (!isValidPassword) {
+        res.status(400).json({
+          error: 'Invalid password',
+          message: 'Senha atual incorreta',
+        })
+        return
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(new_password, 12)
+
+      // Update password
+      await prisma.user.update({
+        where: { id: userId },
+        data: { password_hash: hashedPassword },
+      })
+
+      res.json({
+        message: 'Senha alterada com sucesso',
+      })
+    } catch (error) {
+      logger.error('Failed to change password', { error, userId: req.user?.userId })
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  /**
+   * GET /auth/sessions
+   * Get user active sessions
+   */
+  async getSessions(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      const sessions = await prisma.refreshToken.findMany({
+        where: {
+          user_id: userId,
+          expires_at: {
+            gt: new Date(),
+          },
+        },
+        select: {
+          id: true,
+          created_at: true,
+          expires_at: true,
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      })
+
+      res.json({
+        data: sessions.map((session) => ({
+          id: session.id,
+          user_agent: null,
+          ip_address: null,
+          device_info: null,
+          created_at: session.created_at.toISOString(),
+          expires_at: session.expires_at.toISOString(),
+        })),
+        message: 'Sessões obtidas com sucesso',
+      })
+    } catch (error) {
+      logger.error('Failed to get sessions', { error, userId: req.user?.userId })
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Erro interno do servidor',
+      })
+    }
+  }
+
+  /**
+   * DELETE /auth/sessions/:id
+   * Revoke a session
+   */
+  async revokeSession(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      const sessionId = req.params.id
+
+      // Verify session belongs to user
+      const session = await prisma.refreshToken.findFirst({
+        where: {
+          id: sessionId,
+          user_id: userId,
+        },
+      })
+
+      if (!session) {
+        res.status(404).json({ error: 'Session not found' })
+        return
+      }
+
+      // Delete session
+      await prisma.refreshToken.delete({
+        where: { id: sessionId },
+      })
+
+      res.json({
+        message: 'Sessão revogada com sucesso',
+      })
+    } catch (error) {
+      logger.error('Failed to revoke session', { error, userId: req.user?.userId })
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Erro interno do servidor',

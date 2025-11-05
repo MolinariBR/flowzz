@@ -294,7 +294,7 @@ const CreateClientModal = ({
 }: {
   showCreateModal: boolean
   setShowCreateModal: (show: boolean) => void
-  onCreateClient: (data: any) => Promise<void>
+  onCreateClient: (data: UIClient) => Promise<void>
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -370,8 +370,11 @@ const CreateClientModal = ({
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Nome *</label>
+                  <label htmlFor="nome" className="block text-sm font-medium text-slate-700 mb-2">
+                    Nome *
+                  </label>
                   <input
+                    id="nome"
                     type="text"
                     required
                     value={formData.name}
@@ -382,8 +385,11 @@ const CreateClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+                    Email
+                  </label>
                   <input
+                    id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
@@ -522,7 +528,7 @@ const EditClientModal = ({
   showEditModal: boolean
   setShowEditModal: (show: boolean) => void
   editingClient: any
-  onUpdateClient: (id: string, data: any) => Promise<void>
+  onUpdateClient: (id: string, data: UIClient) => Promise<void>
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -864,7 +870,7 @@ const DeleteClientModal = ({
   )
 }
 
-export default function Clientes() {
+const ClientesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('todos')
   const [showFilters, setShowFilters] = useState(false)
@@ -903,7 +909,17 @@ export default function Clientes() {
     removeClient,
     addTagToExistingClient,
     removeTagFromExistingClient,
+    loadClients,
   } = useClients(isAuthenticated)
+
+  // Carregar clientes ao montar o componente
+  useEffect(() => {
+    const fetchClients = async () => {
+      await loadClients()
+    }
+
+    fetchClients()
+  }, [loadClients])
 
   // Converter tags do backend para formato da UI
   const uiTags: UITag[] = tags.map((tag) => ({
@@ -923,7 +939,7 @@ export default function Clientes() {
   }, [searchTerm, selectedFilter, updateFilters])
 
   // Função para criar cliente
-  const handleCreateClient = async (data: any) => {
+  const handleCreateClient = async (data: Partial<UIClient>) => {
     await createNewClient(data)
   }
 
@@ -934,7 +950,7 @@ export default function Clientes() {
   }
 
   // Função para atualizar cliente
-  const handleUpdateClient = async (id: string, data: any) => {
+  const handleUpdateClient = async (id: string, data: Partial<UIClient>) => {
     await updateExistingClient(id, data)
   }
 
@@ -1417,22 +1433,23 @@ export default function Clientes() {
                   {/* Renderizar páginas */}
                   {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                     const pageNum = Math.max(1, pagination.page - 2) + i
-                    if (pageNum > pagination.totalPages) return null
-
-                    return (
-                      <button
-                        key={pageNum}
-                        type="button"
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`px-3 py-1 rounded-lg text-sm ${
-                          pageNum === pagination.page
-                            ? 'bg-indigo-600 text-white'
-                            : 'border border-slate-300 hover:bg-slate-50'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    )
+                    if (pageNum > 0 && pageNum <= pagination.totalPages) {
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                            pagination.page === pageNum
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    }
+                    return null
                   })}
 
                   <button
@@ -1441,13 +1458,14 @@ export default function Clientes() {
                     disabled={pagination.page >= pagination.totalPages}
                     className="px-3 py-1 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Próximo
+                    Próxima
                   </button>
                 </div>
               </div>
             )}
           </motion.div>
 
+          {/* Modais */}
           <TagModal
             showTagModal={showTagModal}
             setShowTagModal={setShowTagModal}
@@ -1475,3 +1493,5 @@ export default function Clientes() {
     </>
   )
 }
+
+export default ClientesPage

@@ -2,7 +2,45 @@
  * Setup global para testes de integração
  */
 
-import { afterAll, beforeAll } from 'vitest'
+import { afterAll, beforeAll, vi } from 'vitest'
+
+// Mock Redis para evitar problemas de carregamento
+vi.mock('../backend/src/shared/config/redis', () => ({
+  redisConfig: {
+    host: 'localhost',
+    port: 6380,
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    retryStrategy: (times: number) => Math.min(times * 50, 2000),
+  },
+  createRedisClient: vi.fn(() => ({
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
+    expire: vi.fn(),
+    ttl: vi.fn(),
+    keys: vi.fn(),
+    scan: vi.fn(),
+    hget: vi.fn(),
+    hset: vi.fn(),
+    hdel: vi.fn(),
+    hgetall: vi.fn(),
+    sadd: vi.fn(),
+    srem: vi.fn(),
+    smembers: vi.fn(),
+    sismember: vi.fn(),
+    incr: vi.fn(),
+    decr: vi.fn(),
+    exists: vi.fn(),
+    ping: vi.fn(),
+    quit: vi.fn(),
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    on: vi.fn(),
+  })),
+  checkRedisHealth: vi.fn(() => Promise.resolve(true)),
+  disconnectRedis: vi.fn(() => Promise.resolve()),
+}))
 
 // Configurar variáveis de ambiente para testes
 beforeAll(async () => {

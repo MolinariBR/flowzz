@@ -95,14 +95,20 @@ export const cpfSchema = z
   .optional()
   .refine(
     (cpf) => {
-      if (!cpf) return true
+      if (!cpf) {
+        return true
+      }
 
       // Remove formatting
       const cleanCpf = cpf.replace(/[^\d]/g, '')
 
       // Basic CPF validation
-      if (cleanCpf.length !== 11) return false
-      if (/^(\d)\1{10}$/.test(cleanCpf)) return false // All same digits
+      if (cleanCpf.length !== 11) {
+        return false
+      }
+      if (/^(\d)\1{10}$/.test(cleanCpf)) {
+        return false
+      } // All same digits
 
       // Validate check digits
       let sum = 0
@@ -110,21 +116,37 @@ export const cpfSchema = z
         sum += parseInt(cleanCpf.charAt(i), 10) * (10 - i)
       }
       let digit = 11 - (sum % 11)
-      if (digit >= 10) digit = 0
-      if (digit !== parseInt(cleanCpf.charAt(9), 10)) return false
+      if (digit >= 10) {
+        digit = 0
+      }
+      if (digit !== parseInt(cleanCpf.charAt(9), 10)) {
+        return false
+      }
 
       sum = 0
       for (let i = 0; i < 10; i++) {
         sum += parseInt(cleanCpf.charAt(i), 10) * (11 - i)
       }
       digit = 11 - (sum % 11)
-      if (digit >= 10) digit = 0
-      if (digit !== parseInt(cleanCpf.charAt(10), 10)) return false
+      if (digit >= 10) {
+        digit = 0
+      }
+      if (digit !== parseInt(cleanCpf.charAt(10), 10)) {
+        return false
+      }
 
       return true
     },
     { message: 'CPF inválido' }
   )
+
+// CEP validation (Brazilian postal code)
+export const cepSchema = z
+  .string()
+  .regex(/^\d{5}-\d{3}$|^\d{8}$/, {
+    message: 'CEP inválido. Use formato: 01234-567',
+  })
+  .optional()
 
 // UUID validation
 export const uuidSchema = z.string().uuid({ message: 'ID inválido' })

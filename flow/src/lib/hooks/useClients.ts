@@ -39,6 +39,31 @@ export const useClients = (isAuthenticated: boolean = false) => {
     totalPages: 0,
   })
 
+  // Carregar clientes da Coinzz
+  const loadCoinzzClients = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/integrations/coinzz/clients', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar clientes da Coinzz')
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error loading Coinzz clients:', error)
+      toast.error('Erro ao carregar clientes da Coinzz')
+      return []
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   // Carregar lista de clientes com filtros
   const loadClients = useCallback(
     async (clientFilters?: ClientFilters) => {
@@ -50,19 +75,28 @@ export const useClients = (isAuthenticated: boolean = false) => {
       }
       try {
         setIsLoading(true)
-        const response = await getClients(clientFilters || filters)
 
-        setClients(response.data)
+        // Carregar clientes locais
+        const response = await getClients(clientFilters || filters)
+        const localClients = response.data
+
+        // Carregar clientes da Coinzz
+        const coinzzClients = await loadCoinzzClients()
+
+        // Mesclar dados
+        const mergedClients = [...localClients, ...coinzzClients]
+
+        setClients(mergedClients)
         setPagination(
           response.meta || {
-            total: 0,
+            total: mergedClients.length,
             page: 1,
             limit: 20,
-            totalPages: 0,
+            totalPages: Math.ceil(mergedClients.length / 20),
           }
         )
 
-        return response.data
+        return mergedClients
       } catch (error) {
         console.error('Error loading clients:', error)
         toast.error('Erro ao carregar clientes')
@@ -78,7 +112,7 @@ export const useClients = (isAuthenticated: boolean = false) => {
         setIsLoading(false)
       }
     },
-    [filters]
+    [filters, loadCoinzzClients]
   )
 
   // Carregar cliente específico

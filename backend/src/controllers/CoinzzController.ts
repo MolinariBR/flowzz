@@ -53,16 +53,18 @@ export class CoinzzController {
       }
 
       const userId = req.user?.userId
-      if (!userId) {
+      const userEmail = req.user?.email
+
+      if (!userId || !userEmail) {
         res.status(401).json({
           error: 'UNAUTHORIZED',
           message: 'Usuário não autenticado',
         })
         return
       }
-
       const dto = {
         apiKey: validationResult.data.apiKey,
+        producerEmail: userEmail, // Usar email do usuário logado
         ...(validationResult.data.webhookUrl && {
           webhookUrl: validationResult.data.webhookUrl,
         }),
@@ -255,5 +257,38 @@ export class CoinzzController {
       error: 'INTERNAL_SERVER_ERROR',
       message: 'Erro desconhecido ao processar requisição Coinzz',
     })
+  }
+
+  /**
+   * GET /integrations/coinzz/clients
+   *
+   * Retorna lista de clientes criados via integração Coinzz
+   *
+   * Response: Array<ClientDTO>
+   */
+  async getClients(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        res.status(401).json({
+          error: 'UNAUTHORIZED',
+          message: 'Usuário não autenticado',
+        })
+        return
+      }
+
+      // Chamar serviço
+      const clients = await this.coinzzService.getClients(userId)
+
+      logger.info('Coinzz clients retrieved via controller', { userId, count: clients.length })
+
+      res.status(200).json({
+        success: true,
+        data: clients,
+        message: `${clients.length} clientes encontrados`,
+      })
+    } catch (error) {
+      this.handleError(res, error, 'getClients')
+    }
   }
 }

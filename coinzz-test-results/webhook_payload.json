@@ -1,0 +1,50 @@
+{
+  "utms": {
+    "utm_term": null,
+    "utm_medium": null,
+    "utm_source": null,
+    "utm_content": null,
+    "utm_campaign": null
+  },
+  "order": {
+    "url_pix": null,
+    "date_order": "2025-09-24 18:44:06",
+    "deleted_at": null,
+    "qrcode_pix": null,
+    "first_order": true,
+    "courier_name": null,
+    "order_number": "ordmzlyy",
+    "order_status": "Aguardando envio",
+    "product_name": "Derma Natural",
+    "second_order": false,
+    "delivery_time": null,
+    "producer_name": "Victor Henrique",
+    "tracking_code": null,
+    "url_bank_slip": null,
+    "affiliate_name": "Talyta",
+    "method_payment": "Venda pós-paga",
+    "order_quantity": 5,
+    "producer_email": "venettoinv092@gmail.com",
+    "affiliate_email": "talytaaelide@gmail.com",
+    "affiliate_phone": "71986022328",
+    "shipping_status": "A enviar",
+    "deadline_delivery": 2,
+    "order_final_price": 397.00,
+    "total_installments": 1,
+    "terms_and_conditions_file_path": null
+  },
+  "client": {
+    "client_name": "Zidinalva De Almeida Queiroz",
+    "client_email": "suportedermanatural@gmail.com",
+    "client_phone": "+55 74999196196",
+    "client_address": "Povoado Italegre",
+    "client_zip_code": "44620000",
+    "client_documment": "007.651.575-35",
+    "client_address_city": "Baixa Grande",
+    "client_address_comp": "proximo ao psf",
+    "client_address_state": "BA",
+    "client_address_number": "27",
+    "client_address_country": "BR",
+    "client_address_district": "Baixa grande"
+  }
+}

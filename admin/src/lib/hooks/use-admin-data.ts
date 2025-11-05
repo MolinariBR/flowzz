@@ -1,12 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
 import { type AdminMetrics, adminApi } from '../api/admin-api'
+import { useAuthStore } from '../stores/auth-store'
 
 export const useAdminMetrics = () => {
+  const { hydrated, isAuthenticated, token } = useAuthStore()
+
+  console.log('🔍 useAdminMetrics hook - Estado:', {
+    hydrated,
+    isAuthenticated,
+    hasToken: !!token
+  })
+
   return useQuery<AdminMetrics>({
     queryKey: ['admin-metrics'],
-    queryFn: adminApi.getMetrics,
+    queryFn: () => {
+      console.log('📡 useAdminMetrics - Executando query')
+      return adminApi.getMetrics()
+    },
     refetchInterval: 5 * 60 * 1000, // Auto-refresh a cada 5 minutos
+    enabled: hydrated && isAuthenticated && !!token,
   })
 }
 
@@ -40,9 +53,23 @@ export const useRevenueData = () => {
 export const useUsers = (
   params: { page?: number; search?: string; plan?: string; status?: string } = {}
 ) => {
+  const { hydrated, isAuthenticated, token } = useAuthStore()
+
+  console.log('🔍 useUsers hook - Estado:', {
+    hydrated,
+    isAuthenticated,
+    hasToken: !!token,
+    params
+  })
+
   return useQuery({
     queryKey: ['users', params],
-    queryFn: () => adminApi.listUsers(params),
+    queryFn: () => {
+      console.log('📡 useUsers - Executando query para buscar usuários')
+      return adminApi.listUsers(params)
+    },
+    enabled: hydrated && isAuthenticated && !!token,
+    staleTime: 2 * 60 * 1000, // 2 minutos
   })
 }
 

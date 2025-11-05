@@ -43,7 +43,7 @@ export const Login: React.FC = () => {
       // Dar um pequeno delay para garantir que o estado foi persistido
       setTimeout(() => {
         navigate('/dashboard', { replace: true })
-      }, 100)
+      }, 500) // Aumentei o delay para garantir persistência
     } catch (error) {
       console.error('❌ Erro no login:', error)
       const errorMessage =
@@ -82,7 +82,7 @@ export const Login: React.FC = () => {
                 {...register('email')}
                 id={emailId}
                 type="email"
-                placeholder="admin@flowzz.com"
+                placeholder="admin@flowzz.com.br"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>

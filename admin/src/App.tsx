@@ -6,6 +6,7 @@ import { AdminLayout } from './components/layout/admin-layout'
 import { useAuthStore } from './lib/stores/auth-store'
 import { Dashboard } from './pages/Dashboard'
 import { Login } from './pages/Login'
+import { ProfileSettings } from './pages/ProfileSettings'
 import { Users } from './pages/Users'
 import { WhatsAppSettings } from './pages/WhatsAppSettings'
 
@@ -19,27 +20,18 @@ const queryClient = new QueryClient({
 })
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const store = useAuthStore()
-  const [isHydrated, setIsHydrated] = React.useState(false)
+  const { isAuthenticated, user, hydrated } = useAuthStore()
 
-  // Aguardar o Zustand restaurar o estado do localStorage
-  React.useEffect(() => {
-    // Verificar se o estado foi hidratado verificando se há dados persistidos
-    const persistedData = localStorage.getItem('admin-auth-storage')
-    const hasToken = localStorage.getItem('access_token')
+  console.log('🔒 ProtectedRoute - Estado atual:', {
+    isAuthenticated,
+    hasUser: !!user,
+    hydrated,
+    hasToken: !!localStorage.getItem('access_token'),
+  })
 
-    console.log('🔒 ProtectedRoute - Verificando autenticação:', {
-      isAuthenticated: store.isAuthenticated,
-      hasUser: !!store.user,
-      hasToken: !!hasToken,
-      hasPersisted: !!persistedData,
-    })
-
-    setIsHydrated(true)
-  }, [store.isAuthenticated, store.user])
-
-  // Mostrar loading enquanto aguarda restauração do estado
-  if (!isHydrated) {
+  // Aguardar a hidratação do Zustand
+  if (!hydrated) {
+    console.log('⏳ Aguardando hidratação do Zustand...')
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -47,8 +39,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     )
   }
 
-  // Verificar autenticação com múltiplas condições
-  const isAuth = store.isAuthenticated && store.user && localStorage.getItem('access_token')
+  // Verificar autenticação
+  const isAuth = isAuthenticated && user && localStorage.getItem('access_token')
 
   if (!isAuth) {
     console.log('⚠️ Usuário não autenticado, redirecionando para /login')
@@ -92,6 +84,7 @@ function App() {
             >
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="users" element={<Users />} />
+              <Route path="configuracoes" element={<ProfileSettings />} />
               <Route path="whatsapp" element={<WhatsAppSettings />} />
               <Route path="metrics" element={<Dashboard />} />
               <Route path="integrations" element={<WhatsAppSettings />} />

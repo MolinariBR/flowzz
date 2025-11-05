@@ -117,6 +117,7 @@ export interface ICoinzzSubscriptionWebhookPayload {
  */
 export interface ConnectCoinzzDTO {
   apiKey: string
+  producerEmail?: string // Email do produtor para identificar webhooks (opcional, usa email do usuário se não informado)
   webhookUrl?: string // URL para receber webhooks (opcional, gerado automaticamente)
 }
 

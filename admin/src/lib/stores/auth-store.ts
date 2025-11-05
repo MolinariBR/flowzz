@@ -8,6 +8,7 @@ interface AuthState {
   token: string | null
   role: 'ADMIN' | 'SUPER_ADMIN' | null
   isAuthenticated: boolean
+  hydrated: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   setUser: (user: AdminUser) => void
@@ -21,6 +22,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       role: null,
       isAuthenticated: false,
+      hydrated: true, // Iniciar como true - será sobrescrito após hidratação
 
       login: async (email: string, password: string) => {
         try {
@@ -112,15 +114,37 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         role: state.role,
         isAuthenticated: state.isAuthenticated,
+        // Não persistir hydrated - será setado na hidratação
       }),
-      // Sincronizar com localStorage ao hidratar
+            // Sincronizar com localStorage ao hidratar
       onRehydrateStorage: () => (state) => {
+        console.log('💧 Zustand iniciando hidratação...')
+        
+        // MIGRAÇÃO: Detectar e corrigir estados antigos sem hydrated
+        const storedState = localStorage.getItem('admin-auth-storage')
+        if (storedState) {
+          try {
+            const parsed = JSON.parse(storedState)
+            if (parsed.state && parsed.state.hydrated === undefined) {
+              console.log('🔄 Migrando estado antigo - adicionando hydrated: true')
+              parsed.state.hydrated = true
+              localStorage.setItem('admin-auth-storage', JSON.stringify(parsed))
+            }
+          } catch (e) {
+            console.error('Erro ao migrar estado:', e)
+          }
+        }
+        
         if (state) {
           console.log('💧 Zustand hydrated - Estado restaurado:', {
             hasUser: !!state.user,
             hasToken: !!state.token,
             isAuthenticated: state.isAuthenticated,
+            hydrated: state.hydrated,
           })
+
+          // IMPORTANTE: Marcar como hidratado SEMPRE
+          state.hydrated = true
 
           // Verificar se tem token no localStorage mas estado diz não autenticado
           const hasLocalToken = !!localStorage.getItem('access_token')
@@ -128,6 +152,11 @@ export const useAuthStore = create<AuthState>()(
             console.log('🔧 Corrigindo inconsistência - setando isAuthenticated = true')
             state.isAuthenticated = true
           }
+          
+          console.log('✅ Hidratação completa - hydrated:', state.hydrated)
+        } else {
+          // Se não há estado, criar estado inicial com hydrated = true
+          console.log('⚠️ Nenhum estado encontrado - criando estado inicial')
         }
       },
     }

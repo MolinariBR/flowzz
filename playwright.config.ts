@@ -65,7 +65,7 @@ export default defineConfig({
       name: 'admin',
       use: {
         ...devices['Desktop Chrome'],
-        baseURL: 'http://localhost:5173',
+        baseURL: 'http://localhost:4174',
         storageState: 'e2e/.auth/admin-user.json',
       },
       dependencies: ['setup'],

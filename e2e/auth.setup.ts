@@ -95,7 +95,7 @@ setup('authenticate admin user', async ({ request }) => {
     cookies: [],
     origins: [
       {
-        origin: 'http://localhost:5173',
+        origin: 'http://localhost:4174',
         localStorage: [
           {
             name: 'access_token',
@@ -123,6 +123,7 @@ setup('authenticate admin user', async ({ request }) => {
                 token: tokens.accessToken,
                 role: user.role,
                 isAuthenticated: true,
+                hydrated: true, // FIX: Adicionar hydrated = true
               },
               version: 0,
             }),

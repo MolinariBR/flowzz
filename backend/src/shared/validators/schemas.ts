@@ -3,6 +3,7 @@
 
 import { z } from 'zod'
 import {
+  cepSchema,
   cpfSchema,
   currencySchema,
   dateSchema,
@@ -38,9 +39,37 @@ export const loginSchema = z.object({
 export const updateProfileSchema = z.object({
   body: z.object({
     nome: z.string().min(3).max(255).optional(),
+    email: z.string().email().optional(),
     telefone: phoneSchema,
+    documento: cpfSchema,
+    endereco: z.string().optional(),
+    cidade: z.string().optional(),
+    cep: cepSchema,
     avatar_url: urlSchema,
   }),
+})
+
+export const updateSystemSettingsSchema = z.object({
+  body: z.object({
+    dark_mode: z.boolean().optional(),
+    language: z.string().optional(),
+    timezone: z.string().optional(),
+    date_format: z.string().optional(),
+    currency: z.string().optional(),
+  }),
+})
+
+export const changePasswordSchema = z.object({
+  body: z
+    .object({
+      current_password: z.string().min(6),
+      new_password: z.string().min(6),
+      confirm_password: z.string().min(6),
+    })
+    .refine((data) => data.new_password === data.confirm_password, {
+      message: 'Nova senha e confirmação devem ser iguais',
+      path: ['confirm_password'],
+    }),
 })
 
 // ==================== CLIENT SCHEMAS ====================

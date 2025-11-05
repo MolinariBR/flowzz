@@ -97,4 +97,18 @@ router.post('/disconnect', async (req, res) => {
   await coinzzController.disconnect(req, res)
 })
 
+/**
+ * GET /integrations/coinzz/clients
+ *
+ * Retorna lista de clientes criados via integração Coinzz
+ *
+ * Response: Array<ClientDTO>
+ *
+ * Referência: User requirement - Sincronizar clientes da Coinzz
+ */
+router.get('/clients', async (req, res) => {
+  logger.info('GET /integrations/coinzz/clients', { userId: req.user?.userId })
+  await coinzzController.getClients(req, res)
+})
+
 export default router

@@ -544,6 +544,21 @@ export class CoinzzService implements ICoinzzService {
   }> {
     const { client, order, utms } = payload
 
+    // Validação de campos obrigatórios
+    if (!client.client_name || !order.order_number) {
+      throw new Error('Campos obrigatórios ausentes no payload do webhook')
+    }
+
+    // Garantir que campos opcionais sejam tratados
+    const clientEmail = client.client_email || null
+    const affiliateName = order.affiliate_name || null
+
+    // Logs detalhados para depuração
+    logger.debug('Mapeando dados do webhook para Sale e Client', {
+      clientName: client.client_name,
+      orderNumber: order.order_number,
+    })
+
     // Mapear status Coinzz → SaleStatus
     const status = mapCoinzzStatus(order.order_status)
 
@@ -576,30 +591,30 @@ export class CoinzzService implements ICoinzzService {
       },
     }
 
-    const saleData = {
-      product_name: order.product_name,
-      quantity,
-      unit_price,
-      total_price,
-      status,
-      payment_method: order.method_payment,
-      external_id: order.order_number,
-      sale_date,
-      metadata,
+    // Retornar os dados mapeados
+    return {
+      saleData: {
+        product_name: order.product_name,
+        quantity,
+        unit_price,
+        total_price,
+        status,
+        payment_method: order.method_payment,
+        external_id: order.order_number,
+        sale_date,
+        metadata,
+      },
+      clientData: {
+        name: client.client_name,
+        email: clientEmail,
+        phone: formatPhone(client.client_phone),
+        cpf: formatDocument(client.client_documment),
+        address: client.client_address,
+        city: client.client_address_city,
+        state: client.client_address_state,
+        cep: formatCep(client.client_zip_code),
+      },
     }
-
-    const clientData = {
-      name: client.client_name,
-      email: client.client_email,
-      phone: formatPhone(client.client_phone),
-      cpf: formatDocument(client.client_documment),
-      address: client.client_address,
-      city: client.client_address_city,
-      state: client.client_address_state,
-      cep: formatCep(client.client_zip_code),
-    }
-
-    return { saleData, clientData }
   }
 
   /**

@@ -116,25 +116,83 @@ export const adminApi = {
       is_active: boolean
       created_at: string
       updated_at: string
+      plan?: {
+        id: string
+        name: string
+        price: string
+      } | null
+      subscriptions?: unknown[]
+    }
+
+    interface BackendResponse {
+      users?: BackendUser[]
+      data?: BackendUser[]
+      total: number
+      page: number
+      limit: number
+      totalPages: number
     }
 
     const responseData = (await apiClient.get(
       `/admin/users?${queryString}`
-    )) as PaginatedResponse<BackendUser>
+    )) as unknown as BackendResponse
+
+    console.log('📦 Resposta da API /admin/users:', {
+      hasData: !!responseData,
+      hasDataArray: !!responseData?.data,
+      hasUsersArray: !!responseData?.users,
+      isDataArray: Array.isArray(responseData?.data),
+      isUsersArray: Array.isArray(responseData?.users),
+      dataLength: responseData?.data?.length || responseData?.users?.length,
+      responseData
+    })
+
+    // O backend retorna { users: [...], total, page, limit, totalPages }
+    // Normalizar para o formato esperado
+    const usersArray = responseData?.users || responseData?.data
+    
+    // Validar se temos um array de usuários
+    if (!usersArray || !Array.isArray(usersArray)) {
+      console.error('❌ Resposta inválida da API:', responseData)
+      // Retornar estrutura vazia válida
+      return {
+        data: [],
+        total: 0,
+        page: params.page || 1,
+        limit: params.limit || 10,
+        totalPages: 0,
+      }
+    }
 
     // Backend já retorna em formato PaginatedResponse graças ao interceptor
     // Transformar dados do backend (snake_case) para frontend (camelCase)
-    const transformedUsers: User[] = responseData.data.map((user: BackendUser) => ({
-      id: user.id,
-      name: user.nome || 'Sem nome',
-      email: user.email,
-      plan: user.plan_id ? ('pro' as const) : ('trial' as const),
-      status: user.is_active ? ('active' as const) : ('suspended' as const),
-      mrr: 0, // TODO: calcular MRR real
-      lastLogin: user.updated_at ? new Date(user.updated_at) : new Date(),
-      signupDate: new Date(user.created_at),
-      avatar: undefined,
-    }))
+    const transformedUsers: User[] = usersArray.map((user: BackendUser) => {
+      // Determinar o plano baseado nos dados reais
+      let plan: 'trial' | 'basic' | 'pro' | 'premium' = 'trial'
+      if (user.plan) {
+        // Mapear pelo nome do plano
+        const planName = user.plan.name.toLowerCase()
+        if (planName.includes('básico') || planName.includes('basic')) {
+          plan = 'basic'
+        } else if (planName.includes('profissional') || planName.includes('pro')) {
+          plan = 'pro'
+        } else if (planName.includes('premium')) {
+          plan = 'premium'
+        }
+      }
+
+      return {
+        id: user.id,
+        name: user.nome || 'Sem nome',
+        email: user.email,
+        plan,
+        status: user.is_active ? ('active' as const) : ('suspended' as const),
+        mrr: user.plan ? Number.parseFloat(user.plan.price) : 0,
+        lastLogin: user.updated_at ? new Date(user.updated_at) : new Date(),
+        signupDate: new Date(user.created_at),
+        avatar: undefined,
+      }
+    })
 
     return {
       data: transformedUsers,
@@ -200,7 +258,7 @@ export const adminApi = {
   }): Promise<PaginatedResponse<AuditLog>> => {
     const queryString = new URLSearchParams(
       Object.entries(params)
-        .filter(([_, value]) => value !== undefined)
+        .filter(([, value]) => value !== undefined)
         .map(([key, value]) => [key, String(value)])
     ).toString()
 

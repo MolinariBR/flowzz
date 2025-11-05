@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Flowzz Admin - Verificação de Usuários</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #007acc;
+            background: #f8f9fa;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Teste Flowzz Admin - Verificação de Usuários</h1>
+        <p>Este teste verifica se o login funciona e se os usuários aparecem no painel admin.</p>
+
+        <div class="step">
+            <h3>Passo 1: Fazer Login</h3>
+            <p>Use as credenciais do admin:</p>
+            <input type="email" id="email" value="admin@flowzz.com.br" placeholder="Email">
+            <input type="password" id="password" value="Admin@123" placeholder="Senha">
+            <button onclick="login()">Fazer Login</button>
+            <div id="login-result" class="result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Passo 2: Verificar API de Usuários</h3>
+            <button onclick="testUsersAPI()">Testar API de Usuários</button>
+            <div id="users-result" class="result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Passo 3: Abrir Admin Panel</h3>
+            <p>Após o login bem-sucedido, clique no botão abaixo para abrir o painel admin:</p>
+            <button onclick="openAdmin()">Abrir Admin Panel</button>
+        </div>
+
+        <div class="step">
+            <h3>Passo 4: Verificar Estado do Auth Store</h3>
+            <button onclick="checkAuthState()">Verificar Estado de Autenticação</button>
+            <div id="auth-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let accessToken = null;
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('login-result');
+
+            try {
+                resultDiv.innerHTML = '🔄 Fazendo login...';
+
+                const response = await fetch('http://localhost:4000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    accessToken = data.data.tokens.accessToken;
+                    localStorage.setItem('access_token', accessToken);
+                    localStorage.setItem('refresh_token', data.data.tokens.refreshToken);
+
+                    resultDiv.innerHTML = `✅ Login bem-sucedido!\n👤 Usuário: ${data.data.user.nome}\n🔑 Token salvo no localStorage`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `❌ Erro no login: ${data.message || 'Erro desconhecido'}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro de conexão: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testUsersAPI() {
+            const resultDiv = document.getElementById('users-result');
+
+            if (!accessToken) {
+                resultDiv.innerHTML = '❌ Faça login primeiro!';
+                resultDiv.className = 'result error';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '🔄 Testando API de usuários...';
+
+                const response = await fetch('http://localhost:4000/api/v1/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const users = data.data.users || [];
+                    resultDiv.innerHTML = `✅ API funcionando!\n📊 Total de usuários: ${data.data.total || users.length}\n👥 Usuários encontrados:\n${users.map(u => `  - ${u.nome} (${u.email}) - ${u.plan?.name || 'Sem plano'} - ${u.is_active ? 'Ativo' : 'Inativo'}`).join('\n')}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `❌ Erro na API: ${response.status} - ${data.message || 'Erro desconhecido'}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro de conexão: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        function openAdmin() {
+            window.open('http://localhost:4174/login', '_blank');
+        }
+
+        function checkAuthState() {
+            const resultDiv = document.getElementById('auth-result');
+
+            const accessToken = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            const authStorage = localStorage.getItem('admin-auth-storage');
+
+            let result = '🔍 Estado do localStorage:\n';
+            result += `  access_token: ${accessToken ? '✅ Presente' : '❌ Ausente'}\n`;
+            result += `  refresh_token: ${refreshToken ? '✅ Presente' : '❌ Ausente'}\n`;
+            result += `  admin-auth-storage: ${authStorage ? '✅ Presente' : '❌ Ausente'}\n`;
+
+            if (authStorage) {
+                try {
+                    const parsed = JSON.parse(authStorage);
+                    result += '\n📦 Estado do Zustand:\n';
+                    result += `  hydrated: ${parsed.state?.hydrated ? '✅ true' : '❌ false'}\n`;
+                    result += `  isAuthenticated: ${parsed.state?.isAuthenticated ? '✅ true' : '❌ false'}\n`;
+                    result += `  hasUser: ${parsed.state?.user ? '✅ true' : '❌ false'}\n`;
+                    result += `  hasToken: ${parsed.state?.token ? '✅ true' : '❌ false'}\n`;
+                } catch (e) {
+                    result += '\n❌ Erro ao parsear admin-auth-storage';
+                }
+            }
+
+            resultDiv.innerHTML = result;
+            resultDiv.className = 'result';
+        }
+
+        // Verificar estado inicial
+        window.addEventListener('load', () => {
+            checkAuthState();
+        });
+    </script>
+</body>
+</html>

@@ -26,11 +26,11 @@ export class AuthService {
   }
 
   /**
-   * Generate Access Token (exp: 15min)
+   * Generate Access Token (exp: 15m)
    * Referência: design.md Authentication Flow
    */
-  generateAccessToken(userId: string, role: string): string {
-    return jwt.sign({ userId, role }, env.JWT_SECRET, {
+  generateAccessToken(userId: string, role: string, email?: string): string {
+    return jwt.sign({ userId, role, email }, env.JWT_SECRET, {
       expiresIn: env.JWT_ACCESS_EXPIRES_IN,
     } as jwt.SignOptions)
   }
@@ -95,7 +95,7 @@ export class AuthService {
     })
 
     // Generate tokens
-    const accessToken = this.generateAccessToken(user.id, user.role)
+    const accessToken = this.generateAccessToken(user.id, user.role, user.email)
     const refreshToken = this.generateRefreshToken()
 
     // Save refresh token to database
@@ -142,7 +142,7 @@ export class AuthService {
     }
 
     // Generate tokens
-    const accessToken = this.generateAccessToken(user.id, user.role)
+    const accessToken = this.generateAccessToken(user.id, user.role, user.email)
     const refreshToken = this.generateRefreshToken()
 
     // Save refresh token to database
@@ -200,7 +200,11 @@ export class AuthService {
     }
 
     // Generate new access token
-    const newAccessToken = this.generateAccessToken(tokenRecord.user.id, tokenRecord.user.role)
+    const newAccessToken = this.generateAccessToken(
+      tokenRecord.user.id,
+      tokenRecord.user.role,
+      tokenRecord.user.email
+    )
 
     return newAccessToken
   }

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Login Admin Flowzz</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Teste Login Admin Flowzz</h1>
+    <p>Este teste faz login no admin e verifica se o Zustand está salvando o estado.</p>
+
+    <button onclick="testLogin()">Fazer Login e Verificar Estado</button>
+    <div id="result" class="result"></div>
+
+    <script>
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '🔄 Fazendo login...';
+
+            try {
+                // Fazer login na API
+                const loginResponse = await fetch('http://localhost:4000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@flowzz.com.br',
+                        password: 'Admin@123'
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error(`Login falhou: ${loginResponse.status}`);
+                }
+
+                const loginData = await loginResponse.json();
+                const token = loginData.data.tokens.accessToken;
+
+                // Salvar no localStorage
+                localStorage.setItem('access_token', token);
+                localStorage.setItem('refresh_token', loginData.data.tokens.refreshToken);
+
+                resultDiv.innerHTML = '✅ Login API OK. Abrindo admin...';
+
+                // Abrir admin em nova aba
+                window.open('http://localhost:4174/login', '_blank');
+
+                // Aguardar um pouco e verificar se o Zustand foi salvo
+                setTimeout(async () => {
+                    try {
+                        // Tentar verificar o localStorage do admin (não funciona cross-origin)
+                        // Em vez disso, vamos testar a API de usuários diretamente
+                        const usersResponse = await fetch('http://localhost:4000/api/v1/admin/users', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+
+                        if (usersResponse.ok) {
+                            const usersData = await usersResponse.json();
+                            resultDiv.innerHTML += '<br>✅ API de usuários OK<br>';
+                            resultDiv.innerHTML += `📊 ${usersData.data.total} usuários encontrados<br>`;
+                            resultDiv.innerHTML += '🔍 Agora verifique no admin se os usuários aparecem!';
+                            resultDiv.className = 'result success';
+                        } else {
+                            resultDiv.innerHTML += '<br>❌ API de usuários falhou';
+                            resultDiv.className = 'result error';
+                        }
+                    } catch (error) {
+                        resultDiv.innerHTML += `<br>❌ Erro ao testar API: ${error.message}`;
+                        resultDiv.className = 'result error';
+                    }
+                }, 3000);
+
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>

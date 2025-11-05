@@ -18,12 +18,29 @@ import {
   User,
   Zap,
 } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+import {
+  changePassword,
+  getProfile,
+  getSessions,
+  getSystemSettings,
+  revokeSession,
+  updateProfile,
+  updateSystemSettings,
+} from '../../lib/api/auth'
+
+type Session = {
+  id: string
+  user_agent: string
+  ip_address: string
+  device_info: string
+  created_at: string
+  expires_at: string
+}
 
 export default function Configuracoes() {
   const [activeTab, setActiveTab] = useState('perfil')
   const [showPassword, setShowPassword] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -49,6 +66,143 @@ export default function Configuracoes() {
   const novaSenhaId = useId()
   const confirmarSenhaId = useId()
 
+  // State for data
+  const [profileData, setProfileData] = useState<{
+    nome: string
+    email: string
+    telefone: string
+    documento: string
+    endereco: string
+    cidade: string
+    cep: string
+    avatar_url: string
+  }>({
+    nome: '',
+    email: '',
+    telefone: '',
+    documento: '',
+    endereco: '',
+    cidade: '',
+    cep: '',
+    avatar_url: '',
+  })
+  const [systemData, setSystemData] = useState<{
+    dark_mode: boolean
+    language: string
+    timezone: string
+    date_format: string
+    currency: string
+  }>({
+    dark_mode: false,
+    language: 'pt-BR',
+    timezone: 'America/Sao_Paulo',
+    date_format: 'DD/MM/YYYY',
+    currency: 'BRL',
+  })
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: '',
+  })
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [loading, setLoading] = useState(false)
+
+  // Load data on mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const response = await getProfile()
+        setProfileData((prev) => ({ ...prev, ...response.data }))
+      } catch (error) {
+        console.error('Erro ao carregar perfil:', error)
+      }
+    }
+
+    const loadSystemSettings = async () => {
+      try {
+        const response = await getSystemSettings()
+        setSystemData((prev) => ({ ...prev, ...response.data }))
+      } catch (error) {
+        console.error('Erro ao carregar configurações:', error)
+      }
+    }
+
+    const loadSessions = async () => {
+      try {
+        const response = await getSessions()
+        setSessions(response.data)
+      } catch (error) {
+        console.error('Erro ao carregar sessões:', error)
+      }
+    }
+
+    loadProfile()
+    loadSystemSettings()
+    loadSessions()
+  }, [])
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await updateProfile(profileData)
+      alert('Perfil atualizado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error)
+      alert('Erro ao atualizar perfil')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSystemSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await updateSystemSettings(systemData)
+      alert('Configurações atualizadas com sucesso!')
+    } catch (error) {
+      console.error('Erro ao atualizar configurações:', error)
+      alert('Erro ao atualizar configurações')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      alert('Nova senha e confirmação não coincidem')
+      return
+    }
+    setLoading(true)
+    try {
+      await changePassword(passwordData)
+      alert('Senha alterada com sucesso!')
+      setPasswordData({ current_password: '', new_password: '', confirm_password: '' })
+    } catch (error) {
+      console.error('Erro ao alterar senha:', error)
+      alert('Erro ao alterar senha')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRevokeSession = async (sessionId: string) => {
+    if (!confirm('Tem certeza que deseja revogar esta sessão?')) return
+
+    try {
+      await revokeSession(sessionId)
+      // Recarregar sessões após revogar
+      const sessionsResponse = await getSessions()
+      setSessions(sessionsResponse.data)
+      alert('Sessão revogada com sucesso!')
+    } catch (error) {
+      console.error('Erro ao revogar sessão:', error)
+      alert('Erro ao revogar sessão')
+    }
+  }
+
   const tabs = [
     { id: 'perfil', name: 'Perfil', icon: User },
     { id: 'sistema', name: 'Sistema', icon: Settings },
@@ -60,7 +214,7 @@ export default function Configuracoes() {
   ]
 
   const renderPerfilTab = () => (
-    <div className="space-y-6">
+    <form onSubmit={handleProfileSubmit} className="space-y-6">
       {/* Profile Picture */}
       <div className="flex items-center space-x-6">
         <div className="relative">
@@ -107,8 +261,10 @@ export default function Configuracoes() {
           <input
             id={nomeCompletoId}
             type="text"
-            defaultValue="João Silva"
+            value={profileData.nome}
+            onChange={(e) => setProfileData({ ...profileData, nome: e.target.value })}
             className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            required
           />
         </div>
         <div>
@@ -118,8 +274,10 @@ export default function Configuracoes() {
           <input
             id={emailId}
             type="email"
-            defaultValue="joao@flowzz.com"
+            value={profileData.email}
+            onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
             className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            required
           />
         </div>
         <div>
@@ -129,7 +287,8 @@ export default function Configuracoes() {
           <input
             id={telefoneId}
             type="tel"
-            defaultValue="(11) 99999-9999"
+            value={profileData.telefone}
+            onChange={(e) => setProfileData({ ...profileData, telefone: e.target.value })}
             className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
         </div>
@@ -140,7 +299,8 @@ export default function Configuracoes() {
           <input
             id={cpfCnpjId}
             type="text"
-            defaultValue="123.456.789-00"
+            value={profileData.documento}
+            onChange={(e) => setProfileData({ ...profileData, documento: e.target.value })}
             className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
         </div>
@@ -157,7 +317,8 @@ export default function Configuracoes() {
             <input
               id={enderecoId}
               type="text"
-              defaultValue="Rua das Flores, 123"
+              value={profileData.endereco}
+              onChange={(e) => setProfileData({ ...profileData, endereco: e.target.value })}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
@@ -168,7 +329,8 @@ export default function Configuracoes() {
             <input
               id={cidadeId}
               type="text"
-              defaultValue="São Paulo"
+              value={profileData.cidade}
+              onChange={(e) => setProfileData({ ...profileData, cidade: e.target.value })}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
@@ -179,7 +341,8 @@ export default function Configuracoes() {
             <input
               id={cepId}
               type="text"
-              defaultValue="01234-567"
+              value={profileData.cep}
+              onChange={(e) => setProfileData({ ...profileData, cep: e.target.value })}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
@@ -189,18 +352,19 @@ export default function Configuracoes() {
       {/* Save Button */}
       <div className="flex justify-end">
         <button
-          type="button"
-          className="flex items-center space-x-2 bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          type="submit"
+          disabled={loading}
+          className="flex items-center space-x-2 bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
         >
           <Save className="h-4 w-4" />
-          <span>Salvar Alterações</span>
+          <span>{loading ? 'Salvando...' : 'Salvar Alterações'}</span>
         </button>
       </div>
-    </div>
+    </form>
   )
 
   const renderSistemaTab = () => (
-    <div className="space-y-6">
+    <form onSubmit={handleSystemSubmit} className="space-y-6">
       {/* Appearance */}
       <div>
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Aparência</h3>
@@ -214,14 +378,14 @@ export default function Configuracoes() {
             </div>
             <button
               type="button"
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={() => setSystemData({ ...systemData, dark_mode: !systemData.dark_mode })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                darkMode ? 'bg-indigo-600' : 'bg-slate-200'
+                systemData.dark_mode ? 'bg-indigo-600' : 'bg-slate-200'
               }`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  darkMode ? 'translate-x-6' : 'translate-x-1'
+                  systemData.dark_mode ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
@@ -239,11 +403,13 @@ export default function Configuracoes() {
             </label>
             <select
               id={idiomaId}
+              value={systemData.language}
+              onChange={(e) => setSystemData({ ...systemData, language: e.target.value })}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option>Português (Brasil)</option>
-              <option>English (US)</option>
-              <option>Español</option>
+              <option value="pt-BR">Português (Brasil)</option>
+              <option value="en-US">English (US)</option>
+              <option value="es-ES">Español</option>
             </select>
           </div>
           <div>
@@ -255,11 +421,13 @@ export default function Configuracoes() {
             </label>
             <select
               id={fusoHorarioId}
+              value={systemData.timezone}
+              onChange={(e) => setSystemData({ ...systemData, timezone: e.target.value })}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option>America/Sao_Paulo (GMT-3)</option>
-              <option>America/New_York (GMT-5)</option>
-              <option>Europe/London (GMT+0)</option>
+              <option value="America/Sao_Paulo">America/Sao_Paulo (GMT-3)</option>
+              <option value="America/New_York">America/New_York (GMT-5)</option>
+              <option value="Europe/London">Europe/London (GMT+0)</option>
             </select>
           </div>
         </div>
@@ -278,11 +446,13 @@ export default function Configuracoes() {
             </label>
             <select
               id={formatoDataId}
+              value={systemData.date_format}
+              onChange={(e) => setSystemData({ ...systemData, date_format: e.target.value })}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option>DD/MM/YYYY</option>
-              <option>MM/DD/YYYY</option>
-              <option>YYYY-MM-DD</option>
+              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
             </select>
           </div>
           <div>
@@ -291,16 +461,30 @@ export default function Configuracoes() {
             </label>
             <select
               id={moedaId}
+              value={systemData.currency}
+              onChange={(e) => setSystemData({ ...systemData, currency: e.target.value })}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option>Real (R$)</option>
-              <option>Dólar ($)</option>
-              <option>Euro (€)</option>
+              <option value="BRL">Real (R$)</option>
+              <option value="USD">Dólar ($)</option>
+              <option value="EUR">Euro (€)</option>
             </select>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex items-center space-x-2 bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+        >
+          <Save className="h-4 w-4" />
+          <span>{loading ? 'Salvando...' : 'Salvar Configurações'}</span>
+        </button>
+      </div>
+    </form>
   )
 
   const renderNotificacoesTab = () => (
@@ -363,7 +547,7 @@ export default function Configuracoes() {
       {/* Change Password */}
       <div>
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Alterar Senha</h3>
-        <div className="space-y-4">
+        <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <div>
             <label htmlFor={senhaAtualId} className="block text-sm font-medium text-slate-700 mb-2">
               Senha Atual
@@ -372,7 +556,12 @@ export default function Configuracoes() {
               <input
                 id={senhaAtualId}
                 type={showPassword ? 'text' : 'password'}
+                value={passwordData.current_password}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, current_password: e.target.value })
+                }
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                required
               />
               <button
                 type="button"
@@ -382,7 +571,7 @@ export default function Configuracoes() {
                 {showPassword ? (
                   <EyeOff className="h-4 w-4 text-slate-400" />
                 ) : (
-                  <Eye className="h-4 w-4 text-slate-400" />
+                  <Eye className="h-4 w-4 text-slate-600" />
                 )}
               </button>
             </div>
@@ -394,7 +583,10 @@ export default function Configuracoes() {
             <input
               id={novaSenhaId}
               type="password"
+              value={passwordData.new_password}
+              onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              required
             />
           </div>
           <div>
@@ -407,16 +599,22 @@ export default function Configuracoes() {
             <input
               id={confirmarSenhaId}
               type="password"
+              value={passwordData.confirm_password}
+              onChange={(e) =>
+                setPasswordData({ ...passwordData, confirm_password: e.target.value })
+              }
               className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              required
             />
           </div>
           <button
-            type="button"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+            type="submit"
+            disabled={loading}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
           >
-            Alterar Senha
+            {loading ? 'Alterando...' : 'Alterar Senha'}
           </button>
-        </div>
+        </form>
       </div>
 
       {/* Two Factor Authentication */}
@@ -444,18 +642,33 @@ export default function Configuracoes() {
       <div>
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Sessões Ativas</h3>
         <div className="space-y-3">
-          <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Smartphone className="h-5 w-5 text-green-600" />
+          {sessions.map((session: Session, index: number) => (
+            <div
+              key={session.id || index}
+              className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-4"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Smartphone className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-900">
+                    {session.device_info || 'Dispositivo'}
+                  </p>
+                  <p className="text-slate-600 text-sm">
+                    {session.ip_address || 'IP'} • {session.created_at || 'Criada'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-slate-900">Chrome - Windows</p>
-                <p className="text-slate-600 text-sm">São Paulo, Brasil • Ativo agora</p>
-              </div>
+              <button
+                type="button"
+                className="text-red-600 hover:text-red-700 font-medium text-sm"
+                onClick={() => handleRevokeSession(session.id)}
+              >
+                Revogar
+              </button>
             </div>
-            <span className="text-green-600 text-sm font-medium">Sessão Atual</span>
-          </div>
+          ))}
         </div>
       </div>
     </div>

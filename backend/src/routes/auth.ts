@@ -37,4 +37,29 @@ router.get('/subscription', authenticate, (req, res) =>
   authController.getSubscriptionInfo(req, res)
 )
 
+// GET /auth/profile - Get current user profile (protected)
+router.get('/profile', authenticate, (req, res) => authController.getProfile(req, res))
+
+// PUT /auth/profile - Update current user profile (protected)
+router.put('/profile', authenticate, (req, res) => authController.updateProfile(req, res))
+
+// GET /auth/system-settings - Get system settings (protected)
+router.get('/system-settings', authenticate, (req, res) =>
+  authController.getSystemSettings(req, res)
+)
+
+// PUT /auth/system-settings - Update system settings (protected)
+router.put('/system-settings', authenticate, (req, res) =>
+  authController.updateSystemSettings(req, res)
+)
+
+// PUT /auth/security - Change password (protected)
+router.put('/security', authenticate, (req, res) => authController.changePassword(req, res))
+
+// GET /auth/sessions - Get active sessions (protected)
+router.get('/sessions', authenticate, (req, res) => authController.getSessions(req, res))
+
+// DELETE /auth/sessions/:id - Revoke session (protected)
+router.delete('/sessions/:id', authenticate, (req, res) => authController.revokeSession(req, res))
+
 export { router as authRoutes }

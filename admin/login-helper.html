@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowZZ Admin - Login Helper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 FlowZZ Admin - Login Helper</h1>
+        <p>Esta ferramenta ajuda a fazer login automaticamente no painel administrativo.</p>
+
+        <button class="btn" onclick="loginAdmin()">Fazer Login no Admin</button>
+        <button class="btn" onclick="openAdmin()">Abrir Admin</button>
+        <button class="btn" onclick="clearStorage()">Limpar Cache</button>
+
+        <div id="status" class="status"></div>
+
+        <h3>Como usar:</h3>
+        <ol>
+            <li>Clique em "Fazer Login no Admin"</li>
+            <li>Após o login bem-sucedido, clique em "Abrir Admin"</li>
+            <li>O admin será aberto com a sessão já autenticada</li>
+        </ol>
+
+        <h3>Credenciais padrão:</h3>
+        <ul>
+            <li><strong>Email:</strong> admin@flowzz.com.br</li>
+            <li><strong>Senha:</strong> Admin@123</li>
+        </ul>
+
+        <h3>Tokens gerados (para debug):</h3>
+        <div id="tokens"></div>
+    </div>
+
+    <script>
+        async function loginAdmin() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            status.className = 'status';
+            status.textContent = 'Fazendo login...';
+
+            try {
+                // Fazer login na API
+                const response = await fetch('http://localhost:4000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@flowzz.com.br',
+                        password: 'Admin@123'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.data && data.data.tokens) {
+                    const { accessToken, refreshToken } = data.data.tokens;
+                    const user = data.data.user;
+
+                    // Salvar no localStorage
+                    localStorage.setItem('access_token', accessToken);
+                    localStorage.setItem('refresh_token', refreshToken);
+
+                    // Salvar estado do Zustand (incluindo hydrated)
+                    const authState = {
+                        user: {
+                            id: user.id,
+                            name: user.nome,
+                            email: user.email,
+                            role: user.role
+                        },
+                        token: accessToken,
+                        role: user.role,
+                        isAuthenticated: true,
+                        hydrated: true
+                    };
+                    localStorage.setItem('admin-auth-storage', JSON.stringify(authState));
+
+                    // Mostrar sucesso
+                    status.className = 'status success';
+                    status.innerHTML = `
+                        <strong>✅ Login realizado com sucesso!</strong><br>
+                        Usuário: ${user.nome}<br>
+                        Email: ${user.email}<br>
+                        Role: ${user.role}
+                    `;
+
+                    // Mostrar tokens
+                    document.getElementById('tokens').innerHTML = `
+                        <pre>Access Token: ${accessToken.substring(0, 50)}...</pre>
+                        <pre>Refresh Token: ${refreshToken.substring(0, 50)}...</pre>
+                    `;
+
+                } else {
+                    throw new Error('Resposta inválida da API');
+                }
+
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = `<strong>❌ Erro no login:</strong> ${error.message}`;
+                console.error('Erro no login:', error);
+            }
+        }
+
+        function openAdmin() {
+            window.open('http://localhost:4174', '_blank');
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('status').className = 'status success';
+            document.getElementById('status').textContent = 'Cache limpo com sucesso!';
+            document.getElementById('tokens').innerHTML = '';
+        }
+
+        // Verificar se já está logado
+        window.addEventListener('load', function() {
+            const token = localStorage.getItem('access_token');
+            const authStorage = localStorage.getItem('admin-auth-storage');
+
+            if (token && authStorage) {
+                const status = document.getElementById('status');
+                status.style.display = 'block';
+                status.className = 'status success';
+                status.textContent = '✅ Já está logado no admin!';
+            }
+        });
+    </script>
+</body>
+</html>
+                        isAuthenticated: true
+                    };
+
+                    localStorage.setItem('admin-auth-storage', JSON.stringify(authState));
+
+                    alert('Login realizado com sucesso! Redirecionando...');
+
+                    // Redirecionar para o admin
+                    window.location.href = 'http://localhost:4174';
+                } else {
+                    alert('Erro no login: ' + JSON.stringify(data));
+                }
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
