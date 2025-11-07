@@ -7,23 +7,15 @@
  * - design.md: External Integrations - Coinzz, Security
  * - webhookcoinzz.md: Estrutura completa dos webhooks
  *
- * Service responsável por toda a lógica de integração    const existingClient = await this.prisma.client.findFirst({
-      where: {
-        user_id: userId,
-        OR: [
-          { cpf: clientData.cpf_cnpj },
-          { phone: clientData.telefone },
-        ],
-      },
-    });zz:
+ * Service responsável por toda a lógica de integração com Coinzz:
  * - Autenticação e criptografia de API Keys
  * - Sincronização de vendas (manual e automática)
  * - Processamento de webhooks
  * - Mapeamento de dados Coinzz → Sale model
  */
 
-import crypto from 'node:crypto'
 import type { PrismaClient, SaleStatus } from '@prisma/client'
+import crypto from 'node:crypto'
 import type {
   CoinzzStatusDTO,
   ConnectCoinzzDTO,
@@ -655,5 +647,81 @@ export class CoinzzService implements ICoinzzService {
     const decrypted = decipher.update(encrypted, 'hex', 'utf8') + decipher.final('utf8')
 
     return decrypted
+  }
+
+  /**
+   * Obtém lista de clientes criados via integração Coinzz
+   * Retorna apenas clientes que foram criados através de webhooks/processamento de vendas
+   */
+  async getClients(userId: string): Promise<
+    Array<{
+      id: string
+      name: string
+      email: string | null
+      phone: string
+      cpf: string
+      address: string
+      city: string
+      state: string
+      cep: string
+      createdAt: Date
+      updatedAt: Date
+    }>
+  > {
+    try {
+      logger.info('Retrieving Coinzz clients', { userId })
+
+      // Buscar clientes criados via integração Coinzz
+      // Usamos uma query que encontra clientes que têm vendas associadas via Coinzz
+      const clients = await this.prisma.client.findMany({
+        where: {
+          user_id: userId,
+          // Clientes que foram criados através de vendas do Coinzz
+          // (podemos identificar pelo fato de terem vendas com external_id não nulo)
+          sales: {
+            some: {
+              external_id: {
+                not: null,
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          cpf: true,
+          address: true,
+          city: true,
+          state: true,
+          cep: true,
+          created_at: true,
+          updated_at: true,
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      })
+
+      logger.info('Coinzz clients retrieved', { userId, count: clients.length })
+
+      return clients.map((client) => ({
+        id: client.id,
+        name: client.name,
+        email: client.email,
+        phone: client.phone || '',
+        cpf: client.cpf || '',
+        address: client.address || '',
+        city: client.city || '',
+        state: client.state || '',
+        cep: client.cep || '',
+        createdAt: client.created_at,
+        updatedAt: client.updated_at,
+      }))
+    } catch (error) {
+      logger.error('Error retrieving Coinzz clients', { userId, error })
+      throw new Error('Erro ao buscar clientes da Coinzz')
+    }
   }
 }

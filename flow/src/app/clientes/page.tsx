@@ -294,7 +294,7 @@ const CreateClientModal = ({
 }: {
   showCreateModal: boolean
   setShowCreateModal: (show: boolean) => void
-  onCreateClient: (data: UIClient) => Promise<void>
+  onCreateClient: (data: Partial<UIClient>) => Promise<void>
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -311,6 +311,13 @@ const CreateClientModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validar campos obrigatórios
+    if (!formData.name.trim()) {
+      alert('Preencha o nome do cliente')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -402,8 +409,11 @@ const CreateClientModal = ({
               {/* Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
+                  <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-2">
+                    Telefone
+                  </label>
                   <input
+                    id="phone"
                     type="text"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -413,8 +423,11 @@ const CreateClientModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">CPF</label>
+                  <label htmlFor="cpf" className="block text-sm font-medium text-slate-700 mb-2">
+                    CPF
+                  </label>
                   <input
+                    id="cpf"
                     type="text"
                     value={formData.cpf}
                     onChange={(e) => handleInputChange('cpf', e.target.value)}
@@ -528,7 +541,7 @@ const EditClientModal = ({
   showEditModal: boolean
   setShowEditModal: (show: boolean) => void
   editingClient: any
-  onUpdateClient: (id: string, data: UIClient) => Promise<void>
+  onUpdateClient: (id: string, data: Partial<UIClient>) => Promise<void>
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -638,7 +651,9 @@ const EditClientModal = ({
               {/* Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
+                  <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-2">
+                    Telefone
+                  </label>
                   <input
                     type="text"
                     value={formData.phone}
@@ -915,7 +930,9 @@ const ClientesPage = () => {
   // Carregar clientes ao montar o componente
   useEffect(() => {
     const fetchClients = async () => {
+      console.log('[Page] Calling loadClients...')
       await loadClients()
+      console.log('[Page] loadClients completed')
     }
 
     fetchClients()
@@ -940,7 +957,7 @@ const ClientesPage = () => {
 
   // Função para criar cliente
   const handleCreateClient = async (data: Partial<UIClient>) => {
-    await createNewClient(data)
+    await createNewClient(data as any)
   }
 
   // Função para editar cliente
@@ -951,7 +968,7 @@ const ClientesPage = () => {
 
   // Função para atualizar cliente
   const handleUpdateClient = async (id: string, data: Partial<UIClient>) => {
-    await updateExistingClient(id, data)
+    await updateExistingClient(id, data as any)
   }
 
   // Função para excluir cliente
@@ -1006,23 +1023,31 @@ const ClientesPage = () => {
   }
 
   // Converter clientes do backend para formato da UI
-  const clients: UIClient[] = backendClients.map((client) => ({
-    id: client.id,
-    name: client.name,
-    phone: client.phone || '',
-    email: client.email || '',
-    value: Number(client.total_spent) || 0,
-    status: client.status.toLowerCase(), // Converter ACTIVE -> active, etc.
-    deliveryDate: client.last_order_at
-      ? new Date(client.last_order_at).toISOString().split('T')[0]
-      : '',
-    tags: client.tags.map((ct) => ct.tag_id), // IDs das tags
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${client.name}`,
-    lastContact: client.last_order_at
-      ? `${Math.floor((Date.now() - new Date(client.last_order_at).getTime()) / (1000 * 60 * 60 * 24))} dias atrás`
-      : 'Nunca',
-    orders: client.total_orders,
-  }))
+  let clients: UIClient[] = []
+  try {
+    clients = backendClients.map((client) => ({
+      id: (client as any).id as string,
+      name: (client as any).name as string,
+      phone: ((client as any).phone as string) || '',
+      email: ((client as any).email as string) || '',
+      value: Number((client as any).total_spent) || 0,
+      status: ((client as any).status as string)?.toLowerCase?.() || 'active',
+      deliveryDate: (client as any).last_order_at
+        ? new Date((client as any).last_order_at as string).toISOString().split('T')[0]
+        : '',
+      tags: Array.isArray((client as any).tags)
+        ? ((client as any).tags as Array<{ tag_id: string }>).map((ct) => ct.tag_id)
+        : [],
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${(client as any).name as string}`,
+      lastContact: (client as any).last_order_at
+        ? `${Math.floor((Date.now() - new Date((client as any).last_order_at as string).getTime()) / (1000 * 60 * 60 * 24))} dias atrás`
+        : 'Nunca',
+      orders: ((client as any).total_orders as number) || 0,
+    }))
+  } catch (error) {
+    console.error('Erro ao mapear clientes:', error, backendClients)
+    clients = []
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {

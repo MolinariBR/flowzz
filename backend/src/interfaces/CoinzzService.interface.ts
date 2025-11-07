@@ -215,6 +215,26 @@ export interface ICoinzzService {
   syncSales(userId: string, forceFullSync?: boolean): Promise<SyncResultDTO>
 
   /**
+   * Obtém lista de clientes criados via integração Coinzz
+   * Referência: tasks.md Task 5.2.5
+   */
+  getClients(userId: string): Promise<
+    Array<{
+      id: string
+      name: string
+      email: string | null
+      phone: string
+      cpf: string
+      address: string
+      city: string
+      state: string
+      cep: string
+      createdAt: Date
+      updatedAt: Date
+    }>
+  >
+
+  /**
    * Processa webhook de pedido recebido do Coinzz
    * Referência: tasks.md Task 5.2.3, webhookcoinzz.md
    */

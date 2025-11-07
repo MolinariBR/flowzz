@@ -43,7 +43,8 @@ export const useClients = (isAuthenticated: boolean = false) => {
   const loadCoinzzClients = useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/integrations/coinzz/clients', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'
+      const response = await fetch(`${API_BASE_URL}/api/v1/integrations/coinzz/clients`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -54,7 +55,8 @@ export const useClients = (isAuthenticated: boolean = false) => {
       }
 
       const data = await response.json()
-      return data
+      // Retornar apenas o array de clientes, não o objeto inteiro
+      return Array.isArray(data) ? data : data.data || []
     } catch (error) {
       console.error('Error loading Coinzz clients:', error)
       toast.error('Erro ao carregar clientes da Coinzz')
@@ -79,12 +81,15 @@ export const useClients = (isAuthenticated: boolean = false) => {
         // Carregar clientes locais
         const response = await getClients(clientFilters || filters)
         const localClients = response.data
+        console.log('useClients: localClients:', localClients?.length || 0, localClients)
 
         // Carregar clientes da Coinzz
         const coinzzClients = await loadCoinzzClients()
+        console.log('useClients: coinzzClients:', coinzzClients?.length || 0, coinzzClients)
 
         // Mesclar dados
         const mergedClients = [...localClients, ...coinzzClients]
+        console.log('useClients: mergedClients:', mergedClients?.length || 0, mergedClients)
 
         setClients(mergedClients)
         setPagination(
